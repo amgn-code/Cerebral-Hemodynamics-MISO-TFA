@@ -1,0 +1,310 @@
+# Cerebral Hemodynamics MISO Transfer Function Analysis
+
+This repository contains MATLAB code for developing and testing a multiple-input single-output (MISO) transfer function analysis pipeline for cerebrovascular dynamics.
+
+The current focus is validating the pipeline on a Sho-inspired simulated signal before applying the method to real physiological data.
+
+## Project Overview
+
+The goal of this project is to estimate how cerebral blood flow velocity responds to multiple physiological inputs.
+
+The current model is:
+
+```matlab
+CBF(f) = H_BP(f)*BP(f) + H_CO2(f)*CO2(f)
+```
+
+where:
+
+* `BP` represents blood pressure or mean arterial pressure
+* `CO2` represents partial or end-tidal CO2 pressure
+* `CBF` represents cerebral blood flow velocity
+* `H_BP(f)` is the BP-to-CBF transfer function
+* `H_CO2(f)` is the CO2-to-CBF transfer function
+
+The transfer functions are used to quantify:
+
+* gain: how strongly CBF responds to each input at each frequency
+* phase: whether CBF leads or lags behind each input
+* coherence: how reliable the input-output relationship is at each frequency
+
+## Motivation
+
+Traditional transfer function analysis in dynamic cerebral autoregulation often focuses on the relationship between blood pressure and cerebral blood flow velocity. However, CO2 is also a strong vasoactive stimulus and can independently affect cerebral blood flow.
+
+A MISO framework may help separate:
+
+* pressure-driven CBF changes
+* CO2-driven CBF changes
+
+This is the main reason for extending the analysis from a single-input model to a two-input model.
+
+## Current Test Signal
+
+The current validation signal is based on Sho's simulated sinusoidal test signal.
+
+The original signal uses known sinusoidal components with known gain and phase relationships. This allows the pipeline to be tested against a signal where the expected transfer function behavior is known.
+
+In the MISO version, the simulated system is:
+
+```matlab
+BP + CO2 -> CBF
+```
+
+where BP and CO2 contain known frequency components, and CBF is constructed from known BP-driven and CO2-driven contributions.
+
+Because the test signal contains only a small number of discrete frequencies, the transfer function estimates should mainly be interpreted at those inserted frequencies. Estimates at frequencies without meaningful input power may be unreliable.
+
+## MISO Spectral Matrix Formulation
+
+The MISO model assumes that cerebral blood flow velocity can be represented as a linear combination of the BP and CO2 inputs at each frequency:
+
+```matlab
+CBF(f) = H_BP(f)*BP(f) + H_CO2(f)*CO2(f)
+```
+
+where:
+
+* `H_BP(f)` is the transfer function from BP to CBF
+* `H_CO2(f)` is the transfer function from CO2 to CBF
+
+To estimate these transfer functions, we use auto-spectra and cross-spectra.
+
+For a two-input system, the spectral equations can be written as:
+
+```matlab
+S_BP_CBF(f)  = H_BP(f)*S_BP_BP(f)  + H_CO2(f)*S_BP_CO2(f)
+
+S_CO2_CBF(f) = H_BP(f)*S_CO2_BP(f) + H_CO2(f)*S_CO2_CO2(f)
+```
+
+These two equations can be written in matrix form:
+
+```matlab
+[ S_BP_CBF(f)  ]   [ S_BP_BP(f)    S_BP_CO2(f)  ] [ H_BP(f)  ]
+[ S_CO2_CBF(f) ] = [ S_CO2_BP(f)   S_CO2_CO2(f) ] [ H_CO2(f) ]
+```
+
+Or more compactly:
+
+```matlab
+S_vector = S_matrix * H_vector
+```
+
+where:
+
+```matlab
+S_vector = [S_BP_CBF;
+            S_CO2_CBF];
+
+S_matrix = [S_BP_BP    S_BP_CO2;
+            S_CO2_BP   S_CO2_CO2];
+
+H_vector = [H_BP;
+            H_CO2];
+```
+
+To solve for the transfer functions, we rearrange:
+
+```matlab
+S_vector = S_matrix * H_vector
+```
+
+Andwe get:
+
+```matlab
+H_vector = inv(S_matrix) * S_vector
+```
+
+In MATLAB, the more numerically stable way to compute this is not to explicitly use `inv`, but to use the backslash operator:
+
+```matlab
+H_vector = S_matrix \ S_vector;
+```
+
+This solves the same linear system:
+
+```matlab
+S_matrix * H_vector = S_vector
+```
+
+without explicitly forming the inverse.
+
+The two entries of `H_vector` are then:
+
+```matlab
+H_BP_CBF  = H_vector(1);
+H_CO2_CBF = H_vector(2);
+```
+
+These complex transfer functions are then used to calculate gain and phase:
+
+```matlab
+gain  = abs(H);
+phase = angle(H);
+```
+
+
+## Current Method
+
+The current pipeline uses Welch-based spectral estimation.
+
+Main steps:
+
+1. Convert all signals to column vectors.
+2. Remove mean values.
+3. Estimate power spectra using `pwelch`.
+4. Estimate cross-spectra using `cpsd`.
+5. Construct the input spectral matrix:
+
+
+```matlab
+S_matrix = [S_BP_BP    S_BP_CO2;
+            S_CO2_BP   S_CO2_CO2];
+```
+
+6. Construct the input-output spectral vector:
+
+```matlab
+S_vector = [S_BP_CBF;
+            S_CO2_CBF];
+```
+
+7. Solve for the MISO transfer function vector:
+
+```matlab
+H_vector = S_matrix \ S_vector;
+```
+
+8. Extract gain, phase, pairwise coherence, multiple coherence, and diagnostic information.
+
+## Default TFA Settings
+
+Current default settings:
+
+* Sampling frequency: `fs = 4 Hz`
+* Hanning window
+* 128-second window length
+* 50% overlap
+* `nfft = windowLength_samples`
+* Frequency resolution: `fs / nfft`
+* Frequency range: approximately `0.0078125–0.5078125 Hz`
+
+For sinusoidal validation tests, the window length may need to be adjusted so that the known sinusoid frequencies align more cleanly with frequency bins.
+
+## Identifiability and Fallback Logic
+
+A true MISO estimate is only valid at frequencies where both BP and CO2 have enough input power and the input spectral matrix is numerically stable.
+
+At a frequency where BP has power but CO2 has little or no power, the full MISO model is not identifiable because the data cannot determine the CO2-to-CBF transfer function at that frequency.
+
+In those cases, the current approach is:
+
+* use a BP-only SISO fallback estimate if BP and CBF have enough power,
+* use a CO2-only SISO fallback estimate if CO2 and CBF have enough power,
+* leave the inactive or unidentifiable transfer function as `NaN`.
+
+This allows the active input contribution to still be estimated while avoiding false interpretation of an unidentifiable transfer function.
+
+## Current Issues Being Investigated
+
+The main issues currently being addressed are:
+
+1. **Spectral leakage**
+   Some sinusoidal components do not land exactly on Welch frequency bins, so energy spreads into nearby frequency bins.
+
+2. **Window length effects**
+   The choice of window length affects frequency resolution and whether the simulated sinusoids align with frequency bins.
+
+3. **MISO identifiability**
+   A full MISO estimate cannot be recovered at frequencies where one input has little or no power.
+
+4. **Plot interpretation**
+   Gain and phase should only be interpreted at frequencies where the relevant input has enough power and the estimate is reliable.
+
+## Example Results
+
+Example plots can be included in the `figures/` folder and displayed here.
+
+### Simulated Input and Output Signals
+
+```markdown
+![Sho input and output signals](figures/sho_input_output.png)
+```
+
+### BP-to-CBF Transfer Function
+
+```markdown
+![BP to CBF gain and phase](figures/sho_bp_gain_phase.png)
+```
+
+### CO2-to-CBF Transfer Function
+
+```markdown
+![CO2 to CBF gain and phase](figures/sho_co2_gain_phase.png)
+```
+
+### Coherence Diagnostics
+
+```markdown
+![Coherence diagnostics](figures/sho_coherence_diagnostics.png)
+```
+
+## How to Run
+
+A typical workflow is:
+
+```matlab
+clear; clc; close all;
+
+signalData = createShoMisoSignal();
+
+BP = signalData.bp_clean;
+CO2 = signalData.co2_clean;
+CBF = signalData.cbf_clean;
+fs = signalData.fs;
+
+tfaResults = runTFA(BP, CO2, CBF, fs);
+```
+
+The output `tfaResults` is a MATLAB struct containing:
+
+* frequency vector
+* BP, CO2, and CBF power spectra
+* input-output cross-spectra
+* BP-to-CBF transfer function
+* CO2-to-CBF transfer function
+* gain and phase estimates
+* pairwise coherence estimates
+* multiple coherence
+* condition number diagnostics
+* estimate type labels
+
+## Planned Repository Structure
+
+```text
+Cerebral-Hemodynamics-MISO-TFA/
+│
+├── README.md
+├── main.m
+│
+├── functions/
+│   ├── runTFA.m
+│   ├── plotComplexMagnitudePhase.m
+│   └── createShoMisoSignal.m
+│
+├── figures/
+│   ├── sho_input_output.png
+│   ├── sho_bp_gain_phase.png
+│   ├── sho_co2_gain_phase.png
+│   └── sho_coherence_diagnostics.png
+│
+└── results/
+    └── saved_output_structs_or_figures
+```
+
+## Current Status
+
+The pipeline is currently able to recover gain and phase values at expected simulated frequencies, but interpretation is still being refined. The main current focus is understanding how spectral leakage, window length, and input-power thresholds affect the frequency-domain plots.
+
+This repository is under active development and is intended for research and validation purposes.
