@@ -1,4 +1,4 @@
-function tfaResults = runTFA(bp, co2, cbf, fs)
+function t = runTFA(bp, co2, cbf, fs)
 % runTFA
 %
 % Pipeline:
@@ -115,6 +115,18 @@ end
 [BP_CO2_Sxy, ~] = cpsd(bp, co2, window, noverlap, nfft, fs);
 [CO2_BP_Sxy, ~] = cpsd(co2, bp, window, noverlap, nfft, fs);
 
+%% Define Spectral Lookup Functions
+%{
+S_BP_BP    = @(k) BP_Sxx(k);
+S_CO2_CO2  = @(k) CO2_Sxx(k);
+
+S_BP_CO2   = @(k) BP_CO2_Sxy(k);
+S_CO2_BP   = @(k) CO2_BP_Sxy(k);
+
+S_BP_CBF   = @(k) BP_CBF_Sxy(k);
+S_CO2_CBF  = @(k) CO2_CBF_Sxy(k);
+%}
+
 %% MISO Transfer Functions with Reliability Checks
 
 H_BP_CBF_MISO  = NaN(size(f));
@@ -122,8 +134,6 @@ H_CO2_CBF_MISO = NaN(size(f));
 
 multipleCoherence = NaN(size(f));
 conditionNumber = NaN(size(f));
-
-estimateType = strings(size(f));
 
 % Power thresholds
 % These are relative thresholds, not absolute physiological thresholds.
@@ -155,51 +165,24 @@ for k = 1:length(f)
 
     if enoughBPpower && enoughCO2power && enoughCBFpower && matrixIsStable
 
-        % True MISO estimate
+        % More stable than inv(S_matrix) * S_vector
         H_vector = S_matrix \ S_vector;
 
-        H_BP_CBF_MISO(k,1)  = H_vector(1);
-        H_CO2_CBF_MISO(k,1) = H_vector(2);
+        H_BP_CBF_MISO(k,1)  = H_vector(1,1);
+        H_CO2_CBF_MISO(k,1) = H_vector(2,1);
 
-        estimateType(k,1) = "MISO";
+        % Multiple coherence-like reliability measure:
+        %
+        % This estimates how much of the output power is explained
+        % by both inputs together.
+        %
+        % numerator = explained output power
+        % denominator = total output power
 
-        % Multiple coherence is only meaningful for the true MISO case.
-        % It asks how much output power is explained by both inputs together.
         explainedPower = real(H_vector' * S_matrix * H_vector);
         totalOutputPower = CBF_Syy(k);
 
         multipleCoherence(k,1) = explainedPower / totalOutputPower;
-
-    elseif enoughBPpower && enoughCBFpower
-
-        % BP-only fallback
-        H_BP_CBF_MISO(k,1)  = BP_CBF_Sxy(k) / BP_Sxx(k);
-        H_CO2_CBF_MISO(k,1) = NaN;
-
-        estimateType(k,1) = "BP_SISO_fallback";
-
-        % Not a true MISO estimate, so leave multiple coherence undefined.
-        multipleCoherence(k,1) = NaN;
-
-    elseif enoughCO2power && enoughCBFpower
-
-        % CO2-only fallback
-        H_BP_CBF_MISO(k,1)  = NaN;
-        H_CO2_CBF_MISO(k,1) = CO2_CBF_Sxy(k) / CO2_Sxx(k);
-
-        estimateType(k,1) = "CO2_SISO_fallback";
-
-        % Not a true MISO estimate, so leave multiple coherence undefined.
-        multipleCoherence(k,1) = NaN;
-
-    else
-
-        % Not enough information
-        H_BP_CBF_MISO(k,1)  = NaN;
-        H_CO2_CBF_MISO(k,1) = NaN;
-
-        estimateType(k,1) = "insufficient_power";
-        multipleCoherence(k,1) = NaN;
 
     end
 
@@ -255,9 +238,6 @@ BP_CBF_coherence_out = BP_CBF_coherence(freqMask);
 CO2_CBF_coherence_out = CO2_CBF_coherence(freqMask);
 BP_CO2_coherence_out = BP_CO2_coherence(freqMask);
 
-estimateType_out = estimateType(freqMask);
-conditionNumber_out = conditionNumber(freqMask);
-
 %% Plot MISO Transfer Functions
 
 plotComplexMagnitudePhase(H_BP_CBF_MISO_out, f_out, 'MISO TFA H: BP to CBF');
@@ -272,7 +252,7 @@ plot(f_out, BP_CBF_coherence_out, 'LineWidth', 1.2);
 hold on;
 plot(f_out, CO2_CBF_coherence_out, 'LineWidth', 1.2);
 hold on;
-plot(f_out, multipleCoherence_out, '*');
+plot(f_out, multipleCoherence_out, 'LineWidth', 1.5);
 
 xlabel('Frequency (Hz)');
 ylabel('Coherence');
@@ -315,8 +295,5 @@ tfaResults.CO2_CBF_coherence = CO2_CBF_coherence_out;
 tfaResults.BP_CO2_coherence = BP_CO2_coherence_out;
 
 tfaResults.multipleCoherence = multipleCoherence_out;
-
-tfaResults.estimateType = estimateType_out;
-tfaResults.conditionNumber = conditionNumber_out;
 
 end
