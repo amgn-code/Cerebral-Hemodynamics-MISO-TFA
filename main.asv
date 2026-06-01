@@ -51,7 +51,7 @@ xlabel('Time (s)')
 ylabel('Amplitude')
 grid on
 
-%% PSD / Cross-Spectral Transfer Function
+%% Pipeline 2: PSD / Cross-Spectral Transfer Function
 %
 % Goal:
 %   Use Welch PSD and cross spectral density:
@@ -65,4 +65,4 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-TFAResults = runTFA(bp, co2, cbf, fs);
+psdResults = runPSDPipeline(bp, co2, cbf, fs);
