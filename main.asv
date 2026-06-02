@@ -5,11 +5,12 @@ close all
 
 %% SHO's MISO Toy Signal
 
-signalData = createShoMisoSignal();
+%signalData = createShoMisoSignal();
+%signalData = createMisoValidationSignal(true);  % false = no added noise
 
-bp = signalData.bp_clean;
-co2 = signalData.co2_clean;
-cbf = signalData.cbf_clean;
+bp = signalData.bp;
+co2 = signalData.co2;
+cbf = signalData.cbf;
 fs = signalData.fs;
 t = signalData.t;
 
@@ -52,5 +53,5 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-TFAResults = runTFA(bp, co2, cbf, fs);
+tfaResults = runTFA(bp, co2, cbf, fs);
 

@@ -6,12 +6,16 @@ close all
 %% SHO's MISO Toy Signal
 
 signalData = createShoMisoSignal();
+%signalData = createMisoValidationSignal(true);  % false = no added noise
+%signalData = loadPublicTFAData("subj01.csv");
 
 bp = signalData.bp;
 co2 = signalData.co2;
 cbf = signalData.cbf;
 fs = signalData.fs;
 t = signalData.t;
+
+
 
 
 %% Visualize Starting Data
