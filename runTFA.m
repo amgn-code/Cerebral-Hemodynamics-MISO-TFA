@@ -258,21 +258,53 @@ BP_CO2_coherence_out = BP_CO2_coherence(freqMask);
 estimateType_out = estimateType(freqMask);
 conditionNumber_out = conditionNumber(freqMask);
 
-%% Plot MISO Transfer Functions
+%% Coherence-Based Plotting Masks
 
-plotComplexMagnitudePhase(H_BP_CBF_MISO_out, f_out, 'MISO TFA H: BP to CBF');
+% Coherence threshold for deciding which gain/phase estimates are reliable
+% enough to display in the main transfer function plots.
+coherenceThreshold = 0.7;
 
-plotComplexMagnitudePhase(H_CO2_CBF_MISO_out, f_out, 'MISO TFA H: CO2 to CBF');
+% Make plotting copies of the transfer functions.
+% The raw transfer functions are still kept unchanged.
+H_BP_CBF_MISO_plot  = H_BP_CBF_MISO_out;
+H_CO2_CBF_MISO_plot = H_CO2_CBF_MISO_out;
+
+% BP-to-CBF plotting rule:
+% If the estimate came from a true MISO solve, use multiple coherence.
+% If the estimate came from BP-only SISO fallback, use BP-CBF pairwise coherence.
+validBPplot = ...
+    (estimateType_out == "MISO" & multipleCoherence_out >= coherenceThreshold) | ...
+    (estimateType_out == "BP_SISO_fallback" & BP_CBF_coherence_out >= coherenceThreshold);
+
+% CO2-to-CBF plotting rule:
+%
+% If the estimate came from a true MISO solve, use multiple coherence.
+% If the estimate came from CO2-only SISO fallback, use CO2-CBF pairwise coherence.
+validCO2plot = ...
+    (estimateType_out == "MISO" & multipleCoherence_out >= coherenceThreshold) | ...
+    (estimateType_out == "CO2_SISO_fallback" & CO2_CBF_coherence_out >= coherenceThreshold);
+
+% Hide unreliable points from the plotting copies.
+H_BP_CBF_MISO_plot(~validBPplot) = NaN;
+H_CO2_CBF_MISO_plot(~validCO2plot) = NaN;
+
+%% Plot Coherence-Masked Transfer Functions
+
+plotComplexMagnitudePhase(H_BP_CBF_MISO_plot, f_out, ...
+    'MISO TFA H: BP to CBF');
+
+plotComplexMagnitudePhase(H_CO2_CBF_MISO_plot, f_out, ...
+    'MISO TFA H: CO2 to CBF');
 
 %% Plot Coherence Diagnostics
 
-figure('Color','w');
+figure();
 
-plot(f_out, BP_CBF_coherence_out, 'LineWidth', 1.2);
+plot(f_out, BP_CBF_coherence_out);
 hold on;
-plot(f_out, CO2_CBF_coherence_out, 'LineWidth', 1.2);
+plot(f_out, CO2_CBF_coherence_out);
 hold on;
-plot(f_out, multipleCoherence_out, '*');
+plot(f_out, multipleCoherence_out);
 
 xlabel('Frequency (Hz)');
 ylabel('Coherence');
@@ -318,5 +350,16 @@ tfaResults.multipleCoherence = multipleCoherence_out;
 
 tfaResults.estimateType = estimateType_out;
 tfaResults.conditionNumber = conditionNumber_out;
+
+tfaResults.H_BP_CBF_MISO_plot = H_BP_CBF_MISO_plot;
+tfaResults.H_CO2_CBF_MISO_plot = H_CO2_CBF_MISO_plot;
+
+tfaResults.coherenceThreshold = coherenceThreshold;
+
+tfaResults.gain_BP_CBF_MISO_plot = abs(H_BP_CBF_MISO_plot);
+tfaResults.gain_CO2_CBF_MISO_plot = abs(H_CO2_CBF_MISO_plot);
+
+tfaResults.phase_BP_CBF_MISO_plot = angle(H_BP_CBF_MISO_plot);
+tfaResults.phase_CO2_CBF_MISO_plot = angle(H_CO2_CBF_MISO_plot);
 
 end

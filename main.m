@@ -7,9 +7,9 @@ close all
 
 signalData = createShoMisoSignal();
 
-bp = signalData.bp_clean;
-co2 = signalData.co2_clean;
-cbf = signalData.cbf_clean;
+bp = signalData.bp;
+co2 = signalData.co2;
+cbf = signalData.cbf;
 fs = signalData.fs;
 t = signalData.t;
 
