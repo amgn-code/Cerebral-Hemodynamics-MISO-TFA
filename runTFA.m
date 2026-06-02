@@ -258,33 +258,89 @@ BP_CO2_coherence_out = BP_CO2_coherence(freqMask);
 estimateType_out = estimateType(freqMask);
 conditionNumber_out = conditionNumber(freqMask);
 
-%% Coherence-Based Plotting Masks
+%% Reliability-Based Plotting Masks
 
 % Coherence threshold for deciding which gain/phase estimates are reliable
 % enough to display in the main transfer function plots.
-coherenceThreshold = 0.7;
+coherenceThreshold = 0.51;
+
+% Input-input coherence threshold.
+% If BP and CO2 are too coherent with each other, the MISO model may have
+% trouble separating their independent effects on CBF.
+inputCoherenceThreshold = 0.80;
+
+% Stronger power thresholds for plotting only.
+% These are stricter than the numerical thresholds used to avoid division
+% by very small values.
+plotPowerThreshold_BP  = 1e-3 * max(BP_Sxx_out);
+plotPowerThreshold_CO2 = 1e-3 * max(CO2_Sxx_out);
+plotPowerThreshold_CBF = 1e-3 * max(CBF_Syy_out);
+
+strongBPpower  = BP_Sxx_out  >= plotPowerThreshold_BP;
+strongCO2power = CO2_Sxx_out >= plotPowerThreshold_CO2;
+strongCBFpower = CBF_Syy_out >= plotPowerThreshold_CBF;
 
 % Make plotting copies of the transfer functions.
-% The raw transfer functions are still kept unchanged.
+% Raw transfer functions are still kept unchanged.
 H_BP_CBF_MISO_plot  = H_BP_CBF_MISO_out;
 H_CO2_CBF_MISO_plot = H_CO2_CBF_MISO_out;
 
-% BP-to-CBF plotting rule:
-% If the estimate came from a true MISO solve, use multiple coherence.
-% If the estimate came from BP-only SISO fallback, use BP-CBF pairwise coherence.
-validBPplot = ...
-    (estimateType_out == "MISO" & multipleCoherence_out >= coherenceThreshold) | ...
-    (estimateType_out == "BP_SISO_fallback" & BP_CBF_coherence_out >= coherenceThreshold);
+%% MISO reliability masks
 
-% CO2-to-CBF plotting rule:
-%
-% If the estimate came from a true MISO solve, use multiple coherence.
-% If the estimate came from CO2-only SISO fallback, use CO2-CBF pairwise coherence.
-validCO2plot = ...
-    (estimateType_out == "MISO" & multipleCoherence_out >= coherenceThreshold) | ...
-    (estimateType_out == "CO2_SISO_fallback" & CO2_CBF_coherence_out >= coherenceThreshold);
+% BP MISO plot:
+% To show BP->CBF from a true MISO estimate, require:
+%   1. the point came from the full MISO solve,
+%   2. BP has meaningful power,
+%   3. CBF has meaningful power,
+%   4. BP and CBF have sufficient pairwise coherence,
+%   5. BP+CO2 together explain CBF sufficiently,
+%   6. the matrix solve is stable,
+%   7. BP and CO2 are not too strongly coupled.
+validBP_MISOplot = ...
+    estimateType_out == "MISO" & ...
+    strongBPpower & ...
+    strongCBFpower & ...
+    BP_CBF_coherence_out >= coherenceThreshold & ...
+    multipleCoherence_out >= coherenceThreshold & ...
+    conditionNumber_out < conditionThreshold & ...
+    BP_CO2_coherence_out < inputCoherenceThreshold;
 
-% Hide unreliable points from the plotting copies.
+% CO2 MISO plot:
+% Same idea, but input-specific checks use CO2 power and CO2-CBF coherence.
+validCO2_MISOplot = ...
+    estimateType_out == "MISO" & ...
+    strongCO2power & ...
+    strongCBFpower & ...
+    CO2_CBF_coherence_out >= coherenceThreshold & ...
+    multipleCoherence_out >= coherenceThreshold & ...
+    conditionNumber_out < conditionThreshold & ...
+    BP_CO2_coherence_out < inputCoherenceThreshold;
+
+%% SISO fallback reliability masks
+
+% For fallback points, use pairwise coherence because these are no longer
+% true two-input MISO estimates.
+validBPfallbackPlot = ...
+    estimateType_out == "BP_SISO_fallback" & ...
+    strongBPpower & ...
+    strongCBFpower & ...
+    BP_CBF_coherence_out >= coherenceThreshold;
+
+validCO2fallbackPlot = ...
+    estimateType_out == "CO2_SISO_fallback" & ...
+    strongCO2power & ...
+    strongCBFpower & ...
+    CO2_CBF_coherence_out >= coherenceThreshold;
+
+%% Final plotting masks
+
+% Use OR here because a point can be reliable through either:
+%   true MISO pathway OR SISO fallback pathway.
+validBPplot = validBP_MISOplot | validBPfallbackPlot;
+validCO2plot = validCO2_MISOplot | validCO2fallbackPlot;
+
+%% Hide unreliable points from plotting copies
+
 H_BP_CBF_MISO_plot(~validBPplot) = NaN;
 H_CO2_CBF_MISO_plot(~validCO2plot) = NaN;
 
@@ -355,6 +411,15 @@ tfaResults.H_BP_CBF_MISO_plot = H_BP_CBF_MISO_plot;
 tfaResults.H_CO2_CBF_MISO_plot = H_CO2_CBF_MISO_plot;
 
 tfaResults.coherenceThreshold = coherenceThreshold;
+tfaResults.inputCoherenceThreshold = inputCoherenceThreshold;
+
+tfaResults.validBP_MISOplot = validBP_MISOplot;
+tfaResults.validCO2_MISOplot = validCO2_MISOplot;
+tfaResults.validBPfallbackPlot = validBPfallbackPlot;
+tfaResults.validCO2fallbackPlot = validCO2fallbackPlot;
+
+tfaResults.validBPplot = validBPplot;
+tfaResults.validCO2plot = validCO2plot;
 
 tfaResults.gain_BP_CBF_MISO_plot = abs(H_BP_CBF_MISO_plot);
 tfaResults.gain_CO2_CBF_MISO_plot = abs(H_CO2_CBF_MISO_plot);
