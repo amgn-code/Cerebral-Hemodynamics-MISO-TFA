@@ -58,3 +58,10 @@ grid on
 
 tfaResults = runTFA(bp, co2, cbf, fs);
 
+%% test SISO
+sisoResults = runSISO(bp, co2, cbf, fs);
+
+%% test simple
+
+tfaSimpleResults = runTFAsimple(bp, co2, cbf, fs);
+

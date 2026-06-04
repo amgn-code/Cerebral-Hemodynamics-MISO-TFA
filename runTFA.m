@@ -267,7 +267,7 @@ coherenceThreshold = 0.51;
 % Input-input coherence threshold.
 % If BP and CO2 are too coherent with each other, the MISO model may have
 % trouble separating their independent effects on CBF.
-inputCoherenceThreshold = 0.80;
+inputCoherenceThreshold = 0.95;
 
 % Stronger power thresholds for plotting only.
 % These are stricter than the numerical thresholds used to avoid division

@@ -1,6 +1,6 @@
 function plotComplexMagnitudePhase(complexData, f, plotTitle, t)
 
-figure()
+
 
 if isvector(complexData)
 

@@ -11,17 +11,17 @@ function signalData = createShoMisoSignal()
     %% Sampling setup
     fs = 4;
     Ts = 1/fs;
-    t = (0:Ts:1000)';
+    t = (0:Ts:300)';
 
     %% BP-like clean input
     BP_clean = sin(t*2*pi*1/3) + ...
                sin(t*2*pi*1/10) + ...
-               sin(t*2*pi*1/48);
+               sin(t*2*pi*1/40);
 
     %% CO2-like clean input
     CO2_clean = sin(t*2*pi*1/6) + ...
                 sin(t*2*pi*1/20) + ...
-                sin(t*2*pi*1/80);
+                sin(t*2*pi*1/32);
 
     %% Add noise to inputs
     BP = awgn(BP_clean,30);
@@ -31,10 +31,10 @@ function signalData = createShoMisoSignal()
     CBF_clean = ...
         0.5*sin(t*2*pi*1/3 - 3*pi/4) + ...   % BP contribution
         1.0*sin(t*2*pi*1/10) + ...           % BP contribution
-        1.5*cos(t*2*pi*1/48) + ...           % BP contribution
+        1.5*sin(t*2*pi*1/40) + ...           % BP contribution
         0.8*sin(t*2*pi*1/6 - pi/4) + ...     % CO2 contribution
         1.2*sin(t*2*pi*1/20 + pi/3) + ...    % CO2 contribution
-        0.6*sin(t*2*pi*1/80);                % CO2 contribution
+        0.6*sin(t*2*pi*1/32);                % CO2 contribution
 
     CBF = awgn(CBF_clean,30);
 
