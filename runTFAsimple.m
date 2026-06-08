@@ -7,7 +7,7 @@ co2_clean = reshape(co2, 1, []);
 cbv_clean = reshape(cbv, 1, []);
 
 % User editable parameters
-window_length_s = 128;
+window_length_s = 128; 
 window_overlap = 0.5;
 
 window_length_n = window_length_s * fs;
@@ -66,15 +66,16 @@ for k = 1:length(f)
     S_xy = [S_mapcbv_smoothed(k);
            S_co2cbv_smoothed(k)];
 
-    H = inv(S_xx)*S_xy;
+    %H = inv(S_xx)*S_xy;
+    %Better Formulation to reduce Noise
+    Eps = 1e-6 * max(diag(S_xx)); % Dynamic safety threshold based on peak power
+    H = (S_xx + Eps*eye(2)) \ S_xy; % Robust, regularized matrix division
 
     H_mapcbv(k) = H(1,1);
     H_co2cbv(k) = H(2,1);
 
     % Multiple Coherence from Peng
-    % I don't understand the formulation
-
-    multiple_coherence(k) = (H'*S_xx*H) / (S_cbvcbv_smoothed(k));  
+    multiple_coherence(k) = real(H'*S_xx*H) / (S_cbvcbv_smoothed(k));  
 
 
 
@@ -84,7 +85,7 @@ end
 
 % H MAP -> CBV
 
-figure()
+figure('Name', 'MisoMapToCbvTransferFunction1', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(H_mapcbv))
 hold on
@@ -99,8 +100,8 @@ stem(f, angle(H_mapcbv))
 hold on
 plot(f, multiple_coherence)
 title('MAP to CBV Phase')
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('MAP to CBV Transfer Function')
@@ -108,7 +109,7 @@ sgtitle('MAP to CBV Transfer Function')
 
 % H CO2 -> CBV
 
-figure()
+figure('Name', 'MisoCo2ToCbvTransferFunction1', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(H_co2cbv))
 hold on
@@ -123,8 +124,8 @@ stem(f, angle(H_co2cbv))
 hold on
 plot(f, multiple_coherence)
 title('CO2 to CBV Phase')
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('CO2 to CBV Transfer Function')
@@ -150,7 +151,7 @@ hf_multiple_coherence = multiple_coherence(f>0.20 & f<=0.50);
 
 % vlf, lf, hf for MAP to CBV
 
-figure()
+figure('Name', 'PartitionedMisoMapToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(3,2,1)
 stem(vlf, abs(vlf_H_mapcbv))
 hold on
@@ -210,7 +211,7 @@ sgtitle('Partitioned MAP to CBV Transfer Function')
 
 % vlf, lf, hf for H CO2 to CBV
 
-figure()
+figure('Name', 'PartitionedMisoCo2ToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(3,2,1)
 stem(vlf, abs(vlf_H_co2cbv))
 hold on
@@ -272,7 +273,7 @@ sgtitle('Partitioned CO2 to CBV Transfer Function')
 multcoh_filtered_H_mapcbv = H_mapcbv;
 multcoh_filtered_H_mapcbv(multiple_coherence < coherence_threshold) = NaN;
 
-figure()
+figure('Name', 'MultCohFilteredMisoMapToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(multcoh_filtered_H_mapcbv))
 xlabel('Frequency (Hz)')
@@ -281,8 +282,8 @@ grid on
 
 subplot(1,2,2)
 stem(f, angle(multcoh_filtered_H_mapcbv))
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('Filtered MAP to CBV Transfer Function')
@@ -292,7 +293,7 @@ sgtitle('Filtered MAP to CBV Transfer Function')
 multcoh_filtered_H_co2cbv = H_co2cbv;
 multcoh_filtered_H_co2cbv(multiple_coherence < coherence_threshold) = NaN;
 
-figure()
+figure('Name', 'MultCohFilteredMisoCo2ToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(multcoh_filtered_H_co2cbv))
 xlabel('Frequency (Hz)')
@@ -301,8 +302,8 @@ grid on
 
 subplot(1,2,2)
 stem(f, angle(multcoh_filtered_H_co2cbv))
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('Filtered CO2 to CBV Transfer Function')
@@ -329,7 +330,7 @@ hf_mult_filtered_H_co2cbv(hf_multiple_coherence < coherence_threshold) = NaN;
 
 % VLF, LF, HF for Multiple Coherence Filtered MAP to CBV
 
-figure()
+figure('Name', 'PartitionedMultCohFilteredMisoMapToCbvTransferFunction', 'NumberTitle', 'off')
 
 subplot(3,2,1)
 stem(vlf, abs(vlf_mult_filtered_H_mapcbv))
@@ -378,7 +379,7 @@ sgtitle('Filtered MAP to CBV Transfer Function')
 
 % VLF, LF, HF for Multiple Coherence Filtered CO2 to CBV
 
-figure()
+figure('Name', 'PartitionedMultCohFilteredMisoCo2ToCbvTransferFunction', 'NumberTitle', 'off')
 
 subplot(3,2,1)
 stem(vlf, abs(vlf_mult_filtered_H_co2cbv))
@@ -472,7 +473,7 @@ partial_coh_co2_cbv_given_map = abs(S_co2cbv_given_map).^2 ./ ...
 
 % H MAP -> CBV
 
-figure()
+figure('Name', 'MisoMapToCbvTransferFunction2', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(H_mapcbv))
 hold on
@@ -491,8 +492,8 @@ plot(f, multiple_coherence)
 hold on
 plot(f, partial_coh_map_cbv_given_co2)
 title('MAP to CBV Phase')
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('MAP to CBV Transfer Function')
@@ -500,7 +501,7 @@ sgtitle('MAP to CBV Transfer Function')
 
 % H CO2 -> CBV
 
-figure()
+figure('Name', 'MisoCo2ToCbvTransferFunction2', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(H_co2cbv))
 hold on
@@ -519,8 +520,8 @@ plot(f, multiple_coherence)
 hold on
 plot(f, partial_coh_co2_cbv_given_map)
 title('CO2 to CBV Phase')
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('CO2 to CBV Transfer Function')
@@ -530,7 +531,7 @@ sgtitle('CO2 to CBV Transfer Function')
 multpartcoh_filtered_H_mapcbv = multcoh_filtered_H_mapcbv;
 multpartcoh_filtered_H_mapcbv(partial_coh_map_cbv_given_co2 < coherence_threshold) = NaN;
 
-figure()
+figure('Name', 'FilteredMultPartCohFilteredMisoMapToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(multpartcoh_filtered_H_mapcbv))
 xlabel('Frequency (Hz)')
@@ -539,8 +540,8 @@ grid on
 
 subplot(1,2,2)
 stem(f, angle(multpartcoh_filtered_H_mapcbv))
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('Multiple & Partial Coherence Filtered MAP to CBV Transfer Function')
@@ -550,7 +551,7 @@ sgtitle('Multiple & Partial Coherence Filtered MAP to CBV Transfer Function')
 multpartcoh_filtered_H_co2cbv = H_co2cbv;
 multpartcoh_filtered_H_co2cbv(partial_coh_co2_cbv_given_map < coherence_threshold) = NaN;
 
-figure()
+figure('Name', 'FilteredMultPartCohFilteredMisoCo2ToCbvTransferFunction', 'NumberTitle', 'off')
 subplot(1,2,1)
 stem(f, abs(multpartcoh_filtered_H_co2cbv))
 xlabel('Frequency (Hz)')
@@ -559,8 +560,8 @@ grid on
 
 subplot(1,2,2)
 stem(f, angle(multpartcoh_filtered_H_co2cbv))
-xlabel('Phase (rad)')
-ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rad)')
 grid on
 
 sgtitle('Multiple & Partial Coherence Filtered CO2 to CBV Transfer Function')
@@ -580,7 +581,7 @@ hf_multpart_filtered_H_co2cbv = multpartcoh_filtered_H_co2cbv(f>0.20 & f<=0.50);
 
 % VLF, LF, HF for Multiple + Partial Coherence Filtered MAP to CBV
 
-figure()
+figure('Name', 'PartitionedFilteredMultPartCohFilteredMisoMapToCbvTransferFunction', 'NumberTitle', 'off')
 
 subplot(3,2,1)
 stem(vlf, abs(vlf_multpart_filtered_H_mapcbv))
@@ -629,7 +630,7 @@ sgtitle('Multiple + Partial Coherence Filtered MAP to CBV Transfer Function')
 
 % VLF, LF, HF for Multiple + Partial Coherence Filtered CO2 to CBV
 
-figure()
+figure('Name', 'PartitionedFilteredMultPartCohFilteredMisoCo2ToCbvTransferFunction', 'NumberTitle', 'off')
 
 subplot(3,2,1)
 stem(vlf, abs(vlf_multpart_filtered_H_co2cbv))
@@ -676,35 +677,11 @@ grid on
 sgtitle('Multiple + Partial Coherence Filtered CO2 to CBV Transfer Function')
 
 
+%
 
 
 
 
-
-
-%{
-vlf_multpart_coherence = multiple_coherence(f>=0.02 & f<=0.07);
-lf_multiple_coherence = multiple_coherence(f>0.07 & f<=0.20);
-hf_multiple_coherence = multiple_coherence(f>0.20 & f<=0.50);
-
-
-vlf_multpart_filtered_H_mapcbv = vlf_mult_filtered_H_mapcbv;
-lf_multpart_filtered_H_mapcbv = lf_mult_filtered_H_mapcbv;
-hf_multpart_filtered_H_mapcbv = hf_mult_filtered_H_mapcbv;
-
-vlf_multpart_filtered_H_mapcbv(vlf_multiple_coherence < coherence_threshold) = NaN;
-lf_multpart_filtered_H_mapcbv(lf_multiple_coherence < coherence_threshold) = NaN;
-hf_multpart_filtered_H_mapcbv(hf_multiple_coherence < coherence_threshold) = NaN;
-
-vlf_multpart_filtered_H_co2cbv = vlf_mult_filtered_H_co2cbv;
-lf_multpart_filtered_H_co2cbv = lf_mult_filtered_H_co2cbv;
-hf_multpart_filtered_H_co2cbv = hf_mult_filtered_H_co2cbv;
-
-vlf_multpart_filtered_H_co2cbv(vlf_multiple_coherence < coherence_threshold) = NaN;
-lf_multpart_filtered_H_co2cbv(lf_multiple_coherence < coherence_threshold) = NaN;
-hf_multpart_filtered_H_co2cbv(hf_multiple_coherence < coherence_threshold) = NaN;
-
-%}
 
 
 
@@ -712,17 +689,6 @@ hf_multpart_filtered_H_co2cbv(hf_multiple_coherence < coherence_threshold) = NaN
 
 tfaSimpleResults.f = f;
 
-
-
-%{
-plotComplexMagnitudePhase(H_co2cbv, f, 'title');
-
-
-plotComplexMagnitudePhase(lf_H_co2cbv, lf, 'title');
-
-plotComplexMagnitudePhase(lf_H_mapcbv, lf, 'title');
-
-%}
 
 
 

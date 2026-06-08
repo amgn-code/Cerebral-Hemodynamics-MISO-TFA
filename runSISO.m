@@ -161,9 +161,11 @@ phase_CO2_CBF_PSD_plot = angle(H_CO2_CBF_PSD_plot);
 
 %% Plot SISO transfer functions
 
+figure()
 plotComplexMagnitudePhase(H_BP_CBF_PSD_plot, f_out, ...
     'SISO PSD H: BP to CBF');
 
+figure()
 plotComplexMagnitudePhase(H_CO2_CBF_PSD_plot, f_out, ...
     'SISO PSD H: CO2 to CBF');
 

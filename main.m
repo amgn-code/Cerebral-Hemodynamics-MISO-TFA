@@ -6,7 +6,7 @@ close all
 %% SHO's MISO Toy Signal
 
 signalData = createShoMisoSignal();
-%signalData = createMisoValidationSignal(true);  % false = no added noise
+%signalData = createMisoValidationSignal(false);  % false = no added noise
 %signalData = loadPublicTFAData("subj01.csv");
 
 bp = signalData.bp;
@@ -59,7 +59,7 @@ grid on
 tfaResults = runTFA(bp, co2, cbf, fs);
 
 %% test SISO
-sisoResults = runSISO(bp, co2, cbf, fs);
+sisoResults = runSISO2(bp, co2, cbf, fs);
 
 %% test simple
 
