@@ -1,7 +1,7 @@
 %% Clean Start
 clc
 clearvars
-close all
+close all 
 
 %% SHO's MISO Toy Signal
 

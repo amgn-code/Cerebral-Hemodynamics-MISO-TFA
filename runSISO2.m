@@ -1,4 +1,4 @@
-function sisoResults = runSISO(bp, co2, cbf, fs)
+function sisoResults = runSISO2(bp, co2, cbf, fs)
 
 % runSISO
 %
@@ -79,12 +79,15 @@ end
 
 %% SISO transfer functions
 
+% Correct MATLAB cpsd phase convention for H = output / input
+S_bpcbf_tf  = conj(S_bpcbf_smoothed);
+S_co2cbf_tf = conj(S_co2cbf_smoothed);
+
 Eps_BP = 1e-6 * max(real(S_bpbp_smoothed));
 Eps_CO2 = 1e-6 * max(real(S_co2co2_smoothed));
 
-H_bpcbf = S_bpcbf_smoothed ./ (S_bpbp_smoothed + Eps_BP);
-H_co2cbf = S_co2cbf_smoothed ./ (S_co2co2_smoothed + Eps_CO2);
-
+H_bpcbf = S_bpcbf_tf ./ (S_bpbp_smoothed + Eps_BP);
+H_co2cbf = S_co2cbf_tf ./ (S_co2co2_smoothed + Eps_CO2);
 
 %% Univariate coherence
 
@@ -104,477 +107,562 @@ co2_cbf_coherence(co2_cbf_coherence > 1) = 1;
 bp_cbf_coherence(bp_cbf_coherence < 0) = 0;
 co2_cbf_coherence(co2_cbf_coherence < 0) = 0;
 
-%% H BP -> CBF with coherence overlay
+%% H BP -> CBF with standard coherence overlay
 
-figure('Name', 'SisoBpToCbfTransferFunction1', 'NumberTitle', 'off')
+figure('Name', 'SisoBpToCbfTransferFunction', 'NumberTitle', 'off')
 
 subplot(1,2,1)
 yyaxis left
-stem(f, abs(H_bpcbf))
+h_tf_gain = stem(f, abs(H_bpcbf), 'filled');
 ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+title('BP to CBF Gain')
+grid on
 hold on
 
-yyaxis right
-plot(f, bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
+left_min = min(abs(H_bpcbf), [], 'omitnan');
+left_max = max(abs(H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
 
-title('BP to CBF Gain')
-xlabel('Frequency (Hz)')
-grid on
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh_gain = plot(f, bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+
+right_max = max([1; bp_cbf_coherence(:)], [], 'omitnan');
+right_max = 1.05 * right_max;
+
+alignRightYAxisZero(left_min, left_max, right_max)
+
+legend([h_tf_gain, h_coh_gain], ...
+    {'Transfer function', 'Coherence'}, ...
+    'Location', 'best')
+
 
 subplot(1,2,2)
 yyaxis left
-stem(f, angle(H_bpcbf))
+h_tf_phase = stem(f, angle(H_bpcbf), 'filled');
 ylabel('Phase (rad)')
+xlabel('Frequency (Hz)')
+title('BP to CBF Phase')
+grid on
 hold on
 
-yyaxis right
-plot(f, bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
+left_min = min(angle(H_bpcbf), [], 'omitnan');
+left_max = max(angle(H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
 
-title('BP to CBF Phase')
-xlabel('Frequency (Hz)')
-grid on
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh_phase = plot(f, bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+
+right_max = max([1; bp_cbf_coherence(:)], [], 'omitnan');
+right_max = 1.05 * right_max;
+
+alignRightYAxisZero(left_min, left_max, right_max)
+
+legend([h_tf_phase, h_coh_phase], ...
+    {'Transfer function', 'Coherence'}, ...
+    'Location', 'best')
 
 sgtitle('BP to CBF Transfer Function')
 
-%% H CO2 -> CBF with coherence overlay
 
-figure('Name', 'SisoCo2ToCbfTransferFunction1', 'NumberTitle', 'off')
+%% H CO2 -> CBF with standard coherence overlay
+
+figure('Name', 'SisoCo2ToCbfTransferFunction', 'NumberTitle', 'off')
 
 subplot(1,2,1)
 yyaxis left
-stem(f, abs(H_co2cbf))
+h_tf_gain = stem(f, abs(H_co2cbf), 'filled');
 ylabel('Magnitude')
+xlabel('Frequency (Hz)')
+title('CO2 to CBF Gain')
+grid on
 hold on
 
-yyaxis right
-plot(f, co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
+left_min = min(abs(H_co2cbf), [], 'omitnan');
+left_max = max(abs(H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
 
-title('CO2 to CBF Gain')
-xlabel('Frequency (Hz)')
-grid on
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh_gain = plot(f, co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+
+right_max = max([1; co2_cbf_coherence(:)], [], 'omitnan');
+right_max = 1.05 * right_max;
+
+alignRightYAxisZero(left_min, left_max, right_max)
+
+legend([h_tf_gain, h_coh_gain], ...
+    {'Transfer function', 'Coherence'}, ...
+    'Location', 'best')
+
 
 subplot(1,2,2)
 yyaxis left
-stem(f, angle(H_co2cbf))
+h_tf_phase = stem(f, angle(H_co2cbf), 'filled');
 ylabel('Phase (rad)')
+xlabel('Frequency (Hz)')
+title('CO2 to CBF Phase')
+grid on
 hold on
 
-yyaxis right
-plot(f, co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
+left_min = min(angle(H_co2cbf), [], 'omitnan');
+left_max = max(angle(H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
 
-title('CO2 to CBF Phase')
-xlabel('Frequency (Hz)')
-grid on
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh_phase = plot(f, co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+
+right_max = max([1; co2_cbf_coherence(:)], [], 'omitnan');
+right_max = 1.05 * right_max;
+
+alignRightYAxisZero(left_min, left_max, right_max)
+
+legend([h_tf_phase, h_coh_phase], ...
+    {'Transfer function', 'Coherence'}, ...
+    'Location', 'best')
 
 sgtitle('CO2 to CBF Transfer Function')
 
+
 %% VLF, LF, HF partitioned
 
-vlf = f(f >= 0.02 & f <= 0.07);
-lf  = f(f > 0.07 & f <= 0.20);
-hf  = f(f > 0.20 & f <= 0.50);
+bands = getFrequencyBands(f);
 
-vlf_H_bpcbf = H_bpcbf(f >= 0.02 & f <= 0.07);
-lf_H_bpcbf  = H_bpcbf(f > 0.07 & f <= 0.20);
-hf_H_bpcbf  = H_bpcbf(f > 0.20 & f <= 0.50);
+vlf = bands.vlf.f;
+lf  = bands.lf.f;
+hf  = bands.hf.f;
 
-vlf_H_co2cbf = H_co2cbf(f >= 0.02 & f <= 0.07);
-lf_H_co2cbf  = H_co2cbf(f > 0.07 & f <= 0.20);
-hf_H_co2cbf  = H_co2cbf(f > 0.20 & f <= 0.50);
+vlf_H_bpcbf = H_bpcbf(bands.vlf.idx);
+lf_H_bpcbf  = H_bpcbf(bands.lf.idx);
+hf_H_bpcbf  = H_bpcbf(bands.hf.idx);
 
-vlf_bp_cbf_coherence = bp_cbf_coherence(f >= 0.02 & f <= 0.07);
-lf_bp_cbf_coherence  = bp_cbf_coherence(f > 0.07 & f <= 0.20);
-hf_bp_cbf_coherence  = bp_cbf_coherence(f > 0.20 & f <= 0.50);
+vlf_H_co2cbf = H_co2cbf(bands.vlf.idx);
+lf_H_co2cbf  = H_co2cbf(bands.lf.idx);
+hf_H_co2cbf  = H_co2cbf(bands.hf.idx);
 
-vlf_co2_cbf_coherence = co2_cbf_coherence(f >= 0.02 & f <= 0.07);
-lf_co2_cbf_coherence  = co2_cbf_coherence(f > 0.07 & f <= 0.20);
-hf_co2_cbf_coherence  = co2_cbf_coherence(f > 0.20 & f <= 0.50);
+vlf_bp_cbf_coherence = bp_cbf_coherence(bands.vlf.idx);
+lf_bp_cbf_coherence  = bp_cbf_coherence(bands.lf.idx);
+hf_bp_cbf_coherence  = bp_cbf_coherence(bands.hf.idx);
 
-%% VLF, LF, HF for BP to CBF
+vlf_co2_cbf_coherence = co2_cbf_coherence(bands.vlf.idx);
+lf_co2_cbf_coherence  = co2_cbf_coherence(bands.lf.idx);
+hf_co2_cbf_coherence  = co2_cbf_coherence(bands.hf.idx);
+
+
+%% Partitioned BP to CBF with coherence overlay
 
 figure('Name', 'PartitionedSisoBpToCbfTransferFunction', 'NumberTitle', 'off')
 
+% VLF gain
 subplot(3,2,1)
 yyaxis left
-stem(vlf, abs(vlf_H_bpcbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(vlf, vlf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('VLF BP to CBF')
+h_tf = stem(vlf, abs(vlf_H_bpcbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('VLF BP to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(vlf_H_bpcbf), [], 'omitnan');
+left_max = max(abs(vlf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(vlf, vlf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; vlf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% VLF phase
 subplot(3,2,2)
 yyaxis left
-stem(vlf, angle(vlf_H_bpcbf))
+h_tf = stem(vlf, angle(vlf_H_bpcbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(vlf, vlf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('VLF BP to CBF')
 xlabel('Frequency (Hz)')
+title('VLF BP to CBF Phase')
 grid on
+hold on
 
+left_min = min(angle(vlf_H_bpcbf), [], 'omitnan');
+left_max = max(angle(vlf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(vlf, vlf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; vlf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% LF gain
 subplot(3,2,3)
 yyaxis left
-stem(lf, abs(lf_H_bpcbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(lf, lf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('LF BP to CBF')
+h_tf = stem(lf, abs(lf_H_bpcbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('LF BP to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(lf_H_bpcbf), [], 'omitnan');
+left_max = max(abs(lf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(lf, lf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; lf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% LF phase
 subplot(3,2,4)
 yyaxis left
-stem(lf, angle(lf_H_bpcbf))
+h_tf = stem(lf, angle(lf_H_bpcbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(lf, lf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('LF BP to CBF')
 xlabel('Frequency (Hz)')
+title('LF BP to CBF Phase')
 grid on
+hold on
 
+left_min = min(angle(lf_H_bpcbf), [], 'omitnan');
+left_max = max(angle(lf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(lf, lf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; lf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% HF gain
 subplot(3,2,5)
 yyaxis left
-stem(hf, abs(hf_H_bpcbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(hf, hf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('HF BP to CBF')
+h_tf = stem(hf, abs(hf_H_bpcbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('HF BP to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(hf_H_bpcbf), [], 'omitnan');
+left_max = max(abs(hf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(hf, hf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; hf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% HF phase
 subplot(3,2,6)
 yyaxis left
-stem(hf, angle(hf_H_bpcbf))
+h_tf = stem(hf, angle(hf_H_bpcbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(hf, hf_bp_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('HF BP to CBF')
 xlabel('Frequency (Hz)')
+title('HF BP to CBF Phase')
 grid on
+hold on
+
+left_min = min(angle(hf_H_bpcbf), [], 'omitnan');
+left_max = max(angle(hf_H_bpcbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(hf, hf_bp_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; hf_bp_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
 
 sgtitle('Partitioned BP to CBF Transfer Function')
 
-%% VLF, LF, HF for CO2 to CBF
+
+%% Partitioned CO2 to CBF with coherence overlay
 
 figure('Name', 'PartitionedSisoCo2ToCbfTransferFunction', 'NumberTitle', 'off')
 
+% VLF gain
 subplot(3,2,1)
 yyaxis left
-stem(vlf, abs(vlf_H_co2cbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(vlf, vlf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('VLF CO2 to CBF')
+h_tf = stem(vlf, abs(vlf_H_co2cbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('VLF CO2 to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(vlf_H_co2cbf), [], 'omitnan');
+left_max = max(abs(vlf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(vlf, vlf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; vlf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% VLF phase
 subplot(3,2,2)
 yyaxis left
-stem(vlf, angle(vlf_H_co2cbf))
+h_tf = stem(vlf, angle(vlf_H_co2cbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(vlf, vlf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('VLF CO2 to CBF')
 xlabel('Frequency (Hz)')
+title('VLF CO2 to CBF Phase')
 grid on
+hold on
 
+left_min = min(angle(vlf_H_co2cbf), [], 'omitnan');
+left_max = max(angle(vlf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(vlf, vlf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; vlf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% LF gain
 subplot(3,2,3)
 yyaxis left
-stem(lf, abs(lf_H_co2cbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(lf, lf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('LF CO2 to CBF')
+h_tf = stem(lf, abs(lf_H_co2cbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('LF CO2 to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(lf_H_co2cbf), [], 'omitnan');
+left_max = max(abs(lf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(lf, lf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; lf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% LF phase
 subplot(3,2,4)
 yyaxis left
-stem(lf, angle(lf_H_co2cbf))
+h_tf = stem(lf, angle(lf_H_co2cbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(lf, lf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('LF CO2 to CBF')
 xlabel('Frequency (Hz)')
+title('LF CO2 to CBF Phase')
 grid on
+hold on
 
+left_min = min(angle(lf_H_co2cbf), [], 'omitnan');
+left_max = max(angle(lf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(lf, lf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; lf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% HF gain
 subplot(3,2,5)
 yyaxis left
-stem(hf, abs(hf_H_co2cbf))
-ylabel('Gain')
-hold on
-yyaxis right
-plot(hf, hf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('HF CO2 to CBF')
+h_tf = stem(hf, abs(hf_H_co2cbf), 'filled');
+ylabel('Magnitude')
 xlabel('Frequency (Hz)')
+title('HF CO2 to CBF Gain')
 grid on
+hold on
 
+left_min = min(abs(hf_H_co2cbf), [], 'omitnan');
+left_max = max(abs(hf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(hf, hf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; hf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
+
+% HF phase
 subplot(3,2,6)
 yyaxis left
-stem(hf, angle(hf_H_co2cbf))
+h_tf = stem(hf, angle(hf_H_co2cbf), 'filled');
 ylabel('Phase (rad)')
-hold on
-yyaxis right
-plot(hf, hf_co2_cbf_coherence, 'LineWidth', 1.5)
-ylabel('Coherence')
-ylim([0 1])
-title('HF CO2 to CBF')
 xlabel('Frequency (Hz)')
+title('HF CO2 to CBF Phase')
 grid on
+hold on
+
+left_min = min(angle(hf_H_co2cbf), [], 'omitnan');
+left_max = max(angle(hf_H_co2cbf), [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+h_coh = plot(hf, hf_co2_cbf_coherence, 'LineWidth', 0.7);
+ylabel('Coherence')
+right_max = 1.05 * max([1; hf_co2_cbf_coherence(:)], [], 'omitnan');
+alignRightYAxisZero(left_min, left_max, right_max)
+legend([h_tf, h_coh], {'Transfer function', 'Coherence'}, 'Location', 'best')
 
 sgtitle('Partitioned CO2 to CBF Transfer Function')
 
+
 %% Coherence-filtered H BP -> CBF
 
-coh_filtered_H_bpcbf = H_bpcbf;
-coh_filtered_H_bpcbf(bp_cbf_coherence < coherence_threshold) = NaN;
+coh_filtered_H_bpcbf = filterByCoherence( ...
+    H_bpcbf, bp_cbf_coherence, coherence_threshold);
 
 figure('Name', 'CohFilteredSisoBpToCbfTransferFunction', 'NumberTitle', 'off')
 
 subplot(1,2,1)
-stem(f, abs(coh_filtered_H_bpcbf))
+stem(f, abs(coh_filtered_H_bpcbf), 'filled')
+title('BP to CBF Gain')
 xlabel('Frequency (Hz)')
 ylabel('Magnitude')
+xlim([0.02 0.50])
 grid on
+hold on
+addFrequencyBandLines()
 
 subplot(1,2,2)
-stem(f, angle(coh_filtered_H_bpcbf))
+stem(f, angle(coh_filtered_H_bpcbf), 'filled')
+title('BP to CBF Phase')
 xlabel('Frequency (Hz)')
 ylabel('Phase (rad)')
+xlim([0.02 0.50])
 grid on
+hold on
+addFrequencyBandLines()
 
 sgtitle('Coherence Filtered BP to CBF Transfer Function')
 
+
 %% Coherence-filtered H CO2 -> CBF
 
-coh_filtered_H_co2cbf = H_co2cbf;
-coh_filtered_H_co2cbf(co2_cbf_coherence < coherence_threshold) = NaN;
+coh_filtered_H_co2cbf = filterByCoherence( ...
+    H_co2cbf, co2_cbf_coherence, coherence_threshold);
 
 figure('Name', 'CohFilteredSisoCo2ToCbfTransferFunction', 'NumberTitle', 'off')
 
 subplot(1,2,1)
-stem(f, abs(coh_filtered_H_co2cbf))
+stem(f, abs(coh_filtered_H_co2cbf), 'filled')
+title('CO2 to CBF Gain')
 xlabel('Frequency (Hz)')
 ylabel('Magnitude')
+xlim([0.02 0.50])
 grid on
+hold on
+addFrequencyBandLines()
 
 subplot(1,2,2)
-stem(f, angle(coh_filtered_H_co2cbf))
+stem(f, angle(coh_filtered_H_co2cbf), 'filled')
+title('CO2 to CBF Phase')
 xlabel('Frequency (Hz)')
 ylabel('Phase (rad)')
+xlim([0.02 0.50])
 grid on
+hold on
+addFrequencyBandLines()
 
 sgtitle('Coherence Filtered CO2 to CBF Transfer Function')
-
-%% Coherence-filtered H vlf, lf, hf partitioned
-
-vlf_coh_filtered_H_bpcbf = vlf_H_bpcbf;
-lf_coh_filtered_H_bpcbf  = lf_H_bpcbf;
-hf_coh_filtered_H_bpcbf  = hf_H_bpcbf;
-
-vlf_coh_filtered_H_bpcbf(vlf_bp_cbf_coherence < coherence_threshold) = NaN;
-lf_coh_filtered_H_bpcbf(lf_bp_cbf_coherence < coherence_threshold) = NaN;
-hf_coh_filtered_H_bpcbf(hf_bp_cbf_coherence < coherence_threshold) = NaN;
-
-vlf_coh_filtered_H_co2cbf = vlf_H_co2cbf;
-lf_coh_filtered_H_co2cbf  = lf_H_co2cbf;
-hf_coh_filtered_H_co2cbf  = hf_H_co2cbf;
-
-vlf_coh_filtered_H_co2cbf(vlf_co2_cbf_coherence < coherence_threshold) = NaN;
-lf_coh_filtered_H_co2cbf(lf_co2_cbf_coherence < coherence_threshold) = NaN;
-hf_coh_filtered_H_co2cbf(hf_co2_cbf_coherence < coherence_threshold) = NaN;
-
-%% VLF, LF, HF for coherence-filtered BP to CBF
-
-figure('Name', 'PartitionedCohFilteredSisoBpToCbfTransferFunction', 'NumberTitle', 'off')
-
-subplot(3,2,1)
-stem(vlf, abs(vlf_coh_filtered_H_bpcbf))
-title('VLF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,2)
-stem(vlf, angle(vlf_coh_filtered_H_bpcbf))
-title('VLF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-subplot(3,2,3)
-stem(lf, abs(lf_coh_filtered_H_bpcbf))
-title('LF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,4)
-stem(lf, angle(lf_coh_filtered_H_bpcbf))
-title('LF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-subplot(3,2,5)
-stem(hf, abs(hf_coh_filtered_H_bpcbf))
-title('HF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,6)
-stem(hf, angle(hf_coh_filtered_H_bpcbf))
-title('HF BP to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-sgtitle('Coherence Filtered BP to CBF Transfer Function')
-
-%% VLF, LF, HF for coherence-filtered CO2 to CBF
-
-figure('Name', 'PartitionedCohFilteredSisoCo2ToCbfTransferFunction', 'NumberTitle', 'off')
-
-subplot(3,2,1)
-stem(vlf, abs(vlf_coh_filtered_H_co2cbf))
-title('VLF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,2)
-stem(vlf, angle(vlf_coh_filtered_H_co2cbf))
-title('VLF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-subplot(3,2,3)
-stem(lf, abs(lf_coh_filtered_H_co2cbf))
-title('LF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,4)
-stem(lf, angle(lf_coh_filtered_H_co2cbf))
-title('LF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-subplot(3,2,5)
-stem(hf, abs(hf_coh_filtered_H_co2cbf))
-title('HF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Gain')
-grid on
-
-subplot(3,2,6)
-stem(hf, angle(hf_coh_filtered_H_co2cbf))
-title('HF CO2 to CBF')
-xlabel('Frequency (Hz)')
-ylabel('Phase (rad)')
-grid on
-
-sgtitle('Coherence Filtered CO2 to CBF Transfer Function')
-
 %% Store results
 
 sisoResults.f = f;
 
-sisoResults.frequencyResolution = frequencyResolution;
-sisoResults.window_length_s = window_length_s;
-sisoResults.window_length_n = window_length_n;
-sisoResults.window_overlap = window_overlap;
-sisoResults.window_overlap_n = window_overlap_n;
-sisoResults.fft_length_n = fft_length_n;
-sisoResults.num_windows = num_windows;
-
-sisoResults.S_bpbp = S_bpbp;
-sisoResults.S_co2co2 = S_co2co2;
-sisoResults.S_cbfcfb = S_cbfcfb;
-sisoResults.S_bpcbf = S_bpcbf;
-sisoResults.S_co2cbf = S_co2cbf;
-
-sisoResults.S_bpbp_smoothed = S_bpbp_smoothed;
-sisoResults.S_co2co2_smoothed = S_co2co2_smoothed;
-sisoResults.S_cbfcfb_smoothed = S_cbfcfb_smoothed;
-sisoResults.S_bpcbf_smoothed = S_bpcbf_smoothed;
-sisoResults.S_co2cbf_smoothed = S_co2cbf_smoothed;
-
-sisoResults.H_bpcbf = H_bpcbf;
-sisoResults.H_co2cbf = H_co2cbf;
-
-sisoResults.bp_cbf_coherence = bp_cbf_coherence;
-sisoResults.co2_cbf_coherence = co2_cbf_coherence;
-
-sisoResults.coherence_threshold = coherence_threshold;
-
-sisoResults.vlf = vlf;
-sisoResults.lf = lf;
-sisoResults.hf = hf;
-
-sisoResults.vlf_H_bpcbf = vlf_H_bpcbf;
-sisoResults.lf_H_bpcbf = lf_H_bpcbf;
-sisoResults.hf_H_bpcbf = hf_H_bpcbf;
-
-sisoResults.vlf_H_co2cbf = vlf_H_co2cbf;
-sisoResults.lf_H_co2cbf = lf_H_co2cbf;
-sisoResults.hf_H_co2cbf = hf_H_co2cbf;
-
-sisoResults.coh_filtered_H_bpcbf = coh_filtered_H_bpcbf;
-sisoResults.coh_filtered_H_co2cbf = coh_filtered_H_co2cbf;
-
-sisoResults.vlf_coh_filtered_H_bpcbf = vlf_coh_filtered_H_bpcbf;
-sisoResults.lf_coh_filtered_H_bpcbf = lf_coh_filtered_H_bpcbf;
-sisoResults.hf_coh_filtered_H_bpcbf = hf_coh_filtered_H_bpcbf;
-
-sisoResults.vlf_coh_filtered_H_co2cbf = vlf_coh_filtered_H_co2cbf;
-sisoResults.lf_coh_filtered_H_co2cbf = lf_coh_filtered_H_co2cbf;
-sisoResults.hf_coh_filtered_H_co2cbf = hf_coh_filtered_H_co2cbf;
 
 end
