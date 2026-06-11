@@ -1,7 +1,10 @@
 %% Clean Start
-clc
-clearvars
-close all 
+
+clear; clc; close all;
+
+project_root = fileparts(mfilename('fullpath'));
+addpath(genpath(project_root));
+rehash
 
 %% SHO's MISO Toy Signal
 
