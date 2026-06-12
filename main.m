@@ -6,13 +6,13 @@ project_root = pwd;
 addpath(genpath(project_root));
 rehash
 
-%% SHO's MISO Toy Signal
+%% Signal Genereation
 
-%signalData = createShoMisoSignal();
+signalData = createShoMisoSignal();
 %signalData = createMisoValidationSignal(false);  % false = no added noise
 
-public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
-signalData = loadPublicTFAData(public_data_file);
+%public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
+%signalData = loadPublicTFAData(public_data_file);
 
 bp = signalData.bp;
 co2 = signalData.co2;
@@ -82,12 +82,18 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-tfaResults = runTFA(bp, co2, cbf, fs);
+tfaResults = runMISOTFA(bp, co2, cbf, fs);
 
-%% test SISO
+
+%% SISO Model
 sisoResults = runSISO2(bp, co2, cbf, fs);
 
-%% test simple
 
-tfaSimpleResults = runTFAsimple(bp, co2, cbf, fs);
 
+
+%% Save Data to Excel
+
+filename = "miso_tfa_results.xlsx";
+sheetName = "MISO TFA Results";
+
+saveDatatoExcel(filename, sheetName, tfaResults);

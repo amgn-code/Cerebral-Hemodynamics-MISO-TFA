@@ -2,15 +2,17 @@
 
 clear; clc; close all;
 
-project_root = fileparts(mfilename('fullpath'));
+project_root = pwd;
 addpath(genpath(project_root));
 rehash
 
-%% SHO's MISO Toy Signal
+%% Signal Genereation
 
-%signalData = createShoMisoSignal();
+signalData = createShoMisoSignal();
 %signalData = createMisoValidationSignal(false);  % false = no added noise
-%signalData = loadPublicTFAData("subj01.csv");
+
+%public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
+%signalData = loadPublicTFAData(public_data_file);
 
 bp = signalData.bp;
 co2 = signalData.co2;
@@ -26,21 +28,42 @@ t = signalData.t;
 figure()
 
 subplot(2,1,1)
-plot(t, bp)
-hold on
-plot(t, co2)
-hold off
 
-title('BP & CO2 Inputs vs. Time')
+yyaxis left
+plot(t, bp)
+ylabel('MAP')
+grid on
+hold on
+
+left_min = min(bp, [], 'omitnan');
+left_max = max(bp, [], 'omitnan');
+left_min = min(left_min, 0);
+left_max = max(left_max, 0);
+
+if left_min == left_max
+    left_min = left_min - 1;
+    left_max = left_max + 1;
+end
+
+yyaxis right
+plot(t, co2)
+ylabel('CO2')
+
+right_max = max(abs(co2), [], 'omitnan');
+right_max = max(right_max, 1);
+right_max = 1.05 * right_max;
+
+alignRightYAxisZero(left_min, left_max, right_max)
+
+title('MAP and CO2 Inputs vs. Time')
 xlabel('Time (s)')
-ylabel('Amplitude')
-legend('BP', 'CO2')
+legend('MAP', 'CO2', 'Location', 'best')
 grid on
 
 subplot(2,1,2)
 plot(t, cbf)
 
-title('CBF Output vs. Time')
+title('CBV Output vs. Time')
 xlabel('Time (s)')
 ylabel('Amplitude')
 grid on
@@ -59,7 +82,8 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-tfaResults = runTFA(bp, co2, cbf, fs);
+tfaSimpleResults = runTFAsimple(bp, co2, cbf, fs);
+
 
 %% test SISO
 sisoResults = runSISO2(bp, co2, cbf, fs);

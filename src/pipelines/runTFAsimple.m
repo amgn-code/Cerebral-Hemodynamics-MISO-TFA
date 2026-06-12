@@ -853,6 +853,7 @@ sgtitle('Multiple + Partial Coherence Filtered CO2 to CBV Transfer Function')
 
 
 tfaSimpleResults.f = f;
+tfaSimpleResults.mapcbvGain = 
 
 
 
