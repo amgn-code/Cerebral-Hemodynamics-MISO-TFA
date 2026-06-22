@@ -9,7 +9,8 @@ rehash
 %% Signal Generation
 
 %excel_file = ;
-signalData = loadExcelTFAData(excel_file);
+%signalData = loadExcelTFAData(excel_file);
+%signalData = createShoMisoSignal();
 %signalData = createMisoValidationSignal(false);  % false = no added noise
 
 %public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
@@ -98,3 +99,48 @@ filename = "miso_tfa_results.xlsx";
 sheetName = "MISO TFA Results";
 
 saveDatatoExcel(filename, sheetName, tfaResults);
+
+%% Save Figures to Project
+
+% 1. Create the output folder if it doesn't exist
+outputFolder = 'exported_figures';
+if ~exist(outputFolder, 'dir')
+    mkdir(outputFolder);
+end
+
+allFigs = findall(0, 'Type', 'figure');
+
+for i = 1:numel(allFigs)
+    figHandle = allFigs(i);
+    
+    % --- NEW SIZE ADJUSTMENT CODE ---
+    % 1. Store the original size so we don't break your current screen view
+    origUnits = figHandle.Units;
+    origPos = figHandle.Position;
+    
+    % 2. Set units to pixels and define a large, spacious canvas size
+    % [Left, Bottom, Width, Height] -> 1600x900 is a standard clear widescreen
+    figHandle.Units = 'pixels';
+    figHandle.Position = [100, 100, 1600, 900]; 
+    
+    % 3. Force MATLAB to redraw the text/axes with the new spacious dimensions
+    drawnow;
+    % --------------------------------
+    
+    % Dynamic name cleaning
+    customName = figHandle.Name; 
+    if isempty(customName)
+        customName = sprintf('Figure_%d', figHandle.Number);
+    else
+        customName = regexprep(customName, '[\s\./\\:\*,?"<>|]', '_');
+    end
+    
+    fileName = fullfile(outputFolder, [customName '.png']);
+    
+    % Export with high resolution
+    exportgraphics(figHandle, fileName, 'Resolution', 300);
+    
+    % 4. Restore the figure back to its original screen layout size
+    figHandle.Units = origUnits;
+    figHandle.Position = origPos;
+end
