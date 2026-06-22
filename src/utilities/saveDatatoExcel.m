@@ -28,9 +28,10 @@ writecell(headers, filename, ...
 f = tfaResults.f(:);
 
 band = strings(size(f));
-band(f >= 0.02 & f < 0.07) = "VLF";
-band(f >= 0.07 & f < 0.20) = "LF";
-band(f >= 0.20 & f <= 0.50) = "HF";
+band(f >= 0.005 & f < 0.024) = "VVLF";
+band(f >= 0.024 & f < 0.07) = "VLF";
+band(f >= 0.07  & f < 0.20) = "LF";
+band(f >= 0.20  & f <= 0.50) = "HF";
 
 writecell(cellstr(band), filename, ...
     "Sheet", sheetName, ...

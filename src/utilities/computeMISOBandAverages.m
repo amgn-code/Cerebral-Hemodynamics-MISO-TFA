@@ -14,44 +14,47 @@ function bandAverages = computeMISOBandAverages( ...
 % Computes unfiltered band averages for MISO TFA results.
 %
 % Bands:
-%   VLF = 0.02 - 0.07 Hz
-%   LF  = 0.07 - 0.20 Hz
-%   HF  = 0.20 - 0.50 Hz
+%   VVLF = 0.005 - 0.024 Hz
+%   VLF  = 0.024 - 0.07 Hz
+%   LF   = 0.07 - 0.20 Hz
+%   HF   = 0.20 - 0.50 Hz
 %
 % Phase values are averaged using a circular mean.
 
     f = f(:);
 
     % Frequency band masks
-    vlf_mask = f >= 0.02 & f < 0.07;
-    lf_mask  = f >= 0.07 & f < 0.20;
-    hf_mask  = f >= 0.20 & f <= 0.50;
+    vvlf_mask = f >= 0.005 & f < 0.024;
+    vlf_mask  = f >= 0.024 & f < 0.07;
+    lf_mask   = f >= 0.07  & f < 0.20;
+    hf_mask   = f >= 0.20  & f <= 0.50;
 
-    band_names = ["VLF"; "LF"; "HF"];
-    band_masks = {vlf_mask; lf_mask; hf_mask};
+    band_names = ["VVLF"; "VLF"; "LF"; "HF"];
+    band_masks = {vvlf_mask; vlf_mask; lf_mask; hf_mask};
+    num_bands = numel(band_names);
 
     % Preallocate
-    map_gain_mean = NaN(3,1);
-    map_phase_mean = NaN(3,1);
+    map_gain_mean = NaN(num_bands,1);
+    map_phase_mean = NaN(num_bands,1);
 
-    co2_gain_mean = NaN(3,1);
-    co2_phase_mean = NaN(3,1);
+    co2_gain_mean = NaN(num_bands,1);
+    co2_phase_mean = NaN(num_bands,1);
 
-    multiple_coh_mean = NaN(3,1);
-    partial_coh_map_mean = NaN(3,1);
-    partial_coh_co2_mean = NaN(3,1);
+    multiple_coh_mean = NaN(num_bands,1);
+    partial_coh_map_mean = NaN(num_bands,1);
+    partial_coh_co2_mean = NaN(num_bands,1);
 
-    input_input_coh_mean = NaN(3,1);
-    input_input_phase_mean = NaN(3,1);
+    input_input_coh_mean = NaN(num_bands,1);
+    input_input_phase_mean = NaN(num_bands,1);
 
-    condition_number_mean = NaN(3,1);
-    condition_number_median = NaN(3,1);
+    condition_number_mean = NaN(num_bands,1);
+    condition_number_median = NaN(num_bands,1);
 
-    percent_passed_multiple_coh = NaN(3,1);
-    percent_passed_partial_map_coh = NaN(3,1);
-    percent_passed_partial_co2_coh = NaN(3,1);
+    percent_passed_multiple_coh = NaN(num_bands,1);
+    percent_passed_partial_map_coh = NaN(num_bands,1);
+    percent_passed_partial_co2_coh = NaN(num_bands,1);
 
-    for b = 1:3
+    for b = 1:num_bands
 
         mask = band_masks{b};
 
