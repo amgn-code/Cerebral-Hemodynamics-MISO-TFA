@@ -20,89 +20,70 @@ function signalData = loadExcelTFAData(filename)
 %   signalData.cbf
 %   signalData.fs
 %   signalData.t
-
+ 
     %% Read Excel file as a table
-    dataTable = readtable(filename);
+    dataTable = readtable(filename, 'Sheet', 'Sheet1');
 
-    %% Clean column names for easier matching
-    originalNames = dataTable.Properties.VariableNames;
-    cleanNames = lower(strrep(originalNames, "_", ""));
-
-    %% Find relevant columns
-    timeCol = findColumn(cleanNames, ["time", "t", "seconds", "sec"]);
-    bpCol   = findColumn(cleanNames, ["bp", "map", "abp"]);
-    co2Col  = findColumn(cleanNames, ["co2", "petco2", "etco2"]);
-    cbfCol  = findColumn(cleanNames, ["cbf", "cbv", "cbfv"]);
+    timeCol = "Time";
+    bpCol  = "MAP";
+    cbfCol = "Vmean";
+    co2Col = "ETCO2";
 
     %% Extract signals
     t   = dataTable{:, timeCol};
     bp  = dataTable{:, bpCol};
     co2 = dataTable{:, co2Col};
     cbf = dataTable{:, cbfCol};
-
+ 
     %% Force column vectors
     t   = t(:);
     bp  = bp(:);
     co2 = co2(:);
     cbf = cbf(:);
-
+ 
     %% Remove rows with missing values
     validRows = ~isnan(t) & ~isnan(bp) & ~isnan(co2) & ~isnan(cbf);
-
+ 
     t   = t(validRows);
     bp  = bp(validRows);
     co2 = co2(validRows);
     cbf = cbf(validRows);
-
+ 
     %% Sort by time
     [t, sortIdx] = sort(t);
     bp  = bp(sortIdx);
     co2 = co2(sortIdx);
     cbf = cbf(sortIdx);
-
+ 
     %% Remove duplicate time points
     [t, uniqueIdx] = unique(t, "stable");
     bp  = bp(uniqueIdx);
     co2 = co2(uniqueIdx);
     cbf = cbf(uniqueIdx);
-
+ 
     %% Resample to 4 Hz
     fsTarget = 4;
     dtTarget = 1 / fsTarget;
-
+ 
     tResampled = (t(1):dtTarget:t(end))';
-
+ 
     bpResampled  = interp1(t, bp,  tResampled, "linear");
     co2Resampled = interp1(t, co2, tResampled, "linear");
     cbfResampled = interp1(t, cbf, tResampled, "linear");
-
+ 
+    bpResampled = detrend(bpResampled,3);
+    co2Resampled = detrend(co2Resampled,3);
+    cbfResampled = detrend(cbfResampled,3);
+ 
     %% Package output in same format as simulated signal generators
     signalData = struct();
-
+ 
     signalData.bp  = bpResampled;
     signalData.co2 = co2Resampled;
     signalData.cbf = cbfResampled;
     signalData.fs  = fsTarget;
     signalData.t   = tResampled;
-
+ 
 end
-
-
-function colIndex = findColumn(cleanNames, possibleNames)
-% findColumn
-%
-% Finds the first matching column name from a list of acceptable names.
-
-    colIndex = [];
-
-    for k = 1:length(possibleNames)
-        match = find(strcmp(cleanNames, possibleNames(k)), 1);
-
-        if ~isempty(match)
-            colIndex = match;
-            return;
-        end
-    end
-
-    error("Could not find required column. Tried: %s", strjoin(possibleNames, ", "));
-end
+ 
+ 
