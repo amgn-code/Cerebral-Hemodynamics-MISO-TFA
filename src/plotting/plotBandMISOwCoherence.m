@@ -1,7 +1,7 @@
 function plotBandMISOwCoherence(f_band, H_band, multiple_coherence_band, partial_coherence_band, pathway_label, band_label, subplot_start)
 
     % Gain plot
-    subplot(3,2,subplot_start)
+    subplot(4,2,subplot_start)
 
     yyaxis left
     h_tf_gain = stem(f_band, abs(H_band), 'filled');
@@ -39,7 +39,7 @@ function plotBandMISOwCoherence(f_band, H_band, multiple_coherence_band, partial
 
 
     % Phase plot
-    subplot(3,2,subplot_start + 1)
+    subplot(4,2,subplot_start + 1)
 
     yyaxis left
     h_tf_phase = stem(f_band, angle(H_band), 'filled');

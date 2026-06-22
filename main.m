@@ -6,9 +6,10 @@ project_root = pwd;
 addpath(genpath(project_root));
 rehash
 
-%% Signal Genereation
+%% Signal Generation
 
-signalData = createShoMisoSignal();
+%excel_file = ;
+signalData = loadExcelTFAData(excel_file);
 %signalData = createMisoValidationSignal(false);  % false = no added noise
 
 %public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");

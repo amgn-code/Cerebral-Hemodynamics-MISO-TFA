@@ -1,6 +1,6 @@
 function plotFilteredMISO(f, H_filtered, pathway_label, filter_label, figure_name)
 
-    freq_xlim = [0.02 0.50];
+    freq_xlim = [0.005 0.50];
 
     figure('Name', figure_name, 'NumberTitle', 'off')
 
@@ -27,4 +27,3 @@ function plotFilteredMISO(f, H_filtered, pathway_label, filter_label, figure_nam
     sgtitle([filter_label ' ' pathway_label ' Transfer Function'])
 
 end
-

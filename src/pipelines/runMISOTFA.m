@@ -1,7 +1,7 @@
 function misoTFAResults = runMISOTFA(map, co2, cbv, fs)
-
-%% Assuming Trecord = 300s and fs = 50Hz
-
+%
+%Assuming Trecord = 300s and fs = 50Hz
+%
 map_clean = reshape(map, 1, []);
 co2_clean = reshape(co2, 1, []);
 cbv_clean = reshape(cbv, 1, []);
@@ -229,8 +229,8 @@ plotFilteredMISO( ...
 % Should Input Power be considered as another threshold when evaluating
 % the Transfer Function?
 %
-% Should Input-Input Coherence be considered? when Input-Input coherence is
-% low, the Transfer Function Matrix is harder to invert.
+% Should Input-Input Coherence be considered? When Input-Input coherence is
+% high, the Transfer Function Matrix is harder to invert.
 
 %% Input-Input Coherence & Spectra Phase Plots to Discuss
 
@@ -246,7 +246,7 @@ stem(f, input_input_coherence, 'filled')
 title('MAP-CO2 Input-Input Coherence')
 xlabel('Frequency (Hz)')
 ylabel('Coherence')
-xlim([0.02 0.50])
+xlim([0.005 0.50])
 grid on
 
 subplot(1,2,2)
@@ -254,7 +254,7 @@ stem(f, input_input_phase, 'filled')
 title('MAP-CO2 Cross-Spectral Phase')
 xlabel('Frequency (Hz)')
 ylabel('Phase (rad)')
-xlim([0.02 0.50])
+xlim([0.005 0.50])
 grid on
 
 sgtitle('Input-Input Relationship')
@@ -267,11 +267,11 @@ semilogy(f, condition_number, 'LineWidth', 1.2)
 xlabel('Frequency (Hz)')
 ylabel('Condition Number')
 title('Condition Number of MISO Input Matrix')
-xlim([0.02 0.50])
+xlim([0.005 0.50])
 grid on
 hold on
 addFrequencyBandLines()
-xlim([0.02 0.50])
+xlim([0.005 0.50])
 
 %% Band Averages
 

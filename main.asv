@@ -1,3 +1,7 @@
+%% Useful Git Requests
+
+
+
 %% Clean Start
 
 clear; clc; close all;
@@ -8,7 +12,8 @@ rehash
 
 %% Signal Genereation
 
-signalData = createShoMisoSignal();
+excel_file = ;
+signalData = loadExcelTFAData(excel_file);
 %signalData = createMisoValidationSignal(false);  % false = no added noise
 
 %public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
@@ -82,13 +87,18 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-tfaSimpleResults = runTFAsimple(bp, co2, cbf, fs);
+tfaResults = runMISOTFA(bp, co2, cbf, fs);
 
 
-%% test SISO
+%% SISO Model
 sisoResults = runSISO2(bp, co2, cbf, fs);
 
-%% test simple
 
-tfaSimpleResults = runTFAsimple(bp, co2, cbf, fs);
 
+
+%% Save Data to Excel
+
+filename = "miso_tfa_results.xlsx";
+sheetName = "MISO TFA Results";
+
+saveDatatoExcel(filename, sheetName, tfaResults);
