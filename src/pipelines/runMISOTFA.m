@@ -232,6 +232,49 @@ plotFilteredMISO( ...
 % Should Input-Input Coherence be considered? When Input-Input coherence is
 % high, the Transfer Function Matrix is harder to invert.
 
+%% Coherence Plots
+
+% SISO Coherence
+map_cbv_coherence = abs(S_mapcbv_smoothed).^2 ./ ...
+    real(S_mapmap_smoothed .* S_cbvcbv_smoothed);
+
+co2_cbv_coherence = abs(S_co2cbv_smoothed).^2 ./ ...
+    real(S_co2co2_smoothed .* S_cbvcbv_smoothed);
+
+figure('Name', 'MisoCoherenceDiagnostics', 'NumberTitle', 'off')
+
+subplot(2,1,1)
+plot(f, map_cbv_coherence, 'LineWidth', 1.0)
+hold on
+plot(f, co2_cbv_coherence, 'LineWidth', 1.0)
+plot(f, multiple_coherence, 'LineWidth', 1.0)
+xlabel('Frequency (Hz)')
+ylabel('Coherence')
+title('Pairwise and Multiple Coherence')
+legend('MAP-CBV coherence', 'CO2-CBV coherence', 'Multiple coherence', ...
+    'Location', 'best')
+xlim([0.005 0.50])
+ylim([0 1])
+grid on
+addFrequencyBandLines()
+
+subplot(2,1,2)
+plot(f, partial_coh_map_cbv_given_co2, 'LineWidth', 1.0)
+hold on
+plot(f, partial_coh_co2_cbv_given_map, 'LineWidth', 1.0)
+plot(f, multiple_coherence, 'LineWidth', 1.0)
+xlabel('Frequency (Hz)')
+ylabel('Coherence')
+title('Partial and Multiple Coherence')
+legend('MAP-CBV | CO2', 'CO2-CBV | MAP', 'Multiple coherence', ...
+    'Location', 'best')
+xlim([0.005 0.50])
+ylim([0 1])
+grid on
+addFrequencyBandLines()
+
+sgtitle('MISO Coherence Diagnostics')
+
 %% Input-Input Coherence & Spectra Phase Plots to Discuss
 
 input_input_coherence = abs(S_mapco2_smoothed).^2 ./ ...
