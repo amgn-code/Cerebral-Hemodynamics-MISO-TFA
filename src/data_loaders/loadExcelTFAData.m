@@ -1,7 +1,7 @@
-function signalData = loadExcelTFAData(filename)
+function signalData = loadExcelTFAData(inputData, sheetName, varargin)
 % loadExcelTFAData
 %
-% Loads BP/MAP, CO2, and CBF/CBFV data from an Excel sheet, resamples
+% Loads BP/MAP, CO2, and CBF/CBFV data from an Excel sheet or table, resamples
 % the signals to 4 Hz, and returns the same struct format used by
 % createShoMisoSignal().
 %
@@ -9,10 +9,10 @@ function signalData = loadExcelTFAData(filename)
 %   Time   BP   CO2   CBF
 %
 % Acceptable alternative column names:
-%   Time: time, t, seconds, sec
-%   BP:   bp, map, abp
-%   CO2:  co2, petco2, etco2
-%   CBF:  cbf, cbv, cbfv
+%   Time: time, t, seconds, sec, BeatTime
+%   BP:   bp, map, abp, MAP
+%   CO2:  co2, petco2, etco2, ETCO2_Interpolated
+%   CBF:  cbf, cbv, cbfv, Vmean, TCD
 %
 % Output:
 %   signalData.bp
@@ -20,14 +20,47 @@ function signalData = loadExcelTFAData(filename)
 %   signalData.cbf
 %   signalData.fs
 %   signalData.t
- 
-    %% Read Excel file as a table
-    dataTable = readtable(filename, 'Sheet', 'Sheet1');
+    if nargin < 2 || isempty(sheetName)
+        sheetName = "";
+    end
 
-    timeCol = "Time";
-    bpCol  = "MAP";
-    cbfCol = "Vmean";
-    co2Col = "ETCO2";
+    parameterNames = ["TimeColumn", "BPColumn", "CO2Column", "CBFColumn"];
+
+    if any(strcmpi(string(sheetName), parameterNames))
+        varargin = [{sheetName}, varargin];
+        sheetName = "";
+    end
+
+    p = inputParser;
+    addParameter(p, "TimeColumn", "auto", @(x) ischar(x) || isstring(x));
+    addParameter(p, "BPColumn", "auto", @(x) ischar(x) || isstring(x));
+    addParameter(p, "CO2Column", "auto", @(x) ischar(x) || isstring(x));
+    addParameter(p, "CBFColumn", "auto", @(x) ischar(x) || isstring(x));
+    parse(p, varargin{:});
+
+    opts = p.Results;
+
+    %% Read Excel file as a table
+    if istable(inputData)
+        dataTable = inputData;
+    else
+        if strlength(string(sheetName)) == 0
+            dataTable = readtable(inputData, "VariableNamingRule", "preserve");
+        else
+            dataTable = readtable(inputData, ...
+                "Sheet", sheetName, ...
+                "VariableNamingRule", "preserve");
+        end
+    end
+
+    timeCol = resolveColumn(dataTable, opts.TimeColumn, ...
+        ["Time", "BeatTime", "time", "t", "seconds", "sec"]);
+    bpCol = resolveColumn(dataTable, opts.BPColumn, ...
+        ["MAP", "BP", "bp", "map", "abp"]);
+    co2Col = resolveColumn(dataTable, opts.CO2Column, ...
+        ["ETCO2_Interpolated", "ETCO2", "CO2", "co2", "petco2", "etco2"]);
+    cbfCol = resolveColumn(dataTable, opts.CBFColumn, ...
+        ["TCD", "Vmean", "CBF", "CBV", "CBFV", "cbf", "cbv", "cbfv"]);
 
     %% Extract signals
     t   = dataTable{:, timeCol};
@@ -85,5 +118,39 @@ function signalData = loadExcelTFAData(filename)
     signalData.t   = tResampled;
  
 end
- 
- 
+
+
+function colName = resolveColumn(dataTable, requestedName, possibleNames)
+
+    requestedName = string(requestedName);
+
+    if lower(requestedName) == "auto"
+        colName = findColumn(dataTable, possibleNames);
+    else
+        colName = findColumn(dataTable, requestedName);
+    end
+
+end
+
+
+function colName = findColumn(dataTable, possibleNames)
+
+    variableNames = string(dataTable.Properties.VariableNames);
+
+    for k = 1:numel(possibleNames)
+        match = find(variableNames == possibleNames(k), 1);
+
+        if isempty(match)
+            match = find(lower(variableNames) == lower(possibleNames(k)), 1);
+        end
+
+        if ~isempty(match)
+            colName = variableNames(match);
+            return
+        end
+    end
+
+    error("Could not find required column. Tried: %s", ...
+        strjoin(string(possibleNames), ", "));
+
+end
