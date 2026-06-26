@@ -45,7 +45,7 @@ function signalData = loadExcelTFAData(inputData, sheetName, varargin)
         dataTable = inputData;
     else
         if strlength(string(sheetName)) == 0
-            dataTable = readtable(inputData, "VariableNamingRule", "preserve");
+            dataTable = readTFASheet(inputData);
         else
             dataTable = readtable(inputData, ...
                 "Sheet", sheetName, ...
@@ -117,6 +117,78 @@ function signalData = loadExcelTFAData(inputData, sheetName, varargin)
     signalData.fs  = fsTarget;
     signalData.t   = tResampled;
  
+end
+
+
+function dataTable = readTFASheet(filename)
+
+    dataTable = readtable(filename, "VariableNamingRule", "preserve");
+
+    if hasTFAColumns(dataTable)
+        return
+    end
+
+    sheetList = getExcelSheets(filename);
+
+    for k = 1:numel(sheetList)
+        testTable = readtable(filename, ...
+            "Sheet", sheetList(k), ...
+            "VariableNamingRule", "preserve");
+
+        if hasTFAColumns(testTable)
+            fprintf("Using Excel sheet: %s\n", sheetList(k));
+            dataTable = testTable;
+            return
+        end
+    end
+
+end
+
+
+function sheetList = getExcelSheets(filename)
+
+    try
+        sheetList = sheetnames(filename);
+        return
+    catch
+    end
+
+    try
+        [~, sheetList] = xlsfinfo(filename);
+        sheetList = string(sheetList);
+        return
+    catch
+    end
+
+    sheetList = strings(0);
+
+end
+
+
+function hasColumns = hasTFAColumns(dataTable)
+
+    hasColumns = ...
+        hasAnyColumn(dataTable, ["Time", "BeatTime", "time", "t", "seconds", "sec"]) && ...
+        hasAnyColumn(dataTable, ["MAP", "BP", "bp", "map", "abp"]) && ...
+        hasAnyColumn(dataTable, ["ETCO2_Interpolated", "ETCO2", "CO2", "co2", "petco2", "etco2"]) && ...
+        hasAnyColumn(dataTable, ["TCD", "Vmean", "CBF", "CBV", "CBFV", "cbf", "cbv", "cbfv"]);
+
+end
+
+
+function foundColumn = hasAnyColumn(dataTable, possibleNames)
+
+    variableNames = string(dataTable.Properties.VariableNames);
+    foundColumn = false;
+
+    for k = 1:numel(possibleNames)
+        if any(variableNames == possibleNames(k)) || ...
+                any(lower(variableNames) == lower(possibleNames(k)))
+            foundColumn = true;
+            return
+        end
+    end
+
 end
 
 

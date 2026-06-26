@@ -19,9 +19,14 @@ function [window, window_overlap_n, fft_length_n, num_windows] = ...
     % Zero-padded FFT length
     target_df = 0.001;  % desired displayed frequency spacing in Hz
 
+    %{
+
     fft_length_n = 2^nextpow2(fs / target_df);
 
     % Make sure FFT length is at least as long as the window
     fft_length_n = max(fft_length_n, window_length_n);
+
+    %}
+    fft_length_n = window_length_n;
 
 end

@@ -5,6 +5,7 @@ clear; clc; close all;
 project_root = pwd;
 addpath(genpath(project_root));
 rehash
+clear loadExcelTFAData
 
 %% Simulation Data
 
@@ -16,20 +17,25 @@ rehash
 
 %% Load Dataset
 
-excel_file = "/Users/amoghn/Downloads/547_baseline.xlsx"; % Change to File Location
+excel_file = "/Users/amoghn/Downloads/547_baseline_1.xlsx"; % Change to File Location
+dataAlreadyBeatAveraged = true;
 
-%% For Raw BioPac Data
+%% Load TFA Data
 
-[cleanTable, cleanInfo] = cleanTCD(excel_file);
-[beatTable, beatInfo] = computeBeatToBeatAverages(cleanTable, false, ...
-    "/Users/amoghn/Desktop/beat_to_beat_results.xlsx", true);
+if dataAlreadyBeatAveraged
 
-signalData = loadExcelTFAData(beatTable, ...
-    "CO2Column", "ETCO2_Interpolated");
+    signalData = loadExcelTFAData(excel_file, "cleaned");
 
+else
 
-%% For Beat to Beat Averaged Data
-signalData = loadExcelTFAData(excel_file);
+    [cleanTable, cleanInfo] = cleanTCD(excel_file);
+    [beatTable, beatInfo] = computeBeatToBeatAverages(cleanTable, false, ...
+        "/Users/amoghn/Desktop/beat_to_beat_results.xlsx", true);
+
+    signalData = loadExcelTFAData(beatTable, ...
+        "CO2Column", "ETCO2_Interpolated");
+
+end
 
 %% Assign Data
 
