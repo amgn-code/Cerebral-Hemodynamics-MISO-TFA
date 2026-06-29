@@ -3,15 +3,29 @@ function processedSignalData = btbPreProcessing(signalData)
 
     %% Clear Blank Entries
 
-    arrayNames = ['t', 'map', 'co2', 'cbv', 'vmin', 'vmax'];
+    arrayNames = ["t", "map", "co2", "cbv", "vmin", "vmax"];
 
     co2Index = 1;
     while signalData.co2(co2Index) == 0
         for i = 1:length(arrayNames)
             arrayName = arrayNames(i);
-            signalData.arrayName(co2Index) = [];
+            signalData.(arrayName)(co2Index) = [];
         end
     end
+
+    validRows = isfinite(signalData.t) & ...
+            isfinite(signalData.map) & ...
+            isfinite(signalData.co2) & ...
+            isfinite(signalData.cbv) & ...
+            isfinite(signalData.vmin) & ...
+            isfinite(signalData.vmax);
+
+    signalData.t = signalData.t(validRows);
+    signalData.map = signalData.map(validRows);
+    signalData.co2 = signalData.co2(validRows);
+    signalData.cbv = signalData.cbv(validRows);
+    signalData.vmin = signalData.vmin(validRows);
+    signalData.vmax = signalData.vmax(validRows);
 
     %% Beat Confidence
 
