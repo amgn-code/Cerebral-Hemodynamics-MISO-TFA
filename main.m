@@ -5,90 +5,25 @@ clear; clc; close all;
 project_root = pwd;
 addpath(genpath(project_root));
 rehash
-clear loadExcelTFAData
-
-%% Simulation Data
-
-%signalData = createShoMisoSignal();
-%signalData = createMisoValidationSignal(false);  % false = no added noise
-
-%public_data_file = fullfile(project_root, "data", "public_data", "subj01.csv");
-%signalData = loadPublicTFAData(public_data_file);
 
 %% Load Dataset
 
+subjectNum = '547';
 excel_file = "/Users/amoghn/Downloads/547_baseline_1.xlsx"; % Change to File Location
-dataAlreadyBeatAveraged = true;
-
-%% Load TFA Data
-
-if dataAlreadyBeatAveraged
-
-    signalData = loadExcelTFAData(excel_file, "cleaned");
-
-else
-
-    [cleanTable, cleanInfo] = cleanTCD(excel_file);
-    [beatTable, beatInfo] = computeBeatToBeatAverages(cleanTable, false, ...
-        "/Users/amoghn/Desktop/beat_to_beat_results.xlsx", true);
-
-    signalData = loadExcelTFAData(beatTable, ...
-        "CO2Column", "ETCO2_Interpolated");
-
-end
+signalData = loadData(excel_file);
+preprocessedsignalData = btbPreProcessing(signalData);
 
 %% Assign Data
 
-bp = signalData.bp;
-co2 = signalData.co2;
-cbf = signalData.cbf;
-fs = signalData.fs;
-t = signalData.t;
+map = preprocessedsignalData.map;
+co2 = preprocessedsignalData.co2;
+cbv = preprocessedsignalData.cbv;
+fs = preprocessedsignalData.fs;
+t = preprocessedsignalData.t;
 
 %% Visualize Starting Data
 
-figure()
-
-subplot(2,1,1)
-
-yyaxis left
-plot(t, bp)
-ylabel('MAP')
-grid on
-hold on
-
-left_min = min(bp, [], 'omitnan');
-left_max = max(bp, [], 'omitnan');
-left_min = min(left_min, 0);
-left_max = max(left_max, 0);
-
-if left_min == left_max
-    left_min = left_min - 1;
-    left_max = left_max + 1;
-end
-
-yyaxis right
-plot(t, co2)
-ylabel('CO2')
-
-right_max = max(abs(co2), [], 'omitnan');
-right_max = max(right_max, 1);
-right_max = 1.05 * right_max;
-
-alignRightYAxisZero(left_min, left_max, right_max)
-
-title('MAP and CO2 Inputs vs. Time')
-xlabel('Time (s)')
-legend('MAP', 'CO2', 'Location', 'best')
-grid on
-
-subplot(2,1,2)
-plot(t, cbf)
-
-title('CBV Output vs. Time')
-xlabel('Time (s)')
-ylabel('Amplitude')
-grid on
+visualizeTimeSeries(t, map, co2, cbv)
 
 %% PSD / Cross-Spectral Transfer Function
 %
@@ -104,14 +39,41 @@ grid on
 %   Gives one average transfer function over the full recording.
 %   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
 
-tfaResults = runMISOTFA(bp, co2, cbf, fs);
+tfaResults = runMISOTFA(map, co2, cbv, fs);
 
 %% SISO Model
-sisoResults = runSISO2(bp, co2, cbf, fs);
+sisoResults = runSISOTFA(map, co2, cbv, fs);
+
+%% Output Folder
+
+baseOutputFolder = "/Users/amoghn/Desktop/TFA Results";
+confidenceLevel = preprocessedsignalData.confidenceLevel;
+outputFolder = fullfile(baseOutputFolder, confidenceLevel, subjectNum);
+
+if ~exist(outputFolder, "dir")
+    mkdir(outputFolder);
+end
 
 %% Save Data to Excel
 
-filename = "miso_tfa_results.xlsx";
+filename = fullfile(outputFolder, "miso_tfa_results.xlsx");
 sheetName = "MISO TFA Results";
 
 saveDatatoExcel(filename, sheetName, tfaResults);
+
+%% Save Figures
+
+figures = findall(0, "Type", "figure");
+
+for k = 1:numel(figures)
+
+    fig = figures(k);
+    figure(fig)
+
+    set(fig, "WindowState", "maximized")
+    pause(0.2)
+
+    figurePath = fullfile(outputFolder, sprintf("Figure_%02d.png", k));
+    exportgraphics(fig, figurePath, "Resolution", 300);
+
+end

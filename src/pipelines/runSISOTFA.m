@@ -1,4 +1,4 @@
-function sisoResults = runSISO2(bp, co2, cbf, fs)
+function sisoResults = runSISOTFA(bp, co2, cbf, fs)
 
 % runSISO
 %
