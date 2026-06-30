@@ -73,6 +73,8 @@ vectorFigureFiles = [
     "miso_co2_to_cbv_transfer_function.pdf"
 ];
 
+vectorFigureXLimits = [0 0.5];
+
 for k = 1:numel(vectorFigureNames)
 
     fig = findobj( ...
@@ -89,8 +91,24 @@ for k = 1:numel(vectorFigureNames)
     fig = fig(1);
     figure(fig)
 
+    axesList = findall(fig, "Type", "axes");
+    originalXLimits = get(axesList, "XLim");
+    originalXLimitModes = get(axesList, "XLimMode");
+
+    if ~iscell(originalXLimits)
+        originalXLimits = {originalXLimits};
+        originalXLimitModes = {originalXLimitModes};
+    end
+
+    set(axesList, "XLim", vectorFigureXLimits);
+
     figurePath = fullfile(outputFolder, vectorFigureFiles(k));
     exportgraphics(fig, figurePath, "ContentType", "vector");
+
+    for axIdx = 1:numel(axesList)
+        axesList(axIdx).XLim = originalXLimits{axIdx};
+        axesList(axIdx).XLimMode = originalXLimitModes{axIdx};
+    end
 
 end
 
