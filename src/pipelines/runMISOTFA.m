@@ -64,6 +64,11 @@ num_welch_windows = [3, 4, 5, 6, 7, 8, 9,10, 15, 20, 25];
 coherence_critical_vals = [0.51, 0.41, 0.34, 0.29, 0.25, 0.22, 0.20, 0.18, 0.12, 0.09, 0.08];
 coherence_threshold = coherence_critical_vals(find(num_windows == num_welch_windows));
 
+if isempty(coherence_threshold)
+    warning('num_windows does not match coherence lookup table. Using default threshold of 0.51.');
+    coherence_threshold = 0.51;
+end
+
 %% Solving for MISO System
 
 H_mapcbv = NaN(size(f));
