@@ -61,6 +61,39 @@ sheetName = "MISO TFA Results";
 
 saveDatatoExcel(filename, sheetName, tfaResults);
 
+%% Save Selected Figures as Vector PDFs for LaTeX
+
+vectorFigureNames = [
+    "MisoMapToCbvTransferFunction"
+    "MisoCo2ToCbvTransferFunction"
+];
+
+vectorFigureFiles = [
+    "miso_map_to_cbv_transfer_function.pdf"
+    "miso_co2_to_cbv_transfer_function.pdf"
+];
+
+for k = 1:numel(vectorFigureNames)
+
+    fig = findobj( ...
+        findall(0, "Type", "figure"), ...
+        "Type", "figure", ...
+        "Name", char(vectorFigureNames(k)));
+
+    if isempty(fig)
+        warning("Could not find figure named '%s'. Skipping vector PDF export.", ...
+            vectorFigureNames(k));
+        continue
+    end
+
+    fig = fig(1);
+    figure(fig)
+
+    figurePath = fullfile(outputFolder, vectorFigureFiles(k));
+    exportgraphics(fig, figurePath, "ContentType", "vector");
+
+end
+
 %% Save Figures
 
 figures = findall(0, "Type", "figure");

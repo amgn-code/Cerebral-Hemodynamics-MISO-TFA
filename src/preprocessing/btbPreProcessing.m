@@ -6,7 +6,8 @@ function processedSignalData = btbPreProcessing(signalData)
     arrayNames = ["t", "map", "co2", "cbv", "vmin", "vmax"];
 
     co2Index = 1;
-    while signalData.co2(co2Index) == 0
+    co2mean = mean(signalData.co2);
+    while signalData.co2(co2Index) < co2mean - 10
         for i = 1:length(arrayNames)
             arrayName = arrayNames(i);
             signalData.(arrayName)(co2Index) = [];
