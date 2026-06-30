@@ -74,6 +74,7 @@ vectorFigureFiles = [
 ];
 
 vectorFigureXLimits = [0 0.5];
+vectorFigurePosition = [100 100 1400 700];
 
 for k = 1:numel(vectorFigureNames)
 
@@ -91,6 +92,10 @@ for k = 1:numel(vectorFigureNames)
     fig = fig(1);
     figure(fig)
 
+    originalFigureUnits = fig.Units;
+    originalFigurePosition = fig.Position;
+    originalWindowState = fig.WindowState;
+
     axesList = findall(fig, "Type", "axes");
     originalXLimits = get(axesList, "XLim");
     originalXLimitModes = get(axesList, "XLimMode");
@@ -100,6 +105,9 @@ for k = 1:numel(vectorFigureNames)
         originalXLimitModes = {originalXLimitModes};
     end
 
+    fig.WindowState = "normal";
+    fig.Units = "pixels";
+    fig.Position = vectorFigurePosition;
     set(axesList, "XLim", vectorFigureXLimits);
 
     figurePath = fullfile(outputFolder, vectorFigureFiles(k));
@@ -109,6 +117,10 @@ for k = 1:numel(vectorFigureNames)
         axesList(axIdx).XLim = originalXLimits{axIdx};
         axesList(axIdx).XLimMode = originalXLimitModes{axIdx};
     end
+
+    fig.Position = originalFigurePosition;
+    fig.Units = originalFigureUnits;
+    fig.WindowState = originalWindowState;
 
 end
 
