@@ -4,9 +4,9 @@ function signalData = loadData(filePath)
     
     headerNames = {
         't', ["Time", "time", "Seconds", "seconds", "Sec", "sec"];
-        'map', ["MAP", "map", "BP", "bp", "Portapres", "portapres"];
+        'map', ["MAP", "map", "MAP", "map", "Portapres", "portapres"];
         'co2', ["ETCO2", "CO2", "Peak_ETCO2"];
-        'cbv', ["CBV", "cbv", "CBFV", "cbfv", "TCD", "tcd", "Vmean"];
+        'cbv', ["CBV", "cbv", "CBVV", "cbvv", "TCD", "tcd", "Vmean"];
         'vmin', ["Vmin"];
         'vmax', ["Vmax"]
         };

@@ -6,11 +6,17 @@ if isvector(complexData)
 
     %% 1D Complex Spectrum Plot
 
+    freqIndex = f >= 0 & f <= 0.5;
+    f = f(freqIndex);
+    complexData = complexData(freqIndex);
+    freqLimits = [0 0.5];
+
     subplot(1,2,1)
     stem(f, abs(complexData))
     title(['Magnitude: ', plotTitle])
     xlabel('Frequency (Hz)')
     ylabel('Magnitude')
+    xlim(freqLimits)
     grid on
 
     subplot(1,2,2)
@@ -18,6 +24,7 @@ if isvector(complexData)
     title(['Phase: ', plotTitle])
     xlabel('Frequency (Hz)')
     ylabel('Phase (rad)')
+    xlim(freqLimits)
     grid on
 
 else
@@ -43,7 +50,7 @@ else
     xlabel('Time (s)')
     ylabel('Frequency (Hz)')
     colorbar
-    caxis([-pi pi])
+    clim([-pi pi])
 
 end
 

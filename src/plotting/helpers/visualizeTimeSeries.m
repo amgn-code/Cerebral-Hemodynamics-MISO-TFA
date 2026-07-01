@@ -10,25 +10,25 @@ function visualizeTimeSeries(t, map, co2, cbv)
     grid on
     hold on
     
-    left_min = min(map, [], 'omitnan');
-    left_max = max(map, [], 'omitnan');
-    left_min = min(left_min, 0);
-    left_max = max(left_max, 0);
+    leftMin = min(map, [], 'omitnan');
+    leftMax = max(map, [], 'omitnan');
+    leftMin = min(leftMin, 0);
+    leftMax = max(leftMax, 0);
     
-    if left_min == left_max
-        left_min = left_min - 1;
-        left_max = left_max + 1;
+    if leftMin == leftMax
+        leftMin = leftMin - 1;
+        leftMax = leftMax + 1;
     end
     
     yyaxis right
     plot(t, co2)
     ylabel('CO2')
     
-    right_max = max(abs(co2), [], 'omitnan');
-    right_max = max(right_max, 1);
-    right_max = 1.05 * right_max;
+    rightMax = max(abs(co2), [], 'omitnan');
+    rightMax = max(rightMax, 1);
+    rightMax = 1.05 * rightMax;
     
-    alignRightYAxisZero(left_min, left_max, right_max)
+    alignRightYAxisZero(leftMin, leftMax, rightMax)
     
     title('MAP and CO2 Inputs vs. Time')
     xlabel('Time (s)')

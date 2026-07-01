@@ -2,141 +2,87 @@
 
 clear; clc; close all;
 
-project_root = pwd;
-addpath(genpath(project_root));
+projectRoot = pwd;
+addpath(genpath(projectRoot));
 rehash
 
-%% Load Dataset
+%% Run Settings
 
-subjectNum = '547';
-excel_file = "/Users/amoghn/Downloads/547_baseline_1.xlsx"; % Change to File Location
-signalData = loadData(excel_file);
-preprocessedsignalData = btbPreProcessing(signalData);
+runType = "batch";    % Use "single" or "batch"
 
-%% Assign Data
+%% Analysis Settings
 
-map = preprocessedsignalData.map;
-co2 = preprocessedsignalData.co2;
-cbv = preprocessedsignalData.cbv;
-fs = preprocessedsignalData.fs;
-t = preprocessedsignalData.t;
+% Frequency bands are the intervals between consecutive edges.
+% Example: VVLF is 0.005 <= f < 0.024 Hz.
+% The final band includes its upper edge.
+analysisSettings.frequencyBandEdgesHz = [0.005; 0.024; 0.070; 0.200; 0.500];
+analysisSettings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
 
-%% Visualize Starting Data
+% Subjects shorter than this window are skipped and written to the status
+% sheet instead of being analyzed with too little data.
+analysisSettings.windowLengthSeconds = 128;
+analysisSettings.windowOverlap = 0.5;
 
-visualizeTimeSeries(t, map, co2, cbv)
+analysisSettings.figureMode = "summary";    % Use "none", "summary", or "all"
+analysisSettings.runSISO = true;
 
-%% PSD / Cross-Spectral Transfer Function
-%
-% Goal:
-%   Use Welch PSD and cross spectral density:
-%
-%       H(f) = Sxy(f) / Sxx(f)
-%
-% Benefit:
-%   More stable than direct FFT division.
-%
-% Limitation:
-%   Gives one average transfer function over the full recording.
-%   Does not tell us when the BP-CBF or CO2-CBF relationship changes.
-
-tfaResults = runMISOTFA(map, co2, cbv, fs);
-
-%% SISO Model
-sisoResults = runSISOTFA(map, co2, cbv, fs);
-
-%% Output Folder
-
-baseOutputFolder = "/Users/amoghn/Desktop/TFA Results";
-confidenceLevel = preprocessedsignalData.confidenceLevel;
-outputFolder = fullfile(baseOutputFolder, confidenceLevel, subjectNum);
-
-if ~exist(outputFolder, "dir")
-    mkdir(outputFolder);
+if ~any(analysisSettings.figureMode == ["none", "summary", "all"])
+    error('figureMode must be "none", "summary", or "all".');
 end
 
-%% Save Data to Excel
+%% Output Settings
 
-filename = fullfile(outputFolder, "miso_tfa_results.xlsx");
-sheetName = "MISO TFA Results";
+outputSettings.baseOutputFolder = "/Users/amoghn/Desktop/TFA Results";
+outputSettings.singleSubjectExcelFileName = "subject_tfa_results.xlsx";
+outputSettings.batchSummaryExcelFileName = "batch_tfa_summary.xlsx";
 
-saveDatatoExcel(filename, sheetName, tfaResults);
+outputSettings.saveSingleSubjectExcel = true;
+outputSettings.saveBatchSummaryExcel = true;
+outputSettings.saveFigures = true;
+outputSettings.saveFullFrequencyData = false;
 
-%% Save Selected Figures as Vector PDFs for LaTeX
+%% Batch Subject Selection
 
-vectorFigureNames = [
-    "MisoMapToCbvTransferFunction"
-    "MisoCo2ToCbvTransferFunction"
-];
+batchSettings.dataFolder = "/Users/amoghn/Downloads/ieem_data";
+batchSettings.groupsToRun = ["MCI"; "NC"];    % Use "MCI", "NC", or both
+batchSettings.batchRunMode = "firstN";        % Use "single", "firstN", or "all"
+batchSettings.singleSubjectID = "528";
+batchSettings.numSubjectsPerGroup = 5;
+batchSettings.previewOnly = false;
 
-vectorFigureFiles = [
-    "miso_map_to_cbv_transfer_function.pdf"
-    "miso_co2_to_cbv_transfer_function.pdf"
-];
+%% Single Subject Settings
 
-vectorFigureXLimits = [0 0.5];
-vectorFigurePosition = [100 100 1400 700];
+subjectInfo.subjectID = "547";
+subjectInfo.group = "MCI";       % Use "MCI" or "NC"
+subjectInfo.session = "baseline_1";
+subjectInfo.sourceFile = "/Users/amoghn/Downloads/547_baseline_1.xlsx";
 
-for k = 1:numel(vectorFigureNames)
+%% Run TFA
 
-    fig = findobj( ...
-        findall(0, "Type", "figure"), ...
-        "Type", "figure", ...
-        "Name", char(vectorFigureNames(k)));
+if runType == "single"
 
-    if isempty(fig)
-        warning("Could not find figure named '%s'. Skipping vector PDF export.", ...
-            vectorFigureNames(k));
-        continue
+    subjectResults = runSingleSubjectTFA( ...
+        subjectInfo, analysisSettings, outputSettings);
+
+elseif runType == "batch"
+
+    subjectList = findIEEMSubjects( ...
+        batchSettings.dataFolder, ...
+        batchSettings.groupsToRun, ...
+        batchSettings.batchRunMode, ...
+        batchSettings.singleSubjectID, ...
+        batchSettings.numSubjectsPerGroup);
+
+    if batchSettings.previewOnly
+        disp(subjectList)
+        return
     end
 
-    fig = fig(1);
-    figure(fig)
+    batchResults = runBatchTFA( ...
+        subjectList, analysisSettings, outputSettings, batchSettings);
 
-    originalFigureUnits = fig.Units;
-    originalFigurePosition = fig.Position;
-    originalWindowState = fig.WindowState;
+else
 
-    axesList = findall(fig, "Type", "axes");
-    originalXLimits = get(axesList, "XLim");
-    originalXLimitModes = get(axesList, "XLimMode");
-
-    if ~iscell(originalXLimits)
-        originalXLimits = {originalXLimits};
-        originalXLimitModes = {originalXLimitModes};
-    end
-
-    fig.WindowState = "normal";
-    fig.Units = "pixels";
-    fig.Position = vectorFigurePosition;
-    set(axesList, "XLim", vectorFigureXLimits);
-
-    figurePath = fullfile(outputFolder, vectorFigureFiles(k));
-    exportgraphics(fig, figurePath, "ContentType", "vector");
-
-    for axIdx = 1:numel(axesList)
-        axesList(axIdx).XLim = originalXLimits{axIdx};
-        axesList(axIdx).XLimMode = originalXLimitModes{axIdx};
-    end
-
-    fig.Position = originalFigurePosition;
-    fig.Units = originalFigureUnits;
-    fig.WindowState = originalWindowState;
-
-end
-
-%% Save Figures
-
-figures = findall(0, "Type", "figure");
-
-for k = 1:numel(figures)
-
-    fig = figures(k);
-    figure(fig)
-
-    set(fig, "WindowState", "maximized")
-    pause(0.2)
-
-    figurePath = fullfile(outputFolder, sprintf("Figure_%02d.png", k));
-    exportgraphics(fig, figurePath, "Resolution", 300);
+    error('runType must be "single" or "batch".');
 
 end

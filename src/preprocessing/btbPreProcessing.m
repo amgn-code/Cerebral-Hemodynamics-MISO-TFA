@@ -28,31 +28,6 @@ function processedSignalData = btbPreProcessing(signalData)
     signalData.vmin = signalData.vmin(validRows);
     signalData.vmax = signalData.vmax(validRows);
 
-    %% Beat Confidence
-
-    numBeats = length(signalData.t);
-    numCorruptedBeats = 0;
-
-    for i = 1:numBeats
-        if signalData.vmax(i) > 150 || signalData.vmin(i) < 5
-            numCorruptedBeats = numCorruptedBeats + 1;
-        end
-    end
-
-    percentCorruptedBeats = (numCorruptedBeats / numBeats);
-   
-    if percentCorruptedBeats == 0
-        confidenceLevel = 'High Confidence';
-    elseif percentCorruptedBeats < 0.03
-        confidenceLevel = 'Moderate Confidence';
-    elseif percentCorruptedBeats < 0.05
-        confidenceLevel = 'Medium Confidence';
-    elseif percentCorruptedBeats < 0.1
-        confidenceLevel = 'Low Confidence';
-    else
-        confidenceLevel = 'Consider Excluding';
-    end
-
     %% Resample to 4 Hz
 
     fsTarget = 4;
@@ -76,9 +51,5 @@ function processedSignalData = btbPreProcessing(signalData)
     processedSignalData.co2 = co2Detrend;
     processedSignalData.cbv = cbvDetrend;
     processedSignalData.fs = fsTarget;
-    processedSignalData.confidenceLevel = confidenceLevel;
-    processedSignalData.percentCorruptedBeats = percentCorruptedBeats;
-
-
 
 end

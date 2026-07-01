@@ -18,42 +18,42 @@ function signalData = createBroadbandMisoToySignal()
     rng(1);
 
     %% Create random raw inputs
-    bp_raw = randn(size(t));
-    co2_raw = randn(size(t));
+    mapRaw = randn(size(t));
+    co2Raw = randn(size(t));
 
     %% Bandpass filter into dCA-ish range
     % Frequency range: 0.01 to 0.5 Hz
     [b,a] = butter(4, [0.01 0.5]/(fs/2), 'bandpass');
 
-    bp = filtfilt(b, a, bp_raw);
-    co2 = filtfilt(b, a, co2_raw);
+    map = filtfilt(b, a, mapRaw);
+    co2 = filtfilt(b, a, co2Raw);
 
-    %% Make CO2 independent/orthogonal from BP
-    % This removes the part of CO2 that points in the same direction as BP.
+    %% Make CO2 independent/orthogonal from MAP
+    % This removes the part of CO2 that points in the same direction as MAP.
     % It makes the MISO separation easier for the first test case.
-    co2 = co2 - (dot(co2,bp)/dot(bp,bp))*bp;
+    co2 = co2 - (dot(co2,map)/dot(map,map))*map;
 
     %% Define true gains
-    true_H_BP = 0.6;
-    true_H_CO2 = 0.8;
+    trueHMap = 0.6;
+    trueHCO2 = 0.8;
 
     %% Create output
-    cbf = true_H_BP*bp + true_H_CO2*co2 + 0.05*randn(size(t));
+    cbv = trueHMap*map + trueHCO2*co2 + 0.05*randn(size(t));
 
     %% Store results
     signalData.fs = fs;
     signalData.t = t;
 
-    signalData.bp = bp;
+    signalData.map = map;
     signalData.co2 = co2;
-    signalData.cbf = cbf;
+    signalData.cbv = cbv;
 
-    signalData.bp_raw = bp_raw;
-    signalData.co2_raw = co2_raw;
+    signalData.mapRaw = mapRaw;
+    signalData.co2Raw = co2Raw;
 
-    signalData.true_H_BP = true_H_BP;
-    signalData.true_H_CO2 = true_H_CO2;
+    signalData.trueHMap = trueHMap;
+    signalData.trueHCO2 = trueHCO2;
 
-    signalData.description = "Broadband-ish MISO toy signal with independent BP and CO2 inputs";
+    signalData.description = "Broadband-ish MISO toy signal with independent MAP and CO2 inputs";
 
 end
