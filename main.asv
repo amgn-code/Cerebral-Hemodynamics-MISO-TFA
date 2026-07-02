@@ -53,10 +53,10 @@ batchSettings.previewOnly = false;
 
 %% Single Subject Settings
 
-subjectInfo.subjectID = "503";
+subjectInfo.subjectID = "101";
 subjectInfo.group = "MCI";       % Use "MCI" or "NC"
 subjectInfo.session = "baseline";
-subjectInfo.sourceFile = "/Users/amoghn/Downloads/ieem_data/NC/503_baseline.xlsx";
+subjectInfo.sourceFile = "/Users/amoghn/Downloads/ieem_data/MCI/101_baseline.xlsx";
 
 %% Run TFA
 

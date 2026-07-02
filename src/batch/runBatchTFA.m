@@ -19,6 +19,9 @@ misoBandTable = table();
 sisoBandTable = table();
 comparisonTable = table();
 groupSummaryCell = {};
+fullFrequencyTables = struct();
+fullFrequencyStatusTable = table();
+batchFigureFiles = strings(0,1);
 
 subjectResults = cell(height(subjectList), 1);
 successfulOutputCounts = initializeSuccessfulOutputCounts(batchSettings);
@@ -90,6 +93,16 @@ if ~isempty(comparisonTable)
     groupSummaryCell = makeGroupSummaryCell(comparisonTable);
 end
 
+if outputSettings.saveFullFrequencyData
+    [fullFrequencyTables, fullFrequencyStatusTable] = ...
+        makeFullFrequencyBatchSummaries(subjectResults, analysisSettings.runSISO);
+end
+
+if outputSettings.saveFullFrequencyData && outputSettings.saveFigures
+    batchFigureFiles = saveBatchFullFrequencyFigures( ...
+        fullFrequencyTables, outputSettings.baseOutputFolder);
+end
+
 if outputSettings.saveBatchSummaryExcel
     batchSummaryFile = fullfile( ...
         outputSettings.baseOutputFolder, ...
@@ -98,6 +111,7 @@ if outputSettings.saveBatchSummaryExcel
     saveBatchSummaryToExcel( ...
         batchSummaryFile, statusTable, ...
         misoBandTable, sisoBandTable, comparisonTable, groupSummaryCell, ...
+        fullFrequencyTables, fullFrequencyStatusTable, ...
         analysisSettings.runSISO);
 end
 
@@ -108,6 +122,9 @@ batchResults.misoBandTable = misoBandTable;
 batchResults.sisoBandTable = sisoBandTable;
 batchResults.comparisonTable = comparisonTable;
 batchResults.groupSummaryCell = groupSummaryCell;
+batchResults.fullFrequencyTables = fullFrequencyTables;
+batchResults.fullFrequencyStatusTable = fullFrequencyStatusTable;
+batchResults.batchFigureFiles = batchFigureFiles;
 batchResults.successfulOutputCounts = successfulOutputCounts;
 
 end
@@ -180,6 +197,11 @@ runStatus.runStage = classifyFailureStage(errorInfo);
 runStatus.statusMessage = "Failed: " + string(errorInfo.message);
 runStatus.isTooShortForWelch = "";
 runStatus.numWelchWindows = NaN;
+if isfield(analysisSettings, 'minimumWelchWindows')
+    runStatus.minimumWelchWindows = analysisSettings.minimumWelchWindows;
+else
+    runStatus.minimumWelchWindows = 1;
+end
 runStatus.signalDurationSeconds = NaN;
 runStatus.windowLengthSeconds = analysisSettings.windowLengthSeconds;
 runStatus.windowOverlap = analysisSettings.windowOverlap;
@@ -226,6 +248,7 @@ statusRow = table( ...
     string(runStatus.statusMessage), ...
     statusValueToString(runStatus.isTooShortForWelch), ...
     runStatus.numWelchWindows, ...
+    runStatus.minimumWelchWindows, ...
     runStatus.signalDurationSeconds, ...
     runStatus.windowLengthSeconds, ...
     runStatus.windowOverlap, ...
@@ -244,6 +267,7 @@ statusRow = table( ...
         'StatusMessage', ...
         'IsTooShortForWelch', ...
         'NumWelchWindows', ...
+        'MinimumWelchWindows', ...
         'SignalDurationSeconds', ...
         'WindowLengthSeconds', ...
         'WindowOverlap', ...
@@ -480,6 +504,338 @@ end
 end
 
 
+function [fullFrequencyTables, fullFrequencyStatusTable] = ...
+    makeFullFrequencyBatchSummaries(subjectResults, runSISO)
+
+groups = ["MCI"; "NC"];
+fullFrequencyTables = struct();
+fullFrequencyStatusTable = initializeFullFrequencyStatusTable();
+
+for g = 1:numel(groups)
+
+    groupName = groups(g);
+
+    [misoCell, statusRows] = makeFullFrequencySummaryForGroup( ...
+        subjectResults, groupName, "MISO");
+    fullFrequencyStatusTable = [fullFrequencyStatusTable; statusRows];
+
+    if ~isempty(misoCell)
+        fullFrequencyTables.("MISO_" + groupName + "_FullFrequency") = misoCell;
+    end
+
+    if runSISO
+        [sisoCell, statusRows] = makeFullFrequencySummaryForGroup( ...
+            subjectResults, groupName, "SISO");
+        fullFrequencyStatusTable = [fullFrequencyStatusTable; statusRows];
+
+        if ~isempty(sisoCell)
+            fullFrequencyTables.("SISO_" + groupName + "_FullFrequency") = sisoCell;
+        end
+    end
+end
+
+end
+
+
+function statusTable = initializeFullFrequencyStatusTable()
+
+statusTable = table( ...
+    strings(0,1), ...
+    strings(0,1), ...
+    strings(0,1), ...
+    strings(0,1), ...
+    strings(0,1), ...
+    zeros(0,1), ...
+    'VariableNames', { ...
+        'SubjectID', ...
+        'Group', ...
+        'Model', ...
+        'IncludedInFullFrequency', ...
+        'Reason', ...
+        'NumFrequencyBins' ...
+    });
+
+end
+
+
+function [summaryCell, statusTable] = makeFullFrequencySummaryForGroup( ...
+    subjectResults, groupName, modelName)
+
+summaryCell = {};
+statusTable = initializeFullFrequencyStatusTable();
+referenceF = [];
+metricData = struct();
+numIncludedSubjects = 0;
+
+for i = 1:numel(subjectResults)
+
+    if isempty(subjectResults{i})
+        continue
+    end
+
+    subjectInfo = subjectResults{i}.subjectInfo;
+    runStatus = subjectResults{i}.runStatus;
+
+    if string(subjectInfo.group) ~= groupName
+        continue
+    end
+
+    if ~runStatus.analysisSucceeded
+        continue
+    end
+
+    [modelResults, hasModelResults] = getModelResults(subjectResults{i}, modelName);
+
+    if ~hasModelResults
+        statusTable = [statusTable; makeFullFrequencyStatusRow( ...
+            subjectInfo, modelName, false, "NoSuccessfulResults", 0)];
+        continue
+    end
+
+    f = modelResults.f(:);
+
+    if isempty(referenceF)
+        referenceF = f;
+        metricData = initializeFullFrequencyMetricData(modelName, numel(f));
+    elseif ~frequencyVectorsMatch(referenceF, f)
+        statusTable = [statusTable; makeFullFrequencyStatusRow( ...
+            subjectInfo, modelName, false, "FrequencyVectorMismatch", numel(f))];
+        continue
+    end
+
+    metricData = addSubjectFullFrequencyMetrics(metricData, modelResults, modelName);
+    numIncludedSubjects = numIncludedSubjects + 1;
+
+    statusTable = [statusTable; makeFullFrequencyStatusRow( ...
+        subjectInfo, modelName, true, "Included", numel(f))];
+
+end
+
+if numIncludedSubjects > 0
+    summaryCell = makeFullFrequencySummaryCell(referenceF, metricData, modelName);
+end
+
+end
+
+
+function [modelResults, hasModelResults] = getModelResults(subjectResult, modelName)
+
+if modelName == "MISO"
+    modelResults = subjectResult.tfaResults;
+else
+    modelResults = subjectResult.sisoResults;
+end
+
+hasModelResults = ~isempty(modelResults);
+
+end
+
+
+function isMatch = frequencyVectorsMatch(referenceF, f)
+
+frequencyTolerance = 1e-12;
+isMatch = numel(referenceF) == numel(f) && ...
+    max(abs(referenceF(:) - f(:))) <= frequencyTolerance;
+
+end
+
+
+function metricData = initializeFullFrequencyMetricData(modelName, numFrequencies)
+
+metricNames = fullFrequencyInternalMetricNames(modelName);
+
+for k = 1:numel(metricNames)
+    metricData.(metricNames(k)) = NaN(numFrequencies, 0);
+end
+
+end
+
+
+function metricNames = fullFrequencyInternalMetricNames(modelName)
+
+if modelName == "MISO"
+    metricNames = [
+        "mapGain"
+        "mapPhase"
+        "co2Gain"
+        "co2Phase"
+        "multipleCoh"
+        "mapCoh"
+        "co2Coh"
+    ];
+else
+    metricNames = [
+        "mapGain"
+        "mapPhase"
+        "co2Gain"
+        "co2Phase"
+        "mapCoh"
+        "co2Coh"
+    ];
+end
+
+end
+
+
+function metricData = addSubjectFullFrequencyMetrics(metricData, modelResults, modelName)
+
+metricData.mapGain(:, end + 1) = modelResults.mapCbvGain(:);
+metricData.mapPhase(:, end + 1) = modelResults.mapCbvPhase(:);
+metricData.co2Gain(:, end + 1) = modelResults.co2CbvGain(:);
+metricData.co2Phase(:, end + 1) = modelResults.co2CbvPhase(:);
+
+if modelName == "MISO"
+    metricData.multipleCoh(:, end + 1) = modelResults.multipleCoh(:);
+    metricData.mapCoh(:, end + 1) = modelResults.partialCohMap(:);
+    metricData.co2Coh(:, end + 1) = modelResults.partialCohCo2(:);
+else
+    metricData.mapCoh(:, end + 1) = modelResults.mapCbvCoh(:);
+    metricData.co2Coh(:, end + 1) = modelResults.co2CbvCoh(:);
+end
+
+end
+
+
+function statusRow = makeFullFrequencyStatusRow( ...
+    subjectInfo, modelName, included, reason, numFrequencyBins)
+
+statusRow = table( ...
+    string(subjectInfo.subjectID), ...
+    string(subjectInfo.group), ...
+    modelName, ...
+    string(included), ...
+    reason, ...
+    numFrequencyBins, ...
+    'VariableNames', { ...
+        'SubjectID', ...
+        'Group', ...
+        'Model', ...
+        'IncludedInFullFrequency', ...
+        'Reason', ...
+        'NumFrequencyBins' ...
+    });
+
+end
+
+
+function summaryCell = makeFullFrequencySummaryCell(f, metricData, modelName)
+
+headers = fullFrequencyHeaders(modelName);
+numFrequencies = numel(f);
+summaryCell = cell(numFrequencies + 1, numel(headers));
+summaryCell(1,:) = cellstr(headers);
+
+for k = 1:numFrequencies
+    summaryCell{k + 1, 1} = f(k);
+    summaryCell{k + 1, 2} = countNonNan(metricData.mapGain(k,:));
+
+    summaryCell(k + 1, 3:4) = meanSdFromRow(metricData.mapGain(k,:));
+    summaryCell(k + 1, 5:6) = circularMeanSdFromRow(metricData.mapPhase(k,:));
+    summaryCell(k + 1, 7:8) = meanSdFromRow(metricData.co2Gain(k,:));
+    summaryCell(k + 1, 9:10) = circularMeanSdFromRow(metricData.co2Phase(k,:));
+
+    if modelName == "MISO"
+        summaryCell(k + 1, 11:12) = meanSdFromRow(metricData.multipleCoh(k,:));
+        summaryCell(k + 1, 13:14) = meanSdFromRow(metricData.mapCoh(k,:));
+        summaryCell(k + 1, 15:16) = meanSdFromRow(metricData.co2Coh(k,:));
+    else
+        summaryCell(k + 1, 11:12) = meanSdFromRow(metricData.mapCoh(k,:));
+        summaryCell(k + 1, 13:14) = meanSdFromRow(metricData.co2Coh(k,:));
+    end
+end
+
+end
+
+
+function headers = fullFrequencyHeaders(modelName)
+
+baseHeaders = [
+    "Frequency_Hz"
+    "N"
+    "MAP_Gain_MeanAcrossSubjects"
+    "MAP_Gain_SDAcrossSubjects"
+    "MAP_Phase_CircularMeanAcrossSubjects"
+    "MAP_Phase_CircularSDAcrossSubjects"
+    "CO2_Gain_MeanAcrossSubjects"
+    "CO2_Gain_SDAcrossSubjects"
+    "CO2_Phase_CircularMeanAcrossSubjects"
+    "CO2_Phase_CircularSDAcrossSubjects"
+];
+
+if modelName == "MISO"
+    coherenceHeaders = [
+        "Multiple_Coh_MeanAcrossSubjects"
+        "Multiple_Coh_SDAcrossSubjects"
+        "MAP|CO2_Coh_MeanAcrossSubjects"
+        "MAP|CO2_Coh_SDAcrossSubjects"
+        "CO2|MAP_Coh_MeanAcrossSubjects"
+        "CO2|MAP_Coh_SDAcrossSubjects"
+    ];
+else
+    coherenceHeaders = [
+        "MAP_Coh_MeanAcrossSubjects"
+        "MAP_Coh_SDAcrossSubjects"
+        "CO2_Coh_MeanAcrossSubjects"
+        "CO2_Coh_SDAcrossSubjects"
+    ];
+end
+
+headers = [baseHeaders; coherenceHeaders]';
+
+end
+
+
+function n = countNonNan(values)
+
+n = sum(~isnan(values));
+
+end
+
+
+function cells = meanSdFromRow(values)
+
+values = values(~isnan(values));
+
+if isempty(values)
+    cells = {"-", "-"};
+    return
+end
+
+metricMean = mean(values, 'omitnan');
+
+if numel(values) < 2
+    metricSD = "-";
+else
+    metricSD = std(values, 'omitnan');
+end
+
+cells = {metricMean, metricSD};
+
+end
+
+
+function cells = circularMeanSdFromRow(values)
+
+values = values(~isnan(values));
+
+if isempty(values)
+    cells = {"-", "-"};
+    return
+end
+
+metricMean = circularMeanPhase(values);
+
+if numel(values) < 2
+    metricSD = "-";
+else
+    metricSD = circularStdPhase(values);
+end
+
+cells = {metricMean, metricSD};
+
+end
+
+
 function value = valueOrDash(metricValue)
 
 if isnumeric(metricValue) && isnan(metricValue)
@@ -493,7 +849,8 @@ end
 
 function saveBatchSummaryToExcel( ...
     filename, statusTable, ...
-    misoBandTable, sisoBandTable, comparisonTable, groupSummaryCell, runSISO)
+    misoBandTable, sisoBandTable, comparisonTable, groupSummaryCell, ...
+    fullFrequencyTables, fullFrequencyStatusTable, runSISO)
 
 if exist(filename, "file")
     delete(filename);
@@ -519,7 +876,29 @@ if ~isempty(groupSummaryCell)
         "Range", "A1");
 end
 
+writeFullFrequencySheetsToExcel( ...
+    filename, fullFrequencyTables, fullFrequencyStatusTable);
+
 writeMetricDefinitionsToExcel(filename, "Metric_Definitions");
+
+end
+
+
+function writeFullFrequencySheetsToExcel( ...
+    filename, fullFrequencyTables, fullFrequencyStatusTable)
+
+if ~isempty(fullFrequencyStatusTable)
+    writetable(fullFrequencyStatusTable, filename, ...
+        "Sheet", "FullFrequency_Status");
+end
+
+sheetNames = string(fieldnames(fullFrequencyTables));
+
+for k = 1:numel(sheetNames)
+    writecell(fullFrequencyTables.(sheetNames(k)), filename, ...
+        "Sheet", sheetNames(k), ...
+        "Range", "A1");
+end
 
 end
 
@@ -576,6 +955,13 @@ metricDefinitions = table( ...
         "CO2|MAP_Coh_Mean"
         "MAP_Coh_Mean"
         "CO2_Coh_Mean"
+        "Frequency_Hz"
+        "MAP_Phase_CircularMeanAcrossSubjects"
+        "MAP_Phase_CircularSDAcrossSubjects"
+        "CO2_Phase_CircularMeanAcrossSubjects"
+        "CO2_Phase_CircularSDAcrossSubjects"
+        "IncludedInFullFrequency"
+        "FrequencyVectorMismatch"
         "MCI_MeanAcrossSubjects"
         "MCI_SDAcrossSubjects"
         "MCI_N"
@@ -591,11 +977,18 @@ metricDefinitions = table( ...
         "For MISO, CO2 partial coherence given MAP."
         "For SISO, standard pairwise MAP coherence with CBV as the output."
         "For SISO, standard pairwise CO2 coherence with CBV as the output."
+        "Frequency bin used for the full-frequency group summary sheets."
+        "Circular mean across subjects for MAP to CBV phase at each frequency bin."
+        "Circular standard deviation across subjects for MAP to CBV phase at each frequency bin."
+        "Circular mean across subjects for CO2 to CBV phase at each frequency bin."
+        "Circular standard deviation across subjects for CO2 to CBV phase at each frequency bin."
+        "Shows whether a subject was included in the full-frequency group average."
+        "Subject was not included in the full-frequency average because its frequency vector did not match the first included subject in that group/model."
         "Mean across subject-level band averages for the MCI group."
-        "Standard deviation across subject-level band averages for the MCI group. Blank when fewer than two subjects contribute."
+        "Standard deviation across subject-level band averages for the MCI group. Uses '-' when fewer than two subjects contribute."
         "Number of MCI subjects contributing to that group summary value."
         "Mean across subject-level band averages for the NC group."
-        "Standard deviation across subject-level band averages for the NC group. Blank when fewer than two subjects contribute."
+        "Standard deviation across subject-level band averages for the NC group. Uses '-' when fewer than two subjects contribute."
         "Number of NC subjects contributing to that group summary value."
     ], ...
     'VariableNames', {'Metric', 'Meaning'});

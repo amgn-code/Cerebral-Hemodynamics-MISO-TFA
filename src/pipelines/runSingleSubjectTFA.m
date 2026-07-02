@@ -38,10 +38,16 @@ end
     fs, ...
     length(map));
 
-canRunTFA = ~preflightWelchInfo.isTooShort;
+if ~isfield(analysisSettings, 'minimumWelchWindows')
+    analysisSettings.minimumWelchWindows = 1;
+end
+
+canRunTFA = ~preflightWelchInfo.isTooShort && ...
+    preflightWelchInfo.numWindows >= analysisSettings.minimumWelchWindows;
 runStatus = initializeSubjectRunStatus( ...
     preflightWelchInfo, ...
-    analysisSettings.runSISO);
+    analysisSettings.runSISO, ...
+    analysisSettings.minimumWelchWindows);
 
 tfaResults = [];
 sisoResults = [];
@@ -52,7 +58,7 @@ fprintf("Subject %s: %.1f seconds, %d Welch windows.\n", ...
     preflightWelchInfo.numWindows);
 
 if ~canRunTFA
-    warning("Skipping TFA because signal is shorter than the Welch window.");
+    warning("Skipping TFA: %s", runStatus.statusMessage);
 end
 
 if canRunTFA && analysisSettings.figureMode ~= "none"

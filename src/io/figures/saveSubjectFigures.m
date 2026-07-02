@@ -42,7 +42,7 @@ for k = 1:numel(figureNames)
     figureFileName = makeSafeFigureFileName(figureNames(k)) + ".png";
     figurePath = fullfile(outputFolder, figureFileName);
 
-    exportgraphics(fig, figurePath, "Resolution", 300);
+    exportgraphics(fig, figurePath, "Resolution", 150);
 
 end
 

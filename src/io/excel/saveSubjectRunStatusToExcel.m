@@ -10,6 +10,7 @@ metadata = {
     "StatusMessage", string(runStatus.statusMessage);
     "IsTooShortForWelch", string(runStatus.isTooShortForWelch);
     "NumWelchWindows", runStatus.numWelchWindows;
+    "MinimumWelchWindows", runStatus.minimumWelchWindows;
     "SignalDurationSeconds", runStatus.signalDurationSeconds;
     "WindowLengthSeconds", runStatus.windowLengthSeconds;
     "WindowOverlap", runStatus.windowOverlap;
