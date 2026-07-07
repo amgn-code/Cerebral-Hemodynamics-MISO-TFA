@@ -1,8 +1,11 @@
-function plotMISOwCoherence(f, H, multipleCoherence, partialCoherence, pathwayLabel, figureName)
+function plotMISOwCoherence( ...
+    f, H, phaseData, multipleCoherence, partialCoherence, pathwayLabel, figureName)
 
     freqIndex = f >= 0 & f <= 0.5;
     f = f(freqIndex);
     H = H(freqIndex);
+    phaseWrapped = phaseData.wrapped(freqIndex);
+    phaseUnwrapped = phaseData.display(freqIndex);
     multipleCoherence = multipleCoherence(freqIndex);
     partialCoherence = partialCoherence(freqIndex);
     freqLimits = [0 0.5];
@@ -10,12 +13,12 @@ function plotMISOwCoherence(f, H, multipleCoherence, partialCoherence, pathwayLa
     figure('Name', figureName, 'NumberTitle', 'off')
 
     % Gain plot
-    subplot(1,2,1)
+    subplot(1,3,1)
 
     yyaxis left
     hTfGain = stem(f, abs(H), 'filled');
     hTfGain.DisplayName = 'Transfer function';
-    ylabel('Magnitude')
+    ylabel('Gain (%CBV/mmHg)')
     xlabel('Frequency (Hz)')
     title([pathwayLabel ' Gain'])
     grid on
@@ -49,21 +52,51 @@ function plotMISOwCoherence(f, H, multipleCoherence, partialCoherence, pathwayLa
         'Location', 'best')
 
 
-    % Phase plot
-    subplot(1,2,2)
+    % Wrapped phase plot
+    subplot(1,3,2)
 
     yyaxis left
-    hTfPhase = stem(f, angle(H), 'filled');
+    hTfPhase = stem(f, phaseWrapped, 'filled');
     hTfPhase.DisplayName = 'Transfer function';
-    ylabel('Phase (rad)')
+    ylabel('Wrapped phase (rad)')
     xlabel('Frequency (Hz)')
-    title([pathwayLabel ' Phase'])
+    title([pathwayLabel ' Wrapped Phase'])
+    grid on
+    hold on
+    xlim(freqLimits)
+    ylim([-pi pi])
+
+    yyaxis right
+    hMultPhase = plot(f, multipleCoherence, 'LineWidth', 0.7);
+    hold on
+    hPartPhase = plot(f, partialCoherence, 'Color', '#FFD580', 'LineWidth', 0.7);
+    ylabel('Coherence')
+    xlim(freqLimits)
+
+    rightMax = max([1; multipleCoherence(:); partialCoherence(:)], [], 'omitnan');
+    rightMax = 1.05 * rightMax;
+
+    alignRightYAxisZero(-pi, pi, rightMax)
+
+    legend([hTfPhase, hMultPhase, hPartPhase], ...
+        {'Transfer function', 'Multiple coherence', 'Partial coherence'}, ...
+        'Location', 'best')
+
+    % Unwrapped phase plot
+    subplot(1,3,3)
+
+    yyaxis left
+    hTfPhase = stem(f, phaseUnwrapped, 'filled');
+    hTfPhase.DisplayName = 'Transfer function';
+    ylabel('Unwrapped phase (rad)')
+    xlabel('Frequency (Hz)')
+    title([pathwayLabel ' Unwrapped Phase'])
     grid on
     hold on
     xlim(freqLimits)
 
-    leftMin = min(angle(H), [], 'omitnan');
-    leftMax = max(angle(H), [], 'omitnan');
+    leftMin = min(phaseUnwrapped, [], 'omitnan');
+    leftMax = max(phaseUnwrapped, [], 'omitnan');
     leftMin = min(leftMin, 0);
     leftMax = max(leftMax, 0);
 

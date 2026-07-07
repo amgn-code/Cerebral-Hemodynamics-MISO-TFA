@@ -6,7 +6,7 @@ function visualizeTimeSeries(t, map, co2, cbv)
     
     yyaxis left
     plot(t, map)
-    ylabel('MAP')
+    ylabel('Detrended MAP (mmHg)')
     grid on
     hold on
     
@@ -22,7 +22,7 @@ function visualizeTimeSeries(t, map, co2, cbv)
     
     yyaxis right
     plot(t, co2)
-    ylabel('CO2')
+    ylabel('Detrended CO2 (mmHg)')
     
     rightMax = max(abs(co2), [], 'omitnan');
     rightMax = max(rightMax, 1);
@@ -30,7 +30,7 @@ function visualizeTimeSeries(t, map, co2, cbv)
     
     alignRightYAxisZero(leftMin, leftMax, rightMax)
     
-    title('MAP and CO2 Inputs vs. Time')
+    title('Detrended MAP and CO2 Inputs vs. Time')
     xlabel('Time (s)')
     legend('MAP', 'CO2', 'Location', 'best')
     grid on
@@ -38,9 +38,9 @@ function visualizeTimeSeries(t, map, co2, cbv)
     subplot(2,1,2)
     plot(t, cbv)
     
-    title('CBV Output vs. Time')
+    title('Detrended CBV Output vs. Time')
     xlabel('Time (s)')
-    ylabel('Amplitude')
+    ylabel('Detrended CBV (% baseline)')
     grid on
         
 end

@@ -22,6 +22,8 @@ function runStatus = initializeSubjectRunStatus( ...
     runStatus.windowLengthSeconds = welchInfo.windowLengthSeconds;
     runStatus.windowOverlap = welchInfo.windowOverlap;
     runStatus.runSISO = runSISO;
+    runStatus.cbvBaselineCmPerSec = NaN;
+    runStatus.cbvUnits = "";
 
     runStatus.misoUsedDefaultCoherenceThreshold = NaN;
     runStatus.sisoUsedDefaultCoherenceThreshold = NaN;

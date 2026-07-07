@@ -1,78 +1,67 @@
-function plotBandMISOwCoherence(fBand, HBand, multipleCoherenceBand, partialCoherenceBand, pathwayLabel, bandLabel, subplotStart)
+function plotBandMISOwCoherence( ...
+    fBand, HBand, phaseWrappedBand, phaseUnwrappedBand, ...
+    multipleCoherenceBand, partialCoherenceBand, pathwayLabel, bandLabel, rowIndex)
 
-    % Gain plot
-    subplot(4,2,subplotStart)
+subplot(4,3,3 * (rowIndex - 1) + 1)
+plotBandPanel( ...
+    fBand, abs(HBand), multipleCoherenceBand, partialCoherenceBand, ...
+    [bandLabel ' ' pathwayLabel ' Gain'], 'Gain (%CBV/mmHg)', [])
 
-    yyaxis left
-    hTfGain = stem(fBand, abs(HBand), 'filled');
-    hTfGain.DisplayName = 'Transfer function';
-    ylabel('Magnitude')
-    xlabel('Frequency (Hz)')
-    title([bandLabel ' ' pathwayLabel ' Gain'])
-    grid on
-    hold on
+subplot(4,3,3 * (rowIndex - 1) + 2)
+plotBandPanel( ...
+    fBand, phaseWrappedBand, multipleCoherenceBand, partialCoherenceBand, ...
+    [bandLabel ' ' pathwayLabel ' Wrapped Phase'], 'Wrapped phase (rad)', [-pi pi])
 
-    leftMin = min(abs(HBand), [], 'omitnan');
-    leftMax = max(abs(HBand), [], 'omitnan');
-    leftMin = min(leftMin, 0);
-    leftMax = max(leftMax, 0);
+subplot(4,3,3 * (rowIndex - 1) + 3)
+plotBandPanel( ...
+    fBand, phaseUnwrappedBand, multipleCoherenceBand, partialCoherenceBand, ...
+    [bandLabel ' ' pathwayLabel ' Unwrapped Phase'], 'Unwrapped phase (rad)', [])
 
-    if leftMin == leftMax
-        leftMin = leftMin - 1;
-        leftMax = leftMax + 1;
-    end
-
-    yyaxis right
-    hMultGain = plot(fBand, multipleCoherenceBand, 'LineWidth', 0.7);
-    hold on
-    hPartGain = plot(fBand, partialCoherenceBand, 'Color', '#FFD580', 'LineWidth', 0.7);
-    ylabel('Coherence')
-
-    rightMax = max([1; multipleCoherenceBand(:); partialCoherenceBand(:)], [], 'omitnan');
-    rightMax = 1.05 * rightMax;
-
-    alignRightYAxisZero(leftMin, leftMax, rightMax)
-
-    legend([hTfGain, hMultGain, hPartGain], ...
-        {'Transfer function', 'Multiple coherence', 'Partial coherence'}, ...
-        'Location', 'best')
+end
 
 
-    % Phase plot
-    subplot(4,2,subplotStart + 1)
+function plotBandPanel( ...
+    fBand, transferBand, multipleCoherenceBand, partialCoherenceBand, ...
+    panelTitle, yLabelText, leftLimits)
 
-    yyaxis left
-    hTfPhase = stem(fBand, angle(HBand), 'filled');
-    hTfPhase.DisplayName = 'Transfer function';
-    ylabel('Phase (rad)')
-    xlabel('Frequency (Hz)')
-    title([bandLabel ' ' pathwayLabel ' Phase'])
-    grid on
-    hold on
+yyaxis left
+hTf = stem(fBand, transferBand, 'filled');
+hTf.DisplayName = 'Transfer function';
+ylabel(yLabelText)
+xlabel('Frequency (Hz)')
+title(panelTitle)
+grid on
+hold on
 
-    leftMin = min(angle(HBand), [], 'omitnan');
-    leftMax = max(angle(HBand), [], 'omitnan');
-    leftMin = min(leftMin, 0);
-    leftMax = max(leftMax, 0);
+leftMin = min(transferBand, [], 'omitnan');
+leftMax = max(transferBand, [], 'omitnan');
+leftMin = min(leftMin, 0);
+leftMax = max(leftMax, 0);
 
-    if leftMin == leftMax
-        leftMin = leftMin - 1;
-        leftMax = leftMax + 1;
-    end
+if leftMin == leftMax
+    leftMin = leftMin - 1;
+    leftMax = leftMax + 1;
+end
 
-    yyaxis right
-    hMultPhase = plot(fBand, multipleCoherenceBand, 'LineWidth', 0.7);
-    hold on
-    hPartPhase = plot(fBand, partialCoherenceBand, 'Color', '#FFD580', 'LineWidth', 0.7);
-    ylabel('Coherence')
+if ~isempty(leftLimits)
+    ylim(leftLimits)
+    leftMin = leftLimits(1);
+    leftMax = leftLimits(2);
+end
 
-    rightMax = max([1; multipleCoherenceBand(:); partialCoherenceBand(:)], [], 'omitnan');
-    rightMax = 1.05 * rightMax;
+yyaxis right
+hMult = plot(fBand, multipleCoherenceBand, 'LineWidth', 0.7);
+hold on
+hPart = plot(fBand, partialCoherenceBand, 'Color', '#FFD580', 'LineWidth', 0.7);
+ylabel('Coherence')
 
-    alignRightYAxisZero(leftMin, leftMax, rightMax)
+rightMax = max([1; multipleCoherenceBand(:); partialCoherenceBand(:)], [], 'omitnan');
+rightMax = 1.05 * rightMax;
 
-    legend([hTfPhase, hMultPhase, hPartPhase], ...
-        {'Transfer function', 'Multiple coherence', 'Partial coherence'}, ...
-        'Location', 'best')
+alignRightYAxisZero(leftMin, leftMax, rightMax)
+
+legend([hTf, hMult, hPart], ...
+    {'Transfer function', 'Multiple coherence', 'Partial coherence'}, ...
+    'Location', 'best')
 
 end

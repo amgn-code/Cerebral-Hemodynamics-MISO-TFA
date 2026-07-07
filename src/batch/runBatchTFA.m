@@ -10,6 +10,16 @@ if nargin < 4
     batchSettings.groupsToRun = unique(string(subjectList.Group), 'stable');
 end
 
+if ~isfield(analysisSettings, 'phase')
+    if isfield(analysisSettings, 'phaseUnwrapMethod')
+        analysisSettings.phase = normalizePhaseSettings(analysisSettings.phaseUnwrapMethod);
+    else
+        analysisSettings.phase = defaultPhaseSettings();
+    end
+else
+    analysisSettings.phase = normalizePhaseSettings(analysisSettings.phase);
+end
+
 if ~exist(outputSettings.baseOutputFolder, "dir")
     mkdir(outputSettings.baseOutputFolder);
 end
@@ -95,12 +105,14 @@ end
 
 if outputSettings.saveFullFrequencyData
     [fullFrequencyTables, fullFrequencyStatusTable] = ...
-        makeFullFrequencyBatchSummaries(subjectResults, analysisSettings.runSISO);
+        makeFullFrequencyBatchSummaries( ...
+            subjectResults, analysisSettings.runSISO, analysisSettings.phase);
 end
 
 if outputSettings.saveFullFrequencyData && outputSettings.saveFigures
     batchFigureFiles = saveBatchFullFrequencyFigures( ...
-        fullFrequencyTables, outputSettings.baseOutputFolder);
+        fullFrequencyTables, outputSettings.baseOutputFolder, ...
+        analysisSettings.phase.unwrapMethod);
 end
 
 if outputSettings.saveBatchSummaryExcel
@@ -206,6 +218,8 @@ runStatus.signalDurationSeconds = NaN;
 runStatus.windowLengthSeconds = analysisSettings.windowLengthSeconds;
 runStatus.windowOverlap = analysisSettings.windowOverlap;
 runStatus.runSISO = analysisSettings.runSISO;
+runStatus.cbvBaselineCmPerSec = NaN;
+runStatus.cbvUnits = "";
 runStatus.misoUsedDefaultCoherenceThreshold = "";
 runStatus.sisoUsedDefaultCoherenceThreshold = "";
 runStatus.misoCoherenceThreshold = NaN;
@@ -253,6 +267,8 @@ statusRow = table( ...
     runStatus.windowLengthSeconds, ...
     runStatus.windowOverlap, ...
     statusValueToString(runStatus.runSISO), ...
+    runStatus.cbvBaselineCmPerSec, ...
+    string(runStatus.cbvUnits), ...
     statusValueToString(runStatus.misoUsedDefaultCoherenceThreshold), ...
     statusValueToString(runStatus.sisoUsedDefaultCoherenceThreshold), ...
     runStatus.misoCoherenceThreshold, ...
@@ -272,6 +288,8 @@ statusRow = table( ...
         'WindowLengthSeconds', ...
         'WindowOverlap', ...
         'RunSISO', ...
+        'CBVBaseline_cm_per_s', ...
+        'CBVUnits', ...
         'MISO_UsedDefaultCoherenceThreshold', ...
         'SISO_UsedDefaultCoherenceThreshold', ...
         'MISO_CoherenceThreshold', ...
@@ -343,9 +361,9 @@ variableNames = { ...
     'SourceFile', ...
     'Model', ...
     'MAP_Gain_Mean', ...
-    'MAP_Phase_CircularMean_rad', ...
+    'MAP_Phase_Wrapped_CircularMean_rad', ...
     'CO2_Gain_Mean', ...
-    'CO2_Phase_CircularMean_rad', ...
+    'CO2_Phase_Wrapped_CircularMean_rad', ...
     'Multiple_Coh_Mean', ...
     'MAP_Coh_Mean', ...
     'CO2_Coh_Mean', ...
@@ -464,10 +482,10 @@ end
 headers = [
     "Band"
     "N"
-    "MAP_Gain_MeanAcrossSubjects"
-    "MAP_Gain_SDAcrossSubjects"
-    "CO2_Gain_MeanAcrossSubjects"
-    "CO2_Gain_SDAcrossSubjects"
+    "MAP_Gain_MeanAcrossSubjects_pctCBV_per_mmHg"
+    "MAP_Gain_SDAcrossSubjects_pctCBV_per_mmHg"
+    "CO2_Gain_MeanAcrossSubjects_pctCBV_per_mmHgCO2"
+    "CO2_Gain_SDAcrossSubjects_pctCBV_per_mmHgCO2"
     "Multiple_Coh_MeanAcrossSubjects"
     "Multiple_Coh_SDAcrossSubjects"
     mapCohName + "_MeanAcrossSubjects"
@@ -505,7 +523,7 @@ end
 
 
 function [fullFrequencyTables, fullFrequencyStatusTable] = ...
-    makeFullFrequencyBatchSummaries(subjectResults, runSISO)
+    makeFullFrequencyBatchSummaries(subjectResults, runSISO, phaseSettings)
 
 groups = ["MCI"; "NC"];
 fullFrequencyTables = struct();
@@ -516,7 +534,7 @@ for g = 1:numel(groups)
     groupName = groups(g);
 
     [misoCell, statusRows] = makeFullFrequencySummaryForGroup( ...
-        subjectResults, groupName, "MISO");
+        subjectResults, groupName, "MISO", phaseSettings);
     fullFrequencyStatusTable = [fullFrequencyStatusTable; statusRows];
 
     if ~isempty(misoCell)
@@ -525,7 +543,7 @@ for g = 1:numel(groups)
 
     if runSISO
         [sisoCell, statusRows] = makeFullFrequencySummaryForGroup( ...
-            subjectResults, groupName, "SISO");
+            subjectResults, groupName, "SISO", phaseSettings);
         fullFrequencyStatusTable = [fullFrequencyStatusTable; statusRows];
 
         if ~isempty(sisoCell)
@@ -559,7 +577,7 @@ end
 
 
 function [summaryCell, statusTable] = makeFullFrequencySummaryForGroup( ...
-    subjectResults, groupName, modelName)
+    subjectResults, groupName, modelName, phaseSettings)
 
 summaryCell = {};
 statusTable = initializeFullFrequencyStatusTable();
@@ -612,7 +630,8 @@ for i = 1:numel(subjectResults)
 end
 
 if numIncludedSubjects > 0
-    summaryCell = makeFullFrequencySummaryCell(referenceF, metricData, modelName);
+    summaryCell = makeFullFrequencySummaryCell( ...
+        referenceF, metricData, modelName, phaseSettings);
 end
 
 end
@@ -656,9 +675,9 @@ function metricNames = fullFrequencyInternalMetricNames(modelName)
 if modelName == "MISO"
     metricNames = [
         "mapGain"
-        "mapPhase"
+        "mapPhaseWrapped"
         "co2Gain"
-        "co2Phase"
+        "co2PhaseWrapped"
         "multipleCoh"
         "mapCoh"
         "co2Coh"
@@ -666,9 +685,9 @@ if modelName == "MISO"
 else
     metricNames = [
         "mapGain"
-        "mapPhase"
+        "mapPhaseWrapped"
         "co2Gain"
-        "co2Phase"
+        "co2PhaseWrapped"
         "mapCoh"
         "co2Coh"
     ];
@@ -680,9 +699,11 @@ end
 function metricData = addSubjectFullFrequencyMetrics(metricData, modelResults, modelName)
 
 metricData.mapGain(:, end + 1) = modelResults.mapCbvGain(:);
-metricData.mapPhase(:, end + 1) = modelResults.mapCbvPhase(:);
+metricData.mapPhaseWrapped(:, end + 1) = modelValueOrFallback( ...
+    modelResults, 'mapCbvPhaseWrapped', 'mapCbvPhase');
 metricData.co2Gain(:, end + 1) = modelResults.co2CbvGain(:);
-metricData.co2Phase(:, end + 1) = modelResults.co2CbvPhase(:);
+metricData.co2PhaseWrapped(:, end + 1) = modelValueOrFallback( ...
+    modelResults, 'co2CbvPhaseWrapped', 'co2CbvPhase');
 
 if modelName == "MISO"
     metricData.multipleCoh(:, end + 1) = modelResults.multipleCoh(:);
@@ -691,6 +712,17 @@ if modelName == "MISO"
 else
     metricData.mapCoh(:, end + 1) = modelResults.mapCbvCoh(:);
     metricData.co2Coh(:, end + 1) = modelResults.co2CbvCoh(:);
+end
+
+end
+
+
+function values = modelValueOrFallback(modelResults, preferredField, fallbackField)
+
+if isfield(modelResults, preferredField)
+    values = modelResults.(preferredField)(:);
+else
+    values = modelResults.(fallbackField)(:);
 end
 
 end
@@ -718,31 +750,105 @@ statusRow = table( ...
 end
 
 
-function summaryCell = makeFullFrequencySummaryCell(f, metricData, modelName)
+function summaryCell = makeFullFrequencySummaryCell( ...
+    f, metricData, modelName, phaseSettings)
 
 headers = fullFrequencyHeaders(modelName);
 numFrequencies = numel(f);
 summaryCell = cell(numFrequencies + 1, numel(headers));
 summaryCell(1,:) = cellstr(headers);
 
+[mapPhaseSummary, co2PhaseSummary] = summarizeGroupPhaseMetrics( ...
+    f, metricData, phaseSettings);
+
 for k = 1:numFrequencies
     summaryCell{k + 1, 1} = f(k);
     summaryCell{k + 1, 2} = countNonNan(metricData.mapGain(k,:));
 
     summaryCell(k + 1, 3:4) = meanSdFromRow(metricData.mapGain(k,:));
-    summaryCell(k + 1, 5:6) = circularMeanSdFromRow(metricData.mapPhase(k,:));
-    summaryCell(k + 1, 7:8) = meanSdFromRow(metricData.co2Gain(k,:));
-    summaryCell(k + 1, 9:10) = circularMeanSdFromRow(metricData.co2Phase(k,:));
+    summaryCell(k + 1, 5:6) = phaseSummaryCells( ...
+        mapPhaseSummary.wrappedMean(k), mapPhaseSummary.circularSD(k));
+    summaryCell(k + 1, 7:8) = phaseSummaryCells( ...
+        mapPhaseSummary.unwrappedMean(k), mapPhaseSummary.circularSD(k));
+    summaryCell(k + 1, 9:10) = phaseSummaryCells( ...
+        mapPhaseSummary.anchoredMean(k), mapPhaseSummary.circularSD(k));
+    summaryCell(k + 1, 11:12) = meanSdFromRow(metricData.co2Gain(k,:));
+    summaryCell(k + 1, 13:14) = phaseSummaryCells( ...
+        co2PhaseSummary.wrappedMean(k), co2PhaseSummary.circularSD(k));
+    summaryCell(k + 1, 15:16) = phaseSummaryCells( ...
+        co2PhaseSummary.unwrappedMean(k), co2PhaseSummary.circularSD(k));
+    summaryCell(k + 1, 17:18) = phaseSummaryCells( ...
+        co2PhaseSummary.anchoredMean(k), co2PhaseSummary.circularSD(k));
 
     if modelName == "MISO"
-        summaryCell(k + 1, 11:12) = meanSdFromRow(metricData.multipleCoh(k,:));
-        summaryCell(k + 1, 13:14) = meanSdFromRow(metricData.mapCoh(k,:));
-        summaryCell(k + 1, 15:16) = meanSdFromRow(metricData.co2Coh(k,:));
+        summaryCell(k + 1, 19:20) = meanSdFromRow(metricData.multipleCoh(k,:));
+        summaryCell(k + 1, 21:22) = meanSdFromRow(metricData.mapCoh(k,:));
+        summaryCell(k + 1, 23:24) = meanSdFromRow(metricData.co2Coh(k,:));
     else
-        summaryCell(k + 1, 11:12) = meanSdFromRow(metricData.mapCoh(k,:));
-        summaryCell(k + 1, 13:14) = meanSdFromRow(metricData.co2Coh(k,:));
+        summaryCell(k + 1, 19:20) = meanSdFromRow(metricData.mapCoh(k,:));
+        summaryCell(k + 1, 21:22) = meanSdFromRow(metricData.co2Coh(k,:));
     end
 end
+
+end
+
+
+function [mapPhaseSummary, co2PhaseSummary] = summarizeGroupPhaseMetrics( ...
+    f, metricData, phaseSettings)
+
+mapCoherenceMean = mean(metricData.mapCoh, 2, 'omitnan');
+co2CoherenceMean = mean(metricData.co2Coh, 2, 'omitnan');
+
+mapPhaseSummary = summarizeGroupPhaseByFrequency( ...
+    f, metricData.mapPhaseWrapped, mapCoherenceMean, phaseSettings, "map");
+co2PhaseSummary = summarizeGroupPhaseByFrequency( ...
+    f, metricData.co2PhaseWrapped, co2CoherenceMean, phaseSettings, "co2");
+
+end
+
+
+function phaseSummary = summarizeGroupPhaseByFrequency( ...
+    f, wrappedPhaseBySubject, coherenceMean, phaseSettings, pathwayName)
+
+phaseSettings = normalizePhaseSettings(phaseSettings);
+numFrequencies = numel(f);
+wrappedMean = NaN(numFrequencies, 1);
+circularSD = NaN(numFrequencies, 1);
+
+for frequencyIndex = 1:numFrequencies
+    values = wrappedPhaseBySubject(frequencyIndex,:);
+    values = values(~isnan(values));
+
+    if isempty(values)
+        continue
+    end
+
+    wrappedMean(frequencyIndex) = circularMeanPhase(values);
+
+    if numel(values) >= 2
+        circularSD(frequencyIndex) = circularStdPhase(values);
+    end
+end
+
+unwrappedMean = unwrapPhase( ...
+    wrappedMean, "phase", phaseSettings.unwrapMethod, coherenceMean, 0, ...
+    f, phaseSettings.localWeighted);
+[anchoredMean, anchorInfo] = anchorPhaseCurve( ...
+    unwrappedMean, f, coherenceMean, phaseSettings, pathwayName);
+
+phaseSummary = struct();
+phaseSummary.wrappedMean = wrappedMean;
+phaseSummary.unwrappedMean = unwrappedMean;
+phaseSummary.anchoredMean = anchoredMean;
+phaseSummary.circularSD = circularSD;
+phaseSummary.anchorInfo = anchorInfo;
+
+end
+
+
+function cells = phaseSummaryCells(phaseMean, phaseCircularSD)
+
+cells = {valueOrDash(phaseMean), valueOrDash(phaseCircularSD)};
 
 end
 
@@ -752,14 +858,22 @@ function headers = fullFrequencyHeaders(modelName)
 baseHeaders = [
     "Frequency_Hz"
     "N"
-    "MAP_Gain_MeanAcrossSubjects"
-    "MAP_Gain_SDAcrossSubjects"
-    "MAP_Phase_CircularMeanAcrossSubjects"
-    "MAP_Phase_CircularSDAcrossSubjects"
-    "CO2_Gain_MeanAcrossSubjects"
-    "CO2_Gain_SDAcrossSubjects"
-    "CO2_Phase_CircularMeanAcrossSubjects"
-    "CO2_Phase_CircularSDAcrossSubjects"
+    "MAP_Gain_MeanAcrossSubjects_pctCBV_per_mmHg"
+    "MAP_Gain_SDAcrossSubjects_pctCBV_per_mmHg"
+    "MAP_Phase_Wrapped_CircularMeanAcrossSubjects"
+    "MAP_Phase_Wrapped_CircularSDAcrossSubjects"
+    "MAP_Phase_Unwrapped_CircularMeanAcrossSubjects"
+    "MAP_Phase_Unwrapped_CircularSDAcrossSubjects"
+    "MAP_Phase_Anchored_CircularMeanAcrossSubjects"
+    "MAP_Phase_Anchored_CircularSDAcrossSubjects"
+    "CO2_Gain_MeanAcrossSubjects_pctCBV_per_mmHgCO2"
+    "CO2_Gain_SDAcrossSubjects_pctCBV_per_mmHgCO2"
+    "CO2_Phase_Wrapped_CircularMeanAcrossSubjects"
+    "CO2_Phase_Wrapped_CircularSDAcrossSubjects"
+    "CO2_Phase_Unwrapped_CircularMeanAcrossSubjects"
+    "CO2_Phase_Unwrapped_CircularSDAcrossSubjects"
+    "CO2_Phase_Anchored_CircularMeanAcrossSubjects"
+    "CO2_Phase_Anchored_CircularSDAcrossSubjects"
 ];
 
 if modelName == "MISO"
@@ -807,28 +921,6 @@ if numel(values) < 2
     metricSD = "-";
 else
     metricSD = std(values, 'omitnan');
-end
-
-cells = {metricMean, metricSD};
-
-end
-
-
-function cells = circularMeanSdFromRow(values)
-
-values = values(~isnan(values));
-
-if isempty(values)
-    cells = {"-", "-"};
-    return
-end
-
-metricMean = circularMeanPhase(values);
-
-if numel(values) < 2
-    metricSD = "-";
-else
-    metricSD = circularStdPhase(values);
 end
 
 cells = {metricMean, metricSD};
@@ -934,6 +1026,9 @@ function headers = displayComparisonHeaders(modelName)
 
 headers = comparisonVariableNames();
 
+headers{7} = 'MAP_Gain_Mean_pctCBV_per_mmHg';
+headers{9} = 'CO2_Gain_Mean_pctCBV_per_mmHgCO2';
+
 if modelName == "MISO"
     headers{12} = 'MAP|CO2_Coh_Mean';
     headers{13} = 'CO2|MAP_Coh_Mean';
@@ -956,10 +1051,18 @@ metricDefinitions = table( ...
         "MAP_Coh_Mean"
         "CO2_Coh_Mean"
         "Frequency_Hz"
-        "MAP_Phase_CircularMeanAcrossSubjects"
-        "MAP_Phase_CircularSDAcrossSubjects"
-        "CO2_Phase_CircularMeanAcrossSubjects"
-        "CO2_Phase_CircularSDAcrossSubjects"
+        "MAP_Phase_Wrapped_CircularMeanAcrossSubjects"
+        "MAP_Phase_Wrapped_CircularSDAcrossSubjects"
+        "MAP_Phase_Unwrapped_CircularMeanAcrossSubjects"
+        "MAP_Phase_Unwrapped_CircularSDAcrossSubjects"
+        "MAP_Phase_Anchored_CircularMeanAcrossSubjects"
+        "MAP_Phase_Anchored_CircularSDAcrossSubjects"
+        "CO2_Phase_Wrapped_CircularMeanAcrossSubjects"
+        "CO2_Phase_Wrapped_CircularSDAcrossSubjects"
+        "CO2_Phase_Unwrapped_CircularMeanAcrossSubjects"
+        "CO2_Phase_Unwrapped_CircularSDAcrossSubjects"
+        "CO2_Phase_Anchored_CircularMeanAcrossSubjects"
+        "CO2_Phase_Anchored_CircularSDAcrossSubjects"
         "IncludedInFullFrequency"
         "FrequencyVectorMismatch"
         "MCI_MeanAcrossSubjects"
@@ -970,18 +1073,26 @@ metricDefinitions = table( ...
         "NC_N"
     ], ...
     [
-        "Average MAP to CBV transfer-function gain within the frequency band for each subject."
-        "Average CO2 to CBV transfer-function gain within the frequency band for each subject."
+        "Average MAP to CBV transfer-function gain within the frequency band for each subject, after normalizing CBV to percent baseline. Units: %CBV/mmHg."
+        "Average CO2 to CBV transfer-function gain within the frequency band for each subject, after normalizing CBV to percent baseline. Units: %CBV/mmHg CO2."
         "For MISO, average multiple coherence within the band: CBV variability explained by MAP and CO2 together."
         "For MISO, MAP partial coherence given CO2."
         "For MISO, CO2 partial coherence given MAP."
         "For SISO, standard pairwise MAP coherence with CBV as the output."
         "For SISO, standard pairwise CO2 coherence with CBV as the output."
         "Frequency bin used for the full-frequency group summary sheets."
-        "Circular mean across subjects for MAP to CBV phase at each frequency bin."
-        "Circular standard deviation across subjects for MAP to CBV phase at each frequency bin."
-        "Circular mean across subjects for CO2 to CBV phase at each frequency bin."
-        "Circular standard deviation across subjects for CO2 to CBV phase at each frequency bin."
+        "Circular mean across subjects for MAP to CBV wrapped phase at each frequency bin."
+        "Circular standard deviation across subjects for MAP to CBV wrapped phase at each frequency bin."
+        "Circular mean across subjects for MAP to CBV phase at each frequency bin, then unwrapped across frequency for display."
+        "Circular standard deviation across subjects for MAP to CBV phase, plotted around the unwrapped circular-mean curve."
+        "Circular mean across subjects for MAP to CBV phase, unwrapped across frequency and globally anchor-shifted when anchoring is enabled."
+        "Circular standard deviation across subjects for MAP to CBV phase, plotted around the anchored circular-mean curve."
+        "Circular mean across subjects for CO2 to CBV wrapped phase at each frequency bin."
+        "Circular standard deviation across subjects for CO2 to CBV wrapped phase at each frequency bin."
+        "Circular mean across subjects for CO2 to CBV phase at each frequency bin, then unwrapped across frequency for display."
+        "Circular standard deviation across subjects for CO2 to CBV phase, plotted around the unwrapped circular-mean curve."
+        "Circular mean across subjects for CO2 to CBV phase, unwrapped across frequency and globally anchor-shifted when anchoring is enabled."
+        "Circular standard deviation across subjects for CO2 to CBV phase, plotted around the anchored circular-mean curve."
         "Shows whether a subject was included in the full-frequency group average."
         "Subject was not included in the full-frequency average because its frequency vector did not match the first included subject in that group/model."
         "Mean across subject-level band averages for the MCI group."

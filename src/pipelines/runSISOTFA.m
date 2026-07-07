@@ -2,7 +2,13 @@ function sisoResults = runSISOTFA( ...
     map, co2, cbv, fs, ...
     frequencyBandEdgesHz, frequencyBandNames, ...
     windowLengthSeconds, windowOverlap, ...
-    figureMode)
+    figureMode, phaseSettings)
+
+if nargin < 10
+    phaseSettings = defaultPhaseSettings();
+end
+
+phaseSettings = normalizePhaseSettings(phaseSettings);
 
 % runSISO
 %
@@ -80,6 +86,8 @@ else
 end
 
 welchInfo.coherenceThreshold = coherenceThreshold;
+welchInfo.phaseUnwrapMethod = phaseSettings.unwrapMethod;
+welchInfo.phaseSettings = phaseSettings;
 
 %% SISO transfer functions
 
@@ -111,11 +119,18 @@ co2CbvCoherence(co2CbvCoherence > 1) = 1;
 mapCbvCoherence(mapCbvCoherence < 0) = 0;
 co2CbvCoherence(co2CbvCoherence < 0) = 0;
 
+mapCbvPhaseData = computePhaseRepresentations( ...
+    H_mapcbv, f, mapCbvCoherence, coherenceThreshold, phaseSettings, "map");
+co2CbvPhaseData = computePhaseRepresentations( ...
+    H_co2cbv, f, co2CbvCoherence, coherenceThreshold, phaseSettings, "co2");
+
 if figureMode ~= "none"
     plotSISOResults( ...
         f, ...
         H_mapcbv, ...
         H_co2cbv, ...
+        mapCbvPhaseData, ...
+        co2CbvPhaseData, ...
         mapCbvCoherence, ...
         co2CbvCoherence, ...
         coherenceThreshold, ...
@@ -134,7 +149,8 @@ bandAverages = computeSISOBandAverages( ...
     co2CbvCoherence, ...
     coherenceThreshold, ...
     frequencyBandEdgesHz, ...
-    frequencyBandNames);
+    frequencyBandNames, ...
+    phaseSettings);
 
 %% Store results
 
@@ -148,16 +164,26 @@ sisoResults.cbvPower = S_cbvcbv;
 sisoResults.cbvPowerSmooth = S_cbvcbv_smoothed;
 
 sisoResults.mapCbvGain = abs(H_mapcbv);
-sisoResults.mapCbvPhase = angle(H_mapcbv);
+sisoResults.mapCbvPhaseWrapped = mapCbvPhaseData.wrapped;
+sisoResults.mapCbvPhaseUnwrapped = mapCbvPhaseData.unwrapped;
+sisoResults.mapCbvPhaseAnchored = mapCbvPhaseData.anchored;
+sisoResults.mapCbvPhase = mapCbvPhaseData.display;
 
 sisoResults.co2CbvGain = abs(H_co2cbv);
-sisoResults.co2CbvPhase = angle(H_co2cbv);
+sisoResults.co2CbvPhaseWrapped = co2CbvPhaseData.wrapped;
+sisoResults.co2CbvPhaseUnwrapped = co2CbvPhaseData.unwrapped;
+sisoResults.co2CbvPhaseAnchored = co2CbvPhaseData.anchored;
+sisoResults.co2CbvPhase = co2CbvPhaseData.display;
 
 sisoResults.mapCbvCoh = mapCbvCoherence;
 sisoResults.co2CbvCoh = co2CbvCoherence;
+sisoResults.mapCbvPhaseAnchorInfo = mapCbvPhaseData.anchorInfo;
+sisoResults.co2CbvPhaseAnchorInfo = co2CbvPhaseData.anchorInfo;
 
 sisoResults.bandAverages = bandAverages;
 sisoResults.welchInfo = welchInfo;
+sisoResults.phaseUnwrapMethod = phaseSettings.unwrapMethod;
+sisoResults.phaseSettings = phaseSettings;
 
 
 end

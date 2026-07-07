@@ -28,6 +28,16 @@ function processedSignalData = btbPreProcessing(signalData)
     signalData.vmin = signalData.vmin(validRows);
     signalData.vmax = signalData.vmax(validRows);
 
+    %% Normalize CBV to Percent Baseline
+
+    cbvBaselineCmPerSec = mean(signalData.cbv, 'omitnan');
+
+    if ~isfinite(cbvBaselineCmPerSec) || cbvBaselineCmPerSec == 0
+        error('CBV baseline is invalid, so CBV cannot be normalized.');
+    end
+
+    signalData.cbv = (signalData.cbv / cbvBaselineCmPerSec) * 100;
+
     %% Resample to 4 Hz
 
     fsTarget = 4;
@@ -50,6 +60,8 @@ function processedSignalData = btbPreProcessing(signalData)
     processedSignalData.map = mapDetrend;
     processedSignalData.co2 = co2Detrend;
     processedSignalData.cbv = cbvDetrend;
+    processedSignalData.cbvBaselineCmPerSec = cbvBaselineCmPerSec;
+    processedSignalData.cbvUnits = "% baseline CBV";
     processedSignalData.fs = fsTarget;
 
 end

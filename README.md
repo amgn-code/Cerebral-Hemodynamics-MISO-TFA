@@ -141,8 +141,18 @@ These complex transfer functions are then used to calculate gain and phase:
 
 ```matlab
 gain  = abs(H);
-phase = angle(H);
+phase = unwrapPhase(H, "complex", "standard");
 ```
+
+The phase unwrap method can be set to `"standard"` for MATLAB-style unwrap
+or `"fitted"` for the dynamic-programming/trend-guided branch convention
+used for exploratory visualization. It can also be set to `"coherence"` so
+coherence-passing frequencies define the unwrap branch while low-coherence
+frequencies are kept and assigned to the nearest equivalent branch for
+plotting and summaries. The `"model"` option uses a coherence-weighted
+circular delay model for CO2 -> CBV phase display; MAP -> CBV remains
+wrapped in this mode because MAP phase is interpreted as autoregulatory
+phase separation rather than a simple delay.
 
 
 ## Current Method
@@ -266,6 +276,9 @@ fs = signalData.fs;
 
 tfaResults = runTFA(BP, CO2, CBF, fs);
 ```
+
+For batch runs, set `analysisSettings.figureMode = "batchSummary"` to skip
+single-subject figures and save only the batch full-frequency summary plots.
 
 The output `tfaResults` is a MATLAB struct containing:
 

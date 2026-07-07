@@ -15,6 +15,8 @@ metadata = {
     "WindowLengthSeconds", runStatus.windowLengthSeconds;
     "WindowOverlap", runStatus.windowOverlap;
     "RunSISO", string(runStatus.runSISO);
+    "CBVBaseline_cm_per_s", runStatus.cbvBaselineCmPerSec;
+    "CBVUnits", string(runStatus.cbvUnits);
     "MISO_UsedDefaultCoherenceThreshold", statusValueToString(runStatus.misoUsedDefaultCoherenceThreshold);
     "SISO_UsedDefaultCoherenceThreshold", statusValueToString(runStatus.sisoUsedDefaultCoherenceThreshold);
     "MISO_CoherenceThreshold", runStatus.misoCoherenceThreshold;
