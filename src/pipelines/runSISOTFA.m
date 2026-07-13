@@ -2,10 +2,14 @@ function sisoResults = runSISOTFA( ...
     map, co2, cbv, fs, ...
     frequencyBandEdgesHz, frequencyBandNames, ...
     windowLengthSeconds, windowOverlap, ...
-    figureMode, phaseSettings)
+    figureMode, phaseSettings, plotSettings)
 
 if nargin < 10
     phaseSettings = defaultPhaseSettings();
+end
+
+if nargin < 11
+    plotSettings = defaultPlotSettings();
 end
 
 phaseSettings = normalizePhaseSettings(phaseSettings);
@@ -31,11 +35,8 @@ mapClean  = reshape(map,  1, []);
 co2Clean = reshape(co2, 1, []);
 cbvClean = reshape(cbv, 1, []);
 
-%% Remove means
-
-mapClean  = mapClean  - mean(mapClean,  'omitnan');
-co2Clean = co2Clean - mean(co2Clean, 'omitnan');
-cbvClean = cbvClean - mean(cbvClean, 'omitnan');
+% Mean removal, detrending, and optional high-pass filtering are handled in
+% btbPreProcessing so SISO and MISO use the same analysis signals.
 
 %% Welch settings
 
@@ -72,20 +73,12 @@ S_co2cbv_smoothed = conv(S_co2cbv, triangularSmoothingWindow, 'same');
 
 %% Coherence critical values
 
-numWelchWindows = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25];
-coherenceCriticalValues = [0.51, 0.41, 0.34, 0.29, 0.25, 0.22, 0.20, 0.18, 0.12, 0.09, 0.08];
-
-coherenceThresholdIndex = find(numWindows == numWelchWindows, 1);
-
-if isempty(coherenceThresholdIndex)
-    warning('numWindows does not match coherence lookup table. Using default threshold of 0.51.');
-    coherenceThreshold = 0.51;
-    welchInfo.usesDefaultCoherenceThreshold = true;
-else
-    coherenceThreshold = coherenceCriticalValues(coherenceThresholdIndex);
-end
+[coherenceThreshold, coherenceThresholdInfo] = ...
+    coherenceThresholdFromCarnet(numWindows);
 
 welchInfo.coherenceThreshold = coherenceThreshold;
+welchInfo.coherenceThresholdSource = coherenceThresholdInfo.source;
+welchInfo.usesDefaultCoherenceThreshold = false;
 welchInfo.phaseUnwrapMethod = phaseSettings.unwrapMethod;
 welchInfo.phaseSettings = phaseSettings;
 
@@ -113,11 +106,15 @@ co2CbvCoherence = abs(S_co2cbv_smoothed).^2 ./ ...
 mapCbvCoherence = real(mapCbvCoherence);
 co2CbvCoherence = real(co2CbvCoherence);
 
-mapCbvCoherence(mapCbvCoherence > 1) = 1;
-co2CbvCoherence(co2CbvCoherence > 1) = 1;
+coherenceDiagnostics = [
+    validateCoherenceValues(mapCbvCoherence, "SISO MAP-CBV")
+    validateCoherenceValues(co2CbvCoherence, "SISO CO2-CBV")
+];
 
-mapCbvCoherence(mapCbvCoherence < 0) = 0;
-co2CbvCoherence(co2CbvCoherence < 0) = 0;
+mapUnexplainedFraction = 1 - mapCbvCoherence;
+co2UnexplainedFraction = 1 - co2CbvCoherence;
+mapInputPowerNormalized = normalizePowerSpectrum(S_mapmap_smoothed);
+co2InputPowerNormalized = normalizePowerSpectrum(S_co2co2_smoothed);
 
 mapCbvPhaseData = computePhaseRepresentations( ...
     H_mapcbv, f, mapCbvCoherence, coherenceThreshold, phaseSettings, "map");
@@ -133,10 +130,15 @@ if figureMode ~= "none"
         co2CbvPhaseData, ...
         mapCbvCoherence, ...
         co2CbvCoherence, ...
+        mapUnexplainedFraction, ...
+        co2UnexplainedFraction, ...
+        mapInputPowerNormalized, ...
+        co2InputPowerNormalized, ...
         coherenceThreshold, ...
         frequencyBandEdgesHz, ...
         frequencyBandNames, ...
-        figureMode);
+        figureMode, ...
+        plotSettings);
 end
 
 %% Band Averages
@@ -177,6 +179,11 @@ sisoResults.co2CbvPhase = co2CbvPhaseData.display;
 
 sisoResults.mapCbvCoh = mapCbvCoherence;
 sisoResults.co2CbvCoh = co2CbvCoherence;
+sisoResults.mapUnexplainedFraction = mapUnexplainedFraction;
+sisoResults.co2UnexplainedFraction = co2UnexplainedFraction;
+sisoResults.mapInputPowerNormalized = mapInputPowerNormalized;
+sisoResults.co2InputPowerNormalized = co2InputPowerNormalized;
+sisoResults.coherenceDiagnostics = coherenceDiagnostics;
 sisoResults.mapCbvPhaseAnchorInfo = mapCbvPhaseData.anchorInfo;
 sisoResults.co2CbvPhaseAnchorInfo = co2CbvPhaseData.anchorInfo;
 
@@ -184,6 +191,11 @@ sisoResults.bandAverages = bandAverages;
 sisoResults.welchInfo = welchInfo;
 sisoResults.phaseUnwrapMethod = phaseSettings.unwrapMethod;
 sisoResults.phaseSettings = phaseSettings;
+
+% Keep the spectral solve unchanged, then expose only the configured
+% analysis range to plotting, exports, and batch aggregation.
+sisoResults = limitResultsToFrequencyRange( ...
+    sisoResults, plotSettings.frequencyLimitsHz);
 
 
 end

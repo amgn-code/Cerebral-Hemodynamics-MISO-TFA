@@ -2,7 +2,7 @@ function misoTFAResults = runMISOTFA( ...
     map, co2, cbv, fs, ...
     frequencyBandEdgesHz, frequencyBandNames, ...
     windowLengthSeconds, windowOverlap, ...
-    figureMode, phaseSettings)
+    figureMode, phaseSettings, plotSettings, regularizationSettings)
 %
 %Assuming Trecord = 300s and fs = 50Hz
 %
@@ -10,7 +10,17 @@ if nargin < 10
     phaseSettings = defaultPhaseSettings();
 end
 
+if nargin < 11
+    plotSettings = defaultPlotSettings();
+end
+
+if nargin < 12
+    regularizationSettings = defaultMisoRegularizationSettings();
+end
+
 phaseSettings = normalizePhaseSettings(phaseSettings);
+regularizationSettings = normalizeMisoRegularizationSettings( ...
+    regularizationSettings);
 
 mapClean = reshape(map, 1, []);
 co2Clean = reshape(co2, 1, []);
@@ -74,19 +84,12 @@ S_cbvcbv_smoothed = conv(S_cbvcbv, triangularSmoothingWindow, 'same');
 
 %% Coherence Critical Values
 
-numWelchWindows = [3, 4, 5, 6, 7, 8, 9,10, 15, 20, 25];
-coherenceCriticalValues = [0.51, 0.41, 0.34, 0.29, 0.25, 0.22, 0.20, 0.18, 0.12, 0.09, 0.08];
-coherenceThresholdIndex = find(numWindows == numWelchWindows, 1);
-
-if isempty(coherenceThresholdIndex)
-    warning('numWindows does not match coherence lookup table. Using default threshold of 0.51.');
-    coherenceThreshold = 0.51;
-    welchInfo.usesDefaultCoherenceThreshold = true;
-else
-    coherenceThreshold = coherenceCriticalValues(coherenceThresholdIndex);
-end
+[coherenceThreshold, coherenceThresholdInfo] = ...
+    coherenceThresholdFromCarnet(numWindows);
 
 welchInfo.coherenceThreshold = coherenceThreshold;
+welchInfo.coherenceThresholdSource = coherenceThresholdInfo.source;
+welchInfo.usesDefaultCoherenceThreshold = false;
 welchInfo.phaseUnwrapMethod = phaseSettings.unwrapMethod;
 welchInfo.phaseSettings = phaseSettings;
 
@@ -95,8 +98,11 @@ welchInfo.phaseSettings = phaseSettings;
 H_mapcbv = NaN(size(f));
 H_co2cbv = NaN(size(f));
 multipleCoherence = NaN(size(f));
+unexplainedFraction = NaN(size(f));
+residualPower = NaN(size(f));
 
 conditionNumber = NaN(size(f));
+regularizationLambda = NaN(size(f));
 
 for k = 1:length(f)
 
@@ -108,16 +114,35 @@ for k = 1:length(f)
 
     conditionNumber(k) = cond(S_xx);
 
-    %H = inv(S_xx)*S_xy;
-    %Better Formulation to reduce Noise
-    Eps = 1e-6 * max(diag(S_xx)); % Dynamic safety threshold based on peak power
-    H = (S_xx + Eps*eye(2)) \ S_xy; % Robust, regularized matrix division
+    inputPowerScale = max(real(diag(S_xx)));
+    if ~isfinite(inputPowerScale) || inputPowerScale <= 0
+        inputPowerScale = eps;
+    end
+
+    conditionMultiplier = 1;
+    if regularizationSettings.conditionAware && ...
+            isfinite(conditionNumber(k)) && ...
+            conditionNumber(k) > regularizationSettings.conditionThreshold
+        conditionMultiplier = conditionNumber(k) / ...
+            regularizationSettings.conditionThreshold;
+        conditionMultiplier = min( ...
+            conditionMultiplier, ...
+            regularizationSettings.maxConditionMultiplier);
+    end
+
+    regularizationLambda(k) = ...
+        regularizationSettings.baseLambdaScale * ...
+        inputPowerScale * conditionMultiplier;
+    H = (S_xx + regularizationLambda(k)*eye(2)) \ S_xy;
 
     H_mapcbv(k) = H(1,1);
     H_co2cbv(k) = H(2,1);
 
     % Multiple Coherence from Peng
-    multipleCoherence(k) = real(H'*S_xx*H) / (S_cbvcbv_smoothed(k));
+    cbvPowerAtFrequency = real(S_cbvcbv_smoothed(k));
+    multipleCoherence(k) = real(H'*S_xx*H) / cbvPowerAtFrequency;
+    unexplainedFraction(k) = 1 - multipleCoherence(k);
+    residualPower(k) = cbvPowerAtFrequency * unexplainedFraction(k);
 
 
 end
@@ -172,6 +197,15 @@ co2CbvCoherence = abs(S_co2cbv_smoothed).^2 ./ ...
 inputInputCoherence = abs(S_mapco2_smoothed).^2 ./ ...
     real(S_mapmap_smoothed .* S_co2co2_smoothed);
 
+coherenceDiagnostics = [
+    validateCoherenceValues(multipleCoherence, "MISO multiple")
+    validateCoherenceValues(partialCohMapCbvGivenCo2, "MISO MAP partial")
+    validateCoherenceValues(partialCohCo2CbvGivenMap, "MISO CO2 partial")
+    validateCoherenceValues(mapCbvCoherence, "MISO MAP-CBV pairwise")
+    validateCoherenceValues(co2CbvCoherence, "MISO CO2-CBV pairwise")
+    validateCoherenceValues(inputInputCoherence, "MISO MAP-CO2 input")
+];
+
 inputInputPhaseData = computePhaseRepresentations( ...
     S_mapco2_smoothed, f, inputInputCoherence, coherenceThreshold, ...
     phaseSettings, "input");
@@ -198,10 +232,13 @@ if figureMode ~= "none"
         inputInputCoherence, ...
         inputInputPhaseData, ...
         conditionNumber, ...
+        regularizationLambda, ...
+        unexplainedFraction, ...
         coherenceThreshold, ...
         frequencyBandEdgesHz, ...
         frequencyBandNames, ...
-        figureMode);
+        figureMode, ...
+        plotSettings);
 
 end
 
@@ -245,6 +282,8 @@ misoTFAResults.co2CbvPhase = co2CbvPhaseData.display;
 misoTFAResults.multipleCoh = multipleCoherence;
 misoTFAResults.partialCohMap = partialCohMapCbvGivenCo2;
 misoTFAResults.partialCohCo2 = partialCohCo2CbvGivenMap;
+misoTFAResults.unexplainedFraction = unexplainedFraction;
+misoTFAResults.residualPower = residualPower;
 
 misoTFAResults.inputInputCoh = inputInputCoherence;
 misoTFAResults.inputInputPhaseWrapped = inputInputPhaseData.wrapped;
@@ -255,10 +294,18 @@ misoTFAResults.mapCbvPhaseAnchorInfo = mapCbvPhaseData.anchorInfo;
 misoTFAResults.co2CbvPhaseAnchorInfo = co2CbvPhaseData.anchorInfo;
 
 misoTFAResults.conditionNumber = conditionNumber;
+misoTFAResults.regularizationLambda = regularizationLambda;
+misoTFAResults.regularizationSettings = regularizationSettings;
+misoTFAResults.coherenceDiagnostics = coherenceDiagnostics;
 
 misoTFAResults.bandAverages = bandAverages;
 misoTFAResults.welchInfo = welchInfo;
 misoTFAResults.phaseUnwrapMethod = phaseSettings.unwrapMethod;
 misoTFAResults.phaseSettings = phaseSettings;
+
+% Keep the spectral solve unchanged, then expose only the configured
+% analysis range to plotting, exports, and batch aggregation.
+misoTFAResults = limitResultsToFrequencyRange( ...
+    misoTFAResults, plotSettings.frequencyLimitsHz);
 
 end

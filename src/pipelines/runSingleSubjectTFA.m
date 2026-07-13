@@ -4,6 +4,8 @@ function subjectResults = runSingleSubjectTFA(subjectInfo, analysisSettings, out
 % Runs the full TFA workflow for one subject:
 % load data, preprocess, check Welch length, run MISO/SISO, save outputs.
 
+analysisSettings = normalizeAnalysisFrequencyRange(analysisSettings);
+
 try
     signalData = loadData(subjectInfo.sourceFile);
 catch errorInfo
@@ -12,7 +14,15 @@ catch errorInfo
 end
 
 try
-    preprocessedSignalData = btbPreProcessing(signalData);
+    if ~isfield(analysisSettings, 'preprocessing')
+        analysisSettings.preprocessing = defaultPreprocessingSettings();
+    else
+        analysisSettings.preprocessing = normalizePreprocessingSettings( ...
+            analysisSettings.preprocessing);
+    end
+
+    preprocessedSignalData = btbPreProcessing( ...
+        signalData, analysisSettings.preprocessing);
 catch errorInfo
     error('TFA:PreprocessingFailed', ...
         'PreprocessingFailed: %s', errorInfo.message);
@@ -54,10 +64,22 @@ else
     analysisSettings.phase = normalizePhaseSettings(analysisSettings.phase);
 end
 
-subjectFigureMode = analysisSettings.figureMode;
+if ~isfield(analysisSettings, 'plot')
+    analysisSettings.plot = defaultPlotSettings();
+end
 
-if subjectFigureMode == "batchSummary"
-    subjectFigureMode = "none";
+if ~isfield(analysisSettings, 'misoRegularization')
+    analysisSettings.misoRegularization = defaultMisoRegularizationSettings();
+else
+    analysisSettings.misoRegularization = normalizeMisoRegularizationSettings( ...
+        analysisSettings.misoRegularization);
+end
+
+makeSubjectFigures = shouldMakeSubjectFigures(outputSettings);
+subjectFigureMode = "none";
+
+if makeSubjectFigures
+    subjectFigureMode = "summary";
 end
 
 canRunTFA = ~preflightWelchInfo.isTooShort && ...
@@ -82,7 +104,20 @@ if ~canRunTFA
 end
 
 if canRunTFA && subjectFigureMode ~= "none"
-    visualizeTimeSeries(t, map, co2, cbv)
+    if isfield(preprocessedSignalData, 'mapPlot')
+        visualizeTimeSeries( ...
+            t, ...
+            preprocessedSignalData.mapPlot, ...
+            preprocessedSignalData.co2Plot, ...
+            preprocessedSignalData.cbvPlot, ...
+            preprocessedSignalData.cbvPlotUnits, ...
+            analysisSettings.plot)
+    else
+        visualizeTimeSeries(t, map, co2, cbv, cbvUnits, analysisSettings.plot)
+    end
+
+    visualizeProcessedTimeSeries( ...
+        t, map, co2, cbv, cbvUnits, analysisSettings.plot)
 end
 
 if canRunTFA
@@ -94,7 +129,9 @@ if canRunTFA
             analysisSettings.windowLengthSeconds, ...
             analysisSettings.windowOverlap, ...
             subjectFigureMode, ...
-            analysisSettings.phase);
+            analysisSettings.phase, ...
+            analysisSettings.plot, ...
+            analysisSettings.misoRegularization);
     catch errorInfo
         error('TFA:MISOFailed', ...
             'MISOFailed: %s', errorInfo.message);
@@ -107,8 +144,19 @@ if canRunTFA
         tfaResults.welchInfo.usesDefaultCoherenceThreshold;
     runStatus.misoCoherenceThreshold = ...
         tfaResults.welchInfo.coherenceThreshold;
+    runStatus.misoCoherenceThresholdSource = ...
+        string(tfaResults.welchInfo.coherenceThresholdSource);
     tfaResults.welchInfo.cbvBaselineCmPerSec = cbvBaselineCmPerSec;
     tfaResults.welchInfo.cbvUnits = cbvUnits;
+
+    if subjectFigureMode ~= "none"
+        visualizePowerSpectra( ...
+            tfaResults.f, ...
+            tfaResults.mapPowerSmooth, ...
+            tfaResults.co2PowerSmooth, ...
+            tfaResults.cbvPowerSmooth, ...
+            analysisSettings.plot);
+    end
 
     if analysisSettings.runSISO
         try
@@ -119,7 +167,8 @@ if canRunTFA
                 analysisSettings.windowLengthSeconds, ...
                 analysisSettings.windowOverlap, ...
                 subjectFigureMode, ...
-                analysisSettings.phase);
+                analysisSettings.phase, ...
+                analysisSettings.plot);
         catch errorInfo
             error('TFA:SISOFailed', ...
                 'SISOFailed: %s', errorInfo.message);
@@ -129,6 +178,8 @@ if canRunTFA
             sisoResults.welchInfo.usesDefaultCoherenceThreshold;
         runStatus.sisoCoherenceThreshold = ...
             sisoResults.welchInfo.coherenceThreshold;
+        runStatus.sisoCoherenceThresholdSource = ...
+            string(sisoResults.welchInfo.coherenceThresholdSource);
         sisoResults.welchInfo.cbvBaselineCmPerSec = cbvBaselineCmPerSec;
         sisoResults.welchInfo.cbvUnits = cbvUnits;
     end
@@ -146,6 +197,7 @@ if outputSettings.saveSingleSubjectExcel
         outputSettings.saveFullFrequencyData;
     subjectOutputSettings.phaseUnwrapMethod = ...
         analysisSettings.phase.unwrapMethod;
+    subjectOutputSettings.preprocessing = analysisSettings.preprocessing;
 
     try
         saveSubjectOutputs( ...
@@ -157,7 +209,7 @@ if outputSettings.saveSingleSubjectExcel
     end
 end
 
-if canRunTFA && outputSettings.saveFigures && subjectFigureMode ~= "none"
+if canRunTFA && makeSubjectFigures
     try
         saveSubjectFigures(outputFolder, subjectFigureMode);
     catch errorInfo
@@ -171,5 +223,30 @@ subjectResults.runStatus = runStatus;
 subjectResults.tfaResults = tfaResults;
 subjectResults.sisoResults = sisoResults;
 subjectResults.outputFolder = outputFolder;
+
+end
+
+
+function makeFigures = shouldMakeSubjectFigures(outputSettings)
+
+if isfield(outputSettings, 'saveIndividualSubjectFigures')
+    makeFigures = logical(outputSettings.saveIndividualSubjectFigures);
+    return
+end
+
+if ~isfield(outputSettings, 'numIndividualPlotsPerGroup')
+    makeFigures = false;
+    return
+end
+
+plotCount = outputSettings.numIndividualPlotsPerGroup;
+
+if isnumeric(plotCount)
+    makeFigures = plotCount > 0;
+else
+    plotCount = lower(string(plotCount));
+    makeFigures = plotCount == "all" || ...
+        (plotCount ~= "none" && str2double(plotCount) > 0);
+end
 
 end
