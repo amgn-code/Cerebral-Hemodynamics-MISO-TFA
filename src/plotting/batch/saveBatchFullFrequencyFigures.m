@@ -1,394 +1,56 @@
 function savedFigureFiles = saveBatchFullFrequencyFigures( ...
-    fullFrequencyTables, outputFolder, phaseUnwrapMethod)
-% saveBatchFullFrequencyFigures
-%
-% Saves group-average full-frequency transfer-function plots.
+    groupResults, outputFolder, analysisSettings)
+% saveBatchFullFrequencyFigures Plot and save selected group-average figures.
 
-if nargin < 3
-    phaseUnwrapMethod = "standard";
-end
-
-savedFigureFiles = strings(0,1);
-
-if isempty(fieldnames(fullFrequencyTables))
-    return
-end
-
-figureOutputFolder = fullfile(outputFolder, "Batch_Figures");
-
-if ~exist(figureOutputFolder, "dir")
-    mkdir(figureOutputFolder);
-end
-
-sheetNames = string(fieldnames(fullFrequencyTables));
-
-for k = 1:numel(sheetNames)
-
-    sheetName = sheetNames(k);
-    summaryCell = fullFrequencyTables.(sheetName);
-
-    if isempty(summaryCell)
-        continue
+    if isempty(fieldnames(groupResults))
+        savedFigureFiles = strings(0, 1);
+        return
     end
 
-    [modelName, groupName] = modelGroupFromFullFrequencyName(sheetName);
+    figureOutputFolder = fullfile(outputFolder, "Batch_Figures");
 
-    if modelName == "MISO"
-        figureFiles = saveMISOPathwayFigures( ...
-            summaryCell, groupName, figureOutputFolder, phaseUnwrapMethod);
-    else
-        figureFiles = saveSISOPathwayFigures( ...
-            summaryCell, groupName, figureOutputFolder, phaseUnwrapMethod);
+    if ~exist(figureOutputFolder, "dir")
+        mkdir(figureOutputFolder);
     end
 
-    savedFigureFiles = [savedFigureFiles; figureFiles];
-
-end
-
-end
-
-
-function [modelName, groupName] = modelGroupFromFullFrequencyName(sheetName)
-
-parts = split(sheetName, "_");
-modelName = parts(1);
-groupName = parts(2);
-
-end
-
-
-function figureFiles = saveMISOPathwayFigures( ...
-    summaryCell, groupName, figureOutputFolder, phaseUnwrapMethod)
-
-f = getColumn(summaryCell, "Frequency_Hz");
-multipleCohMean = getColumn(summaryCell, "Multiple_Coh_MeanAcrossSubjects");
-multipleCohSD = getColumn(summaryCell, "Multiple_Coh_SDAcrossSubjects");
-
-figureFiles = strings(0,1);
-
-figureFiles(end + 1, 1) = savePathwayFigure( ...
-    f, ...
-    getColumn(summaryCell, "MAP_Gain_MeanAcrossSubjects_pctCBV_per_mmHg"), ...
-    getColumn(summaryCell, "MAP_Gain_SDAcrossSubjects_pctCBV_per_mmHg"), ...
-    getColumn(summaryCell, "MAP_Phase_Wrapped_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Wrapped_CircularSDAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Anchored_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Anchored_CircularSDAcrossSubjects"), ...
-    multipleCohMean, multipleCohSD, ...
-    getColumn(summaryCell, "MAP|CO2_Coh_MeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP|CO2_Coh_SDAcrossSubjects"), ...
-    "MISO", groupName, "MAP", "MAP|CO2 coherence", figureOutputFolder, ...
-    phaseUnwrapMethod);
-
-figureFiles(end + 1, 1) = savePathwayFigure( ...
-    f, ...
-    getColumn(summaryCell, "CO2_Gain_MeanAcrossSubjects_pctCBV_per_mmHgCO2"), ...
-    getColumn(summaryCell, "CO2_Gain_SDAcrossSubjects_pctCBV_per_mmHgCO2"), ...
-    getColumn(summaryCell, "CO2_Phase_Wrapped_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Wrapped_CircularSDAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Anchored_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Anchored_CircularSDAcrossSubjects"), ...
-    multipleCohMean, multipleCohSD, ...
-    getColumn(summaryCell, "CO2|MAP_Coh_MeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2|MAP_Coh_SDAcrossSubjects"), ...
-    "MISO", groupName, "CO2", "CO2|MAP coherence", figureOutputFolder, ...
-    phaseUnwrapMethod);
-
-end
-
-
-function figureFiles = saveSISOPathwayFigures( ...
-    summaryCell, groupName, figureOutputFolder, phaseUnwrapMethod)
-
-f = getColumn(summaryCell, "Frequency_Hz");
-figureFiles = strings(0,1);
-
-figureFiles(end + 1, 1) = savePathwayFigure( ...
-    f, ...
-    getColumn(summaryCell, "MAP_Gain_MeanAcrossSubjects_pctCBV_per_mmHg"), ...
-    getColumn(summaryCell, "MAP_Gain_SDAcrossSubjects_pctCBV_per_mmHg"), ...
-    getColumn(summaryCell, "MAP_Phase_Wrapped_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Wrapped_CircularSDAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Anchored_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Phase_Anchored_CircularSDAcrossSubjects"), ...
-    [], [], ...
-    getColumn(summaryCell, "MAP_Coh_MeanAcrossSubjects"), ...
-    getColumn(summaryCell, "MAP_Coh_SDAcrossSubjects"), ...
-    "SISO", groupName, "MAP", "MAP coherence", figureOutputFolder, ...
-    phaseUnwrapMethod);
-
-figureFiles(end + 1, 1) = savePathwayFigure( ...
-    f, ...
-    getColumn(summaryCell, "CO2_Gain_MeanAcrossSubjects_pctCBV_per_mmHgCO2"), ...
-    getColumn(summaryCell, "CO2_Gain_SDAcrossSubjects_pctCBV_per_mmHgCO2"), ...
-    getColumn(summaryCell, "CO2_Phase_Wrapped_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Wrapped_CircularSDAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Anchored_CircularMeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Phase_Anchored_CircularSDAcrossSubjects"), ...
-    [], [], ...
-    getColumn(summaryCell, "CO2_Coh_MeanAcrossSubjects"), ...
-    getColumn(summaryCell, "CO2_Coh_SDAcrossSubjects"), ...
-    "SISO", groupName, "CO2", "CO2 coherence", figureOutputFolder, ...
-    phaseUnwrapMethod);
-
-end
-
-
-function figureFile = savePathwayFigure( ...
-    f, gainMean, gainSD, phaseWrappedMean, phaseWrappedSD, ...
-    phaseDisplayMean, phaseDisplaySD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD, ...
-    modelName, groupName, pathwayName, pathwayCohLabel, figureOutputFolder, ...
-    phaseUnwrapMethod)
-
-figureName = modelName + "_" + groupName + "_" + pathwayName + ...
-    "_AverageTransferFunction";
-figureTitle = modelName + " " + groupName + " " + pathwayName + ...
-    " Average Transfer Function";
-
-[f, gainMean, gainSD, phaseWrappedMean, phaseWrappedSD, ...
-    phaseDisplayMean, phaseDisplaySD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD] = ...
-    keepDisplayFrequencyRange( ...
-        f, gainMean, gainSD, phaseWrappedMean, phaseWrappedSD, ...
-        phaseDisplayMean, phaseDisplaySD, ...
-        multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD);
-
-fig = figure('Name', figureName, 'NumberTitle', 'off');
-plotLayout = tiledlayout(fig, 1, 3);
-
-nexttile(plotLayout)
-plotPathwayPanel( ...
-    f, gainMean, gainSD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD, ...
-    pathwayName + " gain", "Gain (%CBV/mmHg)", ...
-    pathwayCohLabel)
-
-nexttile(plotLayout)
-plotPathwayPanel( ...
-    f, phaseWrappedMean, phaseWrappedSD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD, ...
-    pathwayName + " wrapped phase", "Wrapped phase (rad)", ...
-    pathwayCohLabel, [-pi pi])
-
-nexttile(plotLayout)
-plotPathwayPanel( ...
-    f, phaseDisplayMean, phaseDisplaySD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD, ...
-    pathwayName + " unwrapped phase (" + string(phaseUnwrapMethod) + ")", ...
-    "Unwrapped phase (rad)", ...
-    pathwayCohLabel)
-
-title(plotLayout, figureTitle)
-
-figureFileName = lower(figureName) + ".png";
-figureFileName = regexprep(figureFileName, '[^a-z0-9.]+', '_');
-figureFile = string(fullfile(figureOutputFolder, figureFileName));
-
-hideAxesToolbars(fig)
-waitForFigureRender(fig)
-exportgraphics(fig, figureFile, "Resolution", 150);
-close(fig)
-
-end
-
-
-function plotPathwayPanel( ...
-    f, transferMean, transferSD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD, ...
-    transferLabel, yLabelText, pathwayCohLabel, leftLimits)
-
-if nargin < 11
-    leftLimits = [];
-end
-
-yyaxis left
-hold on
-plotShadedBand(f, transferMean, transferSD, [0 0.4470 0.7410]);
-hTransfer = stem(f, transferMean, 'filled', ...
-    'Color', [0 0.4470 0.7410], ...
-    'MarkerSize', 3, ...
-    'LineWidth', 0.7);
-ylabel(yLabelText)
-xlabel('Frequency (Hz)')
-title(transferLabel)
-grid on
-xlim([0 0.5])
-
-leftMin = min([0; transferMean(:) - transferSD(:)], [], 'omitnan');
-leftMax = max([0; transferMean(:) + transferSD(:)], [], 'omitnan');
-[leftMin, leftMax] = widenLimitsIfNeeded(leftMin, leftMax);
-
-if ~isempty(leftLimits)
-    ylim(leftLimits)
-    leftMin = leftLimits(1);
-    leftMax = leftLimits(2);
-end
-
-yyaxis right
-hold on
-coherenceHandles = plotCoherenceOverlays( ...
-    f, multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD);
-ylabel('Coherence')
-xlim([0 0.5])
-
-rightMax = maxCoherenceLimit( ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD);
-alignRightYAxisZero(leftMin, leftMax, rightMax)
-
-legendHandles = [hTransfer, coherenceHandles];
-
-if isempty(multipleCohMean)
-    legendLabels = ["Transfer function", pathwayCohLabel];
-else
-    legendLabels = ["Transfer function", "Multiple coherence", pathwayCohLabel];
-end
-
-legend(legendHandles, cellstr(legendLabels), 'Location', 'best')
-
-end
-
-
-function coherenceHandles = plotCoherenceOverlays( ...
-    f, multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD)
-
-coherenceHandles = gobjects(0);
-
-if ~isempty(multipleCohMean)
-    plotShadedBand(f, multipleCohMean, multipleCohSD, [0.4940 0.1840 0.5560]);
-    coherenceHandles(end + 1) = plot(f, multipleCohMean, ...
-        'Color', [0.4940 0.1840 0.5560], ...
-        'LineWidth', 1.0);
-end
-
-plotShadedBand(f, pathwayCohMean, pathwayCohSD, [0.9290 0.6940 0.1250]);
-coherenceHandles(end + 1) = plot(f, pathwayCohMean, ...
-    'Color', [0.9290 0.6940 0.1250], ...
-    'LineStyle', '--', ...
-    'LineWidth', 1.0);
-
-end
-
-
-function plotShadedBand(f, yMean, ySD, colorValue)
-
-ySD(isnan(ySD)) = 0;
-lowerBound = yMean - ySD;
-upperBound = yMean + ySD;
-
-fill([f; flipud(f)], [lowerBound; flipud(upperBound)], colorValue, ...
-    'FaceAlpha', 0.15, ...
-    'EdgeColor', 'none', ...
-    'HandleVisibility', 'off');
-
-end
-
-
-function rightMax = maxCoherenceLimit( ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD)
-
-coherenceValues = pathwayCohMean(:) + pathwayCohSD(:);
-
-if ~isempty(multipleCohMean)
-    coherenceValues = [
-        coherenceValues
-        multipleCohMean(:) + multipleCohSD(:)
-    ];
-end
-
-rightMax = max([1; coherenceValues], [], 'omitnan');
-rightMax = 1.05 * rightMax;
-
-end
-
-
-function [f, gainMean, gainSD, phaseWrappedMean, phaseWrappedSD, ...
-    phaseUnwrappedMean, phaseUnwrappedSD, ...
-    multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD] = ...
-    keepDisplayFrequencyRange( ...
-        f, gainMean, gainSD, phaseWrappedMean, phaseWrappedSD, ...
-        phaseUnwrappedMean, phaseUnwrappedSD, ...
-        multipleCohMean, multipleCohSD, pathwayCohMean, pathwayCohSD)
-
-freqIndex = f >= 0 & f <= 0.5;
-
-f = f(freqIndex);
-gainMean = gainMean(freqIndex);
-gainSD = gainSD(freqIndex);
-phaseWrappedMean = phaseWrappedMean(freqIndex);
-phaseWrappedSD = phaseWrappedSD(freqIndex);
-phaseUnwrappedMean = phaseUnwrappedMean(freqIndex);
-phaseUnwrappedSD = phaseUnwrappedSD(freqIndex);
-pathwayCohMean = pathwayCohMean(freqIndex);
-pathwayCohSD = pathwayCohSD(freqIndex);
-
-if ~isempty(multipleCohMean)
-    multipleCohMean = multipleCohMean(freqIndex);
-    multipleCohSD = multipleCohSD(freqIndex);
-end
-
-end
-
-
-function values = getColumn(summaryCell, columnName)
-
-headers = string(summaryCell(1,:));
-columnIndex = find(headers == columnName, 1);
-
-if isempty(columnIndex)
-    error("Missing full-frequency column: %s", columnName);
-end
-
-values = summaryCell(2:end, columnIndex);
-values = cellfun(@numericValueOrNaN, values);
-
-end
-
-
-function value = numericValueOrNaN(cellValue)
-
-if isnumeric(cellValue)
-    value = cellValue;
-elseif ismissing(string(cellValue)) || string(cellValue) == "-"
-    value = NaN;
-else
-    value = str2double(string(cellValue));
-end
-
-end
-
-
-function [lowerLimit, upperLimit] = widenLimitsIfNeeded(lowerLimit, upperLimit)
-
-if isnan(lowerLimit) || isnan(upperLimit)
-    lowerLimit = -1;
-    upperLimit = 1;
-elseif lowerLimit == upperLimit
-    lowerLimit = lowerLimit - 1;
-    upperLimit = upperLimit + 1;
-end
-
-end
-
-
-function hideAxesToolbars(fig)
-
-axesHandles = findall(fig, 'Type', 'axes');
-
-for k = 1:numel(axesHandles)
-    if isprop(axesHandles(k), 'Toolbar')
-        axesHandles(k).Toolbar.Visible = 'off';
+    groupNames = string(fieldnames(groupResults));
+    maxFiguresPerGroup = 9;
+    savedFigureFiles = strings( ...
+        maxFiguresPerGroup*numel(groupNames), 1);
+    numSavedFigures = 0;
+
+    for groupIndex = 1:numel(groupNames)
+        groupName = groupNames(groupIndex);
+        figureNames = plotGroupResults( ...
+            groupResults.(groupName), groupName, analysisSettings);
+
+        for figureIndex = 1:numel(figureNames)
+            figureName = figureNames(figureIndex);
+            fig = findobj( ...
+                findall(0, "Type", "figure"), ...
+                "Type", "figure", ...
+                "Name", char(figureName));
+
+            if isempty(fig)
+                continue
+            end
+
+            fig = fig(1);
+            figureFileName = lower(figureName);
+            figureFileName = regexprep(figureFileName, '[^a-z0-9]+', '_');
+            figureFileName = regexprep(figureFileName, '^_|_$', '');
+            figurePath = fullfile( ...
+                figureOutputFolder, figureFileName + ".png");
+
+            drawnow
+            exportgraphics(fig, figurePath, "Resolution", 150);
+            close(fig)
+
+            numSavedFigures = numSavedFigures + 1;
+            savedFigureFiles(numSavedFigures) = string(figurePath);
+        end
     end
-end
 
-end
-
-
-function waitForFigureRender(fig)
-
-figure(fig)
-drawnow
-pause(0.5)
-drawnow
+    savedFigureFiles = savedFigureFiles(1:numSavedFigures);
 
 end

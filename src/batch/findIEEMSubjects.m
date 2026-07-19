@@ -1,47 +1,22 @@
-function subjectList = findIEEMSubjects( ...
-    dataFolder, groupsToRun, batchRunMode, singleSubjectID, ~)
-% findIEEMSubjects
+function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
+% findIEEMSubjects Find subject Excel files in the selected group folders.
 %
 % Finds IEEM subject Excel files from folders like:
 %   dataFolder/MCI/528_baseline.xlsx
 %   dataFolder/NC/101_baseline.xlsx
+%   dataFolder/LC/1054_baseline.xlsx
 
-if nargin < 2 || isempty(groupsToRun)
-    groupsToRun = ["MCI"; "NC"];
+groupsToRun = upper(string(groupsToRun));
+groupsToRun = groupsToRun(:);
+
+if isempty(groupsToRun) || any(strlength(groupsToRun) == 0)
+    error("groupsToRun must contain at least one group folder name.");
 end
 
-if nargin < 3 || isempty(batchRunMode)
-    batchRunMode = "all";
-end
-
-if nargin < 4
-    singleSubjectID = "";
-end
-
-groupsToRun = upper(string(groupsToRun(:)));
-batchRunMode = lower(string(batchRunMode));
-singleSubjectID = string(singleSubjectID);
-
-validGroups = ["MCI"; "NC"];
-validRunModes = ["single"; "firstn"; "all"];
-
-if ~all(ismember(groupsToRun, validGroups))
-    error('groupsToRun must contain "MCI", "NC", or both.');
-end
-
-if ~any(batchRunMode == validRunModes)
-    error('batchRunMode must be "single", "firstN", or "all".');
-end
-
-subjectList = table( ...
-    strings(0,1), ...
-    strings(0,1), ...
-    strings(0,1), ...
-    strings(0,1), ...
-    'VariableNames', {'SubjectID', 'Group', 'Session', 'SourceFile'});
+groupFileLists = cell(numel(groupsToRun), 1);
+maximumNumSubjects = 0;
 
 for g = 1:numel(groupsToRun)
-
     groupName = groupsToRun(g);
     groupFolder = fullfile(dataFolder, groupName);
 
@@ -50,71 +25,54 @@ for g = 1:numel(groupsToRun)
         continue
     end
 
-    files = dir(fullfile(groupFolder, "*.xlsx"));
+    groupFileLists{g} = dir(fullfile(groupFolder, "*.xlsx"));
+    maximumNumSubjects = maximumNumSubjects + numel(groupFileLists{g});
+end
+
+subjectIDs = strings(maximumNumSubjects, 1);
+subjectGroups = strings(maximumNumSubjects, 1);
+subjectSessions = strings(maximumNumSubjects, 1);
+sourceFiles = strings(maximumNumSubjects, 1);
+numSubjects = 0;
+
+for g = 1:numel(groupsToRun)
+    groupName = groupsToRun(g);
+    files = groupFileLists{g};
 
     for k = 1:numel(files)
-
         fileName = string(files(k).name);
 
         if startsWith(fileName, "~$")
             continue
         end
 
-        [subjectID, sessionLabel] = parseIEEMFileName(fileName);
+        tokens = regexp(fileName, '^(\d+)_(.+)\.xlsx$', 'tokens', 'once');
 
-        if strlength(subjectID) == 0
+        if isempty(tokens)
             warning("Skipping file with unexpected name: %s", fileName);
             continue
         end
 
-        sourceFile = fullfile(files(k).folder, files(k).name);
-
-        subjectRow = table( ...
-            subjectID, ...
-            groupName, ...
-            sessionLabel, ...
-            string(sourceFile), ...
-            'VariableNames', {'SubjectID', 'Group', 'Session', 'SourceFile'});
-
-        subjectList = [subjectList; subjectRow];
-
+        numSubjects = numSubjects + 1;
+        subjectIDs(numSubjects) = string(tokens{1});
+        subjectGroups(numSubjects) = groupName;
+        subjectSessions(numSubjects) = string(tokens{2});
+        sourceFiles(numSubjects) = ...
+            string(fullfile(files(k).folder, files(k).name));
     end
 end
 
-if isempty(subjectList)
+if numSubjects == 0
     error("No subject Excel files were found.");
 end
 
+subjectList = table( ...
+    subjectIDs(1:numSubjects), ...
+    subjectGroups(1:numSubjects), ...
+    subjectSessions(1:numSubjects), ...
+    sourceFiles(1:numSubjects), ...
+    'VariableNames', {'SubjectID', 'Group', 'Session', 'SourceFile'});
+
 subjectList = sortrows(subjectList, {'Group', 'SubjectID', 'Session'});
-
-if batchRunMode == "single"
-
-    if strlength(singleSubjectID) == 0
-        error('singleSubjectID is required when batchRunMode is "single".');
-    end
-
-    subjectList = subjectList(subjectList.SubjectID == singleSubjectID, :);
-
-    if isempty(subjectList)
-        error("Subject %s was not found in the selected groups.", singleSubjectID);
-    end
-
-end
-
-end
-
-
-function [subjectID, sessionLabel] = parseIEEMFileName(fileName)
-
-tokens = regexp(fileName, '^(\d+)_(.+)\.xlsx$', 'tokens', 'once');
-
-if isempty(tokens)
-    subjectID = "";
-    sessionLabel = "";
-    return
-end
-
-subjectID = string(tokens{1});
-sessionLabel = string(tokens{2});
 
 end

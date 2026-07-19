@@ -1,25 +1,5 @@
-function saveSubjectFigures(outputFolder, figureMode)
-
-if figureMode == "none"
-    return
-end
-
-if figureMode == "summary"
-    figureNames = [
-        "MisoMapToCbvTransferFunction"
-        "MisoCo2ToCbvTransferFunction"
-        "MisoCoherenceDiagnostics"
-        "SisoMapToCbvTransferFunction"
-        "SisoCo2ToCbvTransferFunction"
-    ];
-else
-    figures = findall(0, "Type", "figure");
-    figureNames = strings(numel(figures), 1);
-
-    for k = 1:numel(figures)
-        figureNames(k) = string(figures(k).Name);
-    end
-end
+function saveSubjectFigures(outputFolder, figureNames)
+% saveSubjectFigures Save the subject figures created by plotSubjectResults.
 
 for k = 1:numel(figureNames)
 
@@ -39,20 +19,13 @@ for k = 1:numel(figureNames)
     fig = fig(1);
     figure(fig)
 
-    figureFileName = makeSafeFigureFileName(figureNames(k)) + ".png";
+    figureFileName = lower(string(figureNames(k)));
+    figureFileName = regexprep(figureFileName, '[^a-z0-9]+', '_');
+    figureFileName = regexprep(figureFileName, '^_|_$', '') + ".png";
     figurePath = fullfile(outputFolder, figureFileName);
 
     exportgraphics(fig, figurePath, "Resolution", 150);
 
 end
-
-end
-
-
-function fileName = makeSafeFigureFileName(figureName)
-
-    fileName = lower(string(figureName));
-    fileName = regexprep(fileName, '[^a-z0-9]+', '_');
-    fileName = regexprep(fileName, '^_|_$', '');
 
 end

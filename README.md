@@ -1,323 +1,364 @@
-# Cerebral Hemodynamics MISO Transfer Function Analysis
+# Cerebral Hemodynamics Transfer Function Analysis
 
-This repository contains MATLAB code for developing and testing a multiple-input single-output (MISO) transfer function analysis pipeline for cerebrovascular dynamics.
+This MATLAB project analyzes the frequency-domain relationships between mean
+arterial pressure (MAP), end-tidal CO2, and cerebral blood flow
+velocity/CBV. It supports both:
 
-The current focus is validating the pipeline on a Sho-inspired simulated signal before applying the method to real physiological data.
+- MISO analysis: MAP and CO2 are solved together as inputs to CBV.
+- SISO analysis: MAP-to-CBV and CO2-to-CBV are solved independently.
 
-## Project Overview
+The project can analyze one subject, a batch of subjects, or a generated
+test signal.
 
-The goal of this project is to estimate how cerebral blood flow velocity responds to multiple physiological inputs.
+## Analysis Models
 
-The current model is:
-
-```matlab
-CBF(f) = H_BP(f)*BP(f) + H_CO2(f)*CO2(f)
-```
-
-where:
-
-* `BP` represents blood pressure or mean arterial pressure
-* `CO2` represents partial or end-tidal CO2 pressure
-* `CBF` represents cerebral blood flow velocity
-* `H_BP(f)` is the BP-to-CBF transfer function
-* `H_CO2(f)` is the CO2-to-CBF transfer function
-
-The transfer functions are used to quantify:
-
-* gain: how strongly CBF responds to each input at each frequency
-* phase: whether CBF leads or lags behind each input
-* coherence: how reliable the input-output relationship is at each frequency
-
-## Motivation
-
-Traditional transfer function analysis in dynamic cerebral autoregulation often focuses on the relationship between blood pressure and cerebral blood flow velocity. However, CO2 is also a strong vasoactive stimulus and can independently affect cerebral blood flow.
-
-A MISO framework may help separate:
-
-* pressure-driven CBF changes
-* CO2-driven CBF changes
-
-This is the main reason for extending the analysis from a single-input model to a two-input model.
-
-## Current Test Signal
-
-The current validation signal is based on Sho's simulated sinusoidal test signal.
-
-The original signal uses known sinusoidal components with known gain and phase relationships. This allows the pipeline to be tested against a signal where the expected transfer function behavior is known.
-
-In the MISO version, the simulated system is:
+At each frequency, the MISO model is:
 
 ```matlab
-BP + CO2 -> CBF
+S_xx = [S_mapmap, S_mapco2;
+        S_co2map, S_co2co2];
+
+S_xy = [S_mapcbv;
+        S_co2cbv];
+
+H = S_xx \ S_xy;
 ```
 
-where BP and CO2 contain known frequency components, and CBF is constructed from known BP-driven and CO2-driven contributions.
-
-Because the test signal contains only a small number of discrete frequencies, the transfer function estimates should mainly be interpreted at those inserted frequencies. Estimates at frequencies without meaningful input power may be unreliable.
-
-## MISO Spectral Matrix Formulation
-
-The MISO model assumes that cerebral blood flow velocity can be represented as a linear combination of the BP and CO2 inputs at each frequency:
+The two transfer functions are:
 
 ```matlab
-CBF(f) = H_BP(f)*BP(f) + H_CO2(f)*CO2(f)
+H_mapcbv = H(1);
+H_co2cbv = H(2);
 ```
 
-where:
+The current MISO solve intentionally uses the direct spectral-matrix
+solution without regularization or SISO fallback logic. The condition
+number is stored as a diagnostic so alternative solving methods can be
+evaluated later.
 
-* `H_BP(f)` is the transfer function from BP to CBF
-* `H_CO2(f)` is the transfer function from CO2 to CBF
-
-To estimate these transfer functions, we use auto-spectra and cross-spectra.
-
-For a two-input system, the spectral equations can be written as:
+The SISO transfer functions are:
 
 ```matlab
-S_BP_CBF(f)  = H_BP(f)*S_BP_BP(f)  + H_CO2(f)*S_BP_CO2(f)
-
-S_CO2_CBF(f) = H_BP(f)*S_CO2_BP(f) + H_CO2(f)*S_CO2_CO2(f)
+H_mapcbv = S_mapcbv ./ S_mapmap;
+H_co2cbv = S_co2cbv ./ S_co2co2;
 ```
 
-These two equations can be written in matrix form:
-
-```matlab
-[ S_BP_CBF(f)  ]   [ S_BP_BP(f)    S_BP_CO2(f)  ] [ H_BP(f)  ]
-[ S_CO2_CBF(f) ] = [ S_CO2_BP(f)   S_CO2_CO2(f) ] [ H_CO2(f) ]
-```
-
-Or more compactly:
-
-```matlab
-S_vector = S_matrix * H_vector
-```
-
-where:
-
-```matlab
-S_vector = [S_BP_CBF;
-            S_CO2_CBF];
-
-S_matrix = [S_BP_BP    S_BP_CO2;
-            S_CO2_BP   S_CO2_CO2];
-
-H_vector = [H_BP;
-            H_CO2];
-```
-
-To solve for the transfer functions, we rearrange:
-
-```matlab
-S_vector = S_matrix * H_vector
-```
-
-And we get:
-
-```matlab
-H_vector = inv(S_matrix) * S_vector
-```
-
-In MATLAB, the more numerically stable way to compute this is not to explicitly use `inv`, but to use the backslash operator:
-
-```matlab
-H_vector = S_matrix \ S_vector;
-```
-
-This solves the same linear system:
-
-```matlab
-S_matrix * H_vector = S_vector
-```
-
-without explicitly forming the inverse.
-
-The two entries of `H_vector` are then:
-
-```matlab
-H_BP_CBF  = H_vector(1);
-H_CO2_CBF = H_vector(2);
-```
-
-These complex transfer functions are then used to calculate gain and phase:
-
-```matlab
-gain  = abs(H);
-phase = unwrapPhase(H, "complex", "standard");
-```
-
-The phase unwrap method can be set to `"standard"` for MATLAB-style unwrap
-or `"fitted"` for the dynamic-programming/trend-guided branch convention
-used for exploratory visualization. It can also be set to `"coherence"` so
-coherence-passing frequencies define the unwrap branch while low-coherence
-frequencies are kept and assigned to the nearest equivalent branch for
-plotting and summaries. The `"model"` option uses a coherence-weighted
-circular delay model for CO2 -> CBV phase display; MAP -> CBV remains
-wrapped in this mode because MAP phase is interpreted as autoregulatory
-phase separation rather than a simple delay.
-
-
-## Current Method
-
-The current pipeline uses Welch-based spectral estimation.
-
-Main steps:
-
-1. Convert all signals to column vectors.
-2. Remove mean values.
-3. Estimate power spectra using `pwelch`.
-4. Estimate cross-spectra using `cpsd`.
-5. Construct the input spectral matrix:
-
-
-```matlab
-S_matrix = [S_BP_BP    S_BP_CO2;
-            S_CO2_BP   S_CO2_CO2];
-```
-
-6. Construct the input-output spectral vector:
-
-```matlab
-S_vector = [S_BP_CBF;
-            S_CO2_CBF];
-```
-
-7. Solve for the MISO transfer function vector:
-
-```matlab
-H_vector = S_matrix \ S_vector;
-```
-
-8. Extract gain, phase, pairwise coherence, multiple coherence, and diagnostic information.
-
-## Default TFA Settings
-
-Current default settings:
-
-* Sampling frequency: `fs = 4 Hz`
-* Hanning window
-* 128-second window length
-* 50% overlap
-* `nfft = windowLength_samples`
-* Frequency resolution: `fs / nfft`
-* Frequency range: approximately `0.0078125–0.5078125 Hz`
-
-For sinusoidal validation tests, the window length may need to be adjusted so that the known sinusoid frequencies align more cleanly with frequency bins.
-
-## Identifiability and Fallback Logic
-
-A true MISO estimate is only valid at frequencies where both BP and CO2 have enough input power and the input spectral matrix is numerically stable.
-
-At a frequency where BP has power but CO2 has little or no power, the full MISO model is not identifiable because the data cannot determine the CO2-to-CBF transfer function at that frequency.
-
-In those cases, the current approach is:
-
-* use a BP-only SISO fallback estimate if BP and CBF have enough power,
-* use a CO2-only SISO fallback estimate if CO2 and CBF have enough power,
-* leave the inactive or unidentifiable transfer function as `NaN`.
-
-This allows the active input contribution to still be estimated while avoiding false interpretation of an unidentifiable transfer function.
-
-## Current Issues Being Investigated
-
-The main issues currently being addressed are:
-
-1. **Spectral leakage**
-   Some sinusoidal components do not land exactly on Welch frequency bins, so energy spreads into nearby frequency bins.
-
-2. **Window length effects**
-   The choice of window length affects frequency resolution and whether the simulated sinusoids align with frequency bins.
-
-3. **MISO identifiability**
-   A full MISO estimate cannot be recovered at frequencies where one input has little or no power.
-
-4. **Plot interpretation**
-   Gain and phase should only be interpreted at frequencies where the relevant input has enough power and the estimate is reliable.
-
-## Example Results
-
-Example plots can be included in the `figures/` folder and displayed here.
-
-### Simulated Input and Output Signals
-
-```markdown
-![input and output signals](figures/input_output.png)
-```
-
-### BP-to-CBF Transfer Function
-
-```markdown
-![BP to CBF gain and phase](figures/bp_gain_phase.png)
-```
-
-### CO2-to-CBF Transfer Function
-
-```markdown
-![CO2 to CBF gain and phase](figures/co2_gain_phase.png)
-```
-
-### Coherence Diagnostics
-
-```markdown
-![Coherence diagnostics](figures/coherence_diagnostics.png)
-```
-
-## How to Run
-
-A typical workflow is:
-
-```matlab
-clear; clc; close all;
-
-signalData = createShoMisoSignal();
-
-BP = signalData.bp_clean;
-CO2 = signalData.co2_clean;
-CBF = signalData.cbf_clean;
-fs = signalData.fs;
-
-tfaResults = runTFA(BP, CO2, CBF, fs);
-```
-
-For batch runs, set `analysisSettings.figureMode = "batchSummary"` to skip
-single-subject figures and save only the batch full-frequency summary plots.
-
-The output `tfaResults` is a MATLAB struct containing:
-
-* frequency vector
-* BP, CO2, and CBF power spectra
-* input-output cross-spectra
-* BP-to-CBF transfer function
-* CO2-to-CBF transfer function
-* gain and phase estimates
-* pairwise coherence estimates
-* multiple coherence
-* condition number diagnostics
-* estimate type labels
-
-## Planned Repository Structure
+## Project Flow
 
 ```text
-Cerebral-Hemodynamics-MISO-TFA/
-│
-├── README.md
-├── main.m
-│
-├── functions/
-│   ├── runTFA.m
-│   ├── plotComplexMagnitudePhase.m
-│   └── createShoMisoSignal.m
-│
-├── figures/
-│   ├── input_output.png
-│   ├── bp_gain_phase.png
-│   ├── co2_gain_phase.png
-│   └── coherence_diagnostics.png
-│
-└── results/
-    └── saved_output_structs_or_figures
+main.m
+├── single
+│   └── loadData → runSubjectTFA
+├── batch
+│   └── findIEEMSubjects → runBatchTFA
+│       └── runSingleSubjectTFA for each subject
+└── test
+    └── createTestSignal → runSubjectTFA
 ```
 
-## Current Status
+`runSubjectTFA` performs the common subject workflow:
 
-The pipeline is currently able to recover gain and phase values at expected simulated frequencies, but interpretation is still being refined. The main current focus is understanding how spectral leakage, window length, and input-power thresholds affect the frequency-domain plots.
+1. Preprocess the time-series arrays.
+2. Check the available Welch windows.
+3. Run MISO analysis.
+4. Optionally run SISO analysis.
+5. Calculate frequency-band averages.
+6. Limit the returned results to the selected analysis range.
+7. Create the selected subject figures.
+8. Export the selected Excel results and figures.
 
-This repository is under active development and is intended for research and validation purposes.
+Batch processing subsequently organizes successful subject results into
+group arrays, means, and standard deviations. The same group structure is
+used for plotting and Excel export.
+
+## Data Loading and Preprocessing
+
+`loadData` reads the required time, MAP, CO2, and CBV columns from an Excel
+worksheet and stores each signal as a horizontal array:
+
+```matlab
+signalData.t
+signalData.map
+signalData.co2
+signalData.cbv
+```
+
+`btbPreProcessing` then:
+
+1. Removes samples containing nonfinite values.
+2. Removes leading CO2 zeros and the initial transition region.
+3. Resamples all signals to `analysisSettings.fsTarget`.
+4. Optionally normalizes CBV to percent baseline.
+5. Optionally detrends the signals.
+6. Optionally removes each signal mean.
+
+The processed arrays remain horizontal throughout the analysis.
+
+## Spectral Analysis
+
+MISO and SISO use the same Welch configuration:
+
+- Window length: `analysisSettings.pwelch.windowLengthSeconds`
+- Window overlap: `analysisSettings.pwelch.windowOverlap`
+- Minimum accepted windows: `analysisSettings.pwelch.minimumWindows`
+- FFT length: the Welch window length in samples
+- Spectral smoothing: `[0.25, 0.5, 0.25]`
+
+The models can be run independently or together:
+
+```matlab
+analysisSettings.runMISO = true;
+analysisSettings.runSISO = true;
+```
+
+Only the smoothed power spectra are retained:
+
+```matlab
+results.map.power
+results.co2.power
+results.cbv.power
+```
+
+The reported frequency range is controlled by:
+
+```matlab
+analysisSettings.frequencyRangeHz
+```
+
+Frequency-band averages use:
+
+```matlab
+analysisSettings.frequencyBandEdgesHz
+analysisSettings.frequencyBandNames
+```
+
+## Phase
+
+Each transfer-function pathway stores:
+
+```matlab
+results.map.phase.wrapped
+results.map.phase.unwrapped
+
+results.co2.phase.wrapped
+results.co2.phase.unwrapped
+```
+
+The input–input relationship stores the equivalent wrapped and unwrapped
+MAP–CO2 phase arrays.
+
+The phase method is selected in `main.m`:
+
+```matlab
+analysisSettings.phase.unwrapMethod = "standard";
+```
+
+Supported methods are:
+
+- `"standard"`: MATLAB `unwrap`
+- `"custom"`: the project-specific coherence-weighted unwrapping method
+
+The selected method is stored once per model:
+
+```matlab
+misoResults.phaseUnwrapMethod
+sisoResults.phaseUnwrapMethod
+```
+
+## Result Structures
+
+### MISO
+
+```text
+misoResults
+├── f
+├── map
+│   ├── power
+│   ├── transferFunction
+│   ├── gain
+│   ├── phase.wrapped
+│   ├── phase.unwrapped
+│   └── coherence.partial
+├── co2
+│   ├── power
+│   ├── transferFunction
+│   ├── gain
+│   ├── phase.wrapped
+│   ├── phase.unwrapped
+│   └── coherence.partial
+├── cbv.power
+├── system
+│   ├── multipleCoherence
+│   ├── unexplainedFraction
+│   └── residualPower
+├── inputRelationship
+│   ├── coherence
+│   ├── phase.wrapped
+│   └── phase.unwrapped
+├── diagnostics.conditionNumber
+├── phaseUnwrapMethod
+├── welchInfo
+└── bandAverages
+```
+
+### SISO
+
+```text
+sisoResults
+├── f
+├── map
+│   ├── power
+│   ├── transferFunction
+│   ├── gain
+│   ├── phase.wrapped
+│   ├── phase.unwrapped
+│   ├── coherence.pairwise
+│   ├── unexplainedFraction
+│   └── residualPower
+├── co2
+│   └── equivalent CO2-to-CBV fields
+├── cbv.power
+├── inputRelationship
+├── phaseUnwrapMethod
+├── welchInfo
+└── bandAverages
+```
+
+Partial and multiple coherence belong to the MISO model. Pairwise
+input-output coherence belongs to the SISO model.
+
+## Running the Project
+
+Configure the project in `main.m`, then select:
+
+```matlab
+runType = "single";
+runType = "batch";
+runType = "test";
+```
+
+### Single
+
+Set `subjectInfo` to one Excel file. The file is loaded and passed into the
+common subject workflow.
+
+### Batch
+
+Set:
+
+```matlab
+batchSettings.dataFolder
+batchSettings.groupsToRun
+batchSettings.numSubjectsPerGroup
+```
+
+Each entry in `batchSettings.groupsToRun` is matched to a folder with that
+name. For example, `["MCI"; "NC"; "LC"]` uses the `MCI`, `NC`, and `LC`
+folders. Subject files use names such as:
+
+```text
+101_baseline.xlsx
+```
+
+Setting `batchSettings.previewOnly = true` loads and preprocesses each
+subject and reports whether it contains enough Welch windows without
+running the TFA models.
+
+### Test
+
+Test mode calls `createTestSignal`, which returns a deterministic horizontal
+Sho-style signal. MAP contains components at 0.03, 0.10, and 0.30 Hz; CO2
+contains components at 0.05, 0.11, and 0.40 Hz; and both inputs contain a
+shared 0.08 Hz component. CBV is constructed with known pathway-specific
+gains and phase shifts. Its raw CBV variation is scaled around a 50 cm/s
+baseline so the stored Sho gains are recovered directly when the default
+percent-baseline normalization is enabled. The test signal then runs through
+the same preprocessing and analysis workflow used for a real subject.
+
+## Plotting
+
+Nine complete figure types can be selected in `main.m`:
+
+1. Subject/group overview
+2. MISO MAP pathway
+3. MISO CO2 pathway
+4. SISO MAP pathway
+5. SISO CO2 pathway
+6. Partitioned MISO MAP pathway
+7. Partitioned MISO CO2 pathway
+8. Partitioned SISO MAP pathway
+9. Partitioned SISO CO2 pathway
+
+Transfer-function gain and phase use stem plots by default. Spectra,
+coherence, condition number, and group mean/SD results use line plots.
+
+Partitioned figures use the frequency bands defined in `main.m`; the number
+of rows changes automatically with the number of configured bands.
+
+## Excel Output
+
+Subject workbooks contain:
+
+- `Status`
+- `MISO_Full`
+- `MISO_Bands`
+- `SISO_Full` and `SISO_Bands` when SISO is enabled
+- `MISO_vs_SISO` when SISO is enabled
+
+Batch workbooks contain:
+
+- `Run_Status`
+- `Band_Averages`
+- `Metric_Definitions`
+- Full-frequency metric sheets prefixed with `FF_`
+- Band-average metric sheets prefixed with `BA_`
+
+Batch metric sheets contain subject columns followed by group mean and
+standard-deviation columns.
+
+## Repository Structure
+
+```text
+.
+├── main.m
+├── src
+│   ├── analysis
+│   ├── batch
+│   ├── data_loaders
+│   ├── io
+│   ├── pipelines
+│   ├── plotting
+│   ├── preprocessing
+│   ├── simulation_signals
+│   └── workflows
+└── tests
+    └── helpers
+```
+
+Each MATLAB function has its own file.
+
+## Requirements
+
+The current dependency audit reports:
+
+- MATLAB
+- Signal Processing Toolbox
+- Statistics and Machine Learning Toolbox
+
+The project is currently tested with MATLAB R2025b.
+
+## Tests
+
+Run:
+
+```matlab
+results = runtests("tests");
+```
+
+The tests cover preprocessing, frequency-range limiting, MISO results, SISO
+results, phase unwrapping, and band averages. Test mode, plotting, Excel
+export, subject discovery, preview, and batch aggregation are also used as
+integration smoke checks during development.
+
+This project is under active development and is intended for research and
+validation use.

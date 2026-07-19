@@ -1,5 +1,5 @@
 function runStatus = initializeSubjectRunStatus( ...
-    welchInfo, runSISO, minimumWelchWindows)
+    welchInfo, runMISO, runSISO, minimumWelchWindows)
 % initializeSubjectRunStatus
 %
 % Creates the first-pass run status for one subject.
@@ -7,10 +7,6 @@ function runStatus = initializeSubjectRunStatus( ...
 % At this point the script has only checked whether the recording is long
 % enough for the Welch window and minimum number of Welch windows. The MISO
 % and SISO fields are filled in later if those models actually run.
-
-    if nargin < 3
-        minimumWelchWindows = 1;
-    end
 
     runStatus.analysisSucceeded = false;
     runStatus.runStage = "NotRun";
@@ -21,6 +17,7 @@ function runStatus = initializeSubjectRunStatus( ...
     runStatus.signalDurationSeconds = welchInfo.signalDurationSeconds;
     runStatus.windowLengthSeconds = welchInfo.windowLengthSeconds;
     runStatus.windowOverlap = welchInfo.windowOverlap;
+    runStatus.runMISO = runMISO;
     runStatus.runSISO = runSISO;
     runStatus.cbvBaselineCmPerSec = NaN;
     runStatus.cbvUnits = "";
@@ -29,6 +26,8 @@ function runStatus = initializeSubjectRunStatus( ...
     runStatus.sisoUsedDefaultCoherenceThreshold = NaN;
     runStatus.misoCoherenceThreshold = NaN;
     runStatus.sisoCoherenceThreshold = NaN;
+    runStatus.misoCoherenceThresholdSource = "";
+    runStatus.sisoCoherenceThresholdSource = "";
 
     if welchInfo.isTooShort
         runStatus.runStage = "TooShortForWelch";
