@@ -41,8 +41,8 @@ function plotOverviewFigure(signalData, analysisResults, plotSettings)
         'Color', plotSettings.colors.co2, ...
         'LineWidth', plotSettings.lineWidth.coherence)
     xlabel(ax, 'Frequency (Hz)')
-    ylabel(ax, 'Power (dB)')
-    title(ax, 'Processed Input Power Spectra')
+    ylabel(ax, 'PSD (dB)')
+    title(ax, 'Processed Input Power Spectral Density')
     legend(ax, 'MAP', 'CO2', 'Location', 'best')
     xlim(ax, plotSettings.frequencyLimitsHz)
     grid(ax, 'on')
@@ -52,8 +52,8 @@ function plotOverviewFigure(signalData, analysisResults, plotSettings)
         'Color', plotSettings.colors.cbv, ...
         'LineWidth', plotSettings.lineWidth.coherence)
     xlabel(ax, 'Frequency (Hz)')
-    ylabel(ax, 'CBV power (dB)')
-    title(ax, 'Processed CBV Power Spectrum (' + ...
+    ylabel(ax, 'CBV PSD (dB)')
+    title(ax, 'Processed CBV Power Spectral Density (' + ...
         string(analysisResults.welchInfo.cbvUnits) + ')')
     xlim(ax, plotSettings.frequencyLimitsHz)
     grid(ax, 'on')

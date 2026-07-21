@@ -9,6 +9,7 @@ plotSettings.transferFunctionStyle = "stem";      % "stem" or "line"
 % one user-selected range.
 plotSettings.frequencyLimitsHz = [0 0.35];
 plotSettings.showFrequencyBandLines = true;
+plotSettings.showSisoCoherenceReference = true;
 
 plotSettings.colors.transferFunction = [0 0.4470 0.7410];
 plotSettings.colors.map = [0 0.4470 0.7410];
@@ -22,9 +23,11 @@ plotSettings.colors.sdBand = [0 0.4470 0.7410];
 plotSettings.colors.residual = [0.6350 0.0780 0.1840];
 plotSettings.colors.conditionNumber = [0.2500 0.2500 0.2500];
 plotSettings.colors.inputPower = [0.4660 0.6740 0.1880];
+plotSettings.colors.coherenceReference = [0.3500 0.3500 0.3500];
 
 plotSettings.lineWidth.transferFunction = 0.9;
 plotSettings.lineWidth.coherence = 1.2;
+plotSettings.lineWidth.coherenceReference = 1.0;
 plotSettings.markerSize = 3;
 
 end

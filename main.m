@@ -1,27 +1,26 @@
 %% Clean Start
 
-clear; clc; close all;
+clearvars; clc; close all;
 
 projectRoot = fileparts(mfilename("fullpath"));
 addpath(genpath(fullfile(projectRoot, "src")));
 
 %% 1. Run Mode
 
-runType = "test";    % Use "single", "batch", or "test"
+runType = "batch";    % Use "single", "batch", or "synthetic"
 
 %% 2. Input Data
 
 % Single-subject input
 subjectInfo.subjectID = "105";
 subjectInfo.group = "MCI";
-subjectInfo.session = "baseline";
 subjectInfo.sourceFile = ...
     "/Users/amoghn/Downloads/ieem_data/MCI/105_baseline.xlsx";
 
 % Batch input
 batchSettings.dataFolder = "/Users/amoghn/Downloads/ieem_data";
-batchSettings.groupsToRun = ["MCI"; "NC"; "LC"];
-batchSettings.numSubjectsPerGroup = Inf;
+batchSettings.groupsToRun = ["NC"; "MCI"];   % Example: ["MCI"; "NC"; "LC"]
+batchSettings.targetSuccessfulSubjectsPerGroup = Inf;
 batchSettings.previewOnly = false;
 
 %% 3. Models
@@ -53,6 +52,9 @@ analysisSettings.preprocessing.meanRemovalEnabled = true;
 analysisSettings.pwelch.windowLengthSeconds = 128;
 analysisSettings.pwelch.windowOverlap = 0.5;
 analysisSettings.pwelch.minimumWindows = 3;
+% Apply the same frequency-domain smoothing to every auto- and cross-spectrum.
+analysisSettings.pwelch.smoothingEnabled = true;
+analysisSettings.pwelch.smoothingKernel = [0.25 0.50 0.25];
 
 %% 7. Phase
 
@@ -70,6 +72,7 @@ analysisSettings.phase.custom.minWeight = 0.01;
 analysisSettings.plot = defaultPlotSettings();
 analysisSettings.plot.transferFunctionStyle = "stem";    % "stem" or "line"
 analysisSettings.plot.colors.co2Coherence = [0.9290 0.4940 0.1250];
+analysisSettings.plot.showSisoCoherenceReference = true;
 
 % Each Boolean controls one complete figure.
 analysisSettings.plot.show.overview = true;
@@ -83,34 +86,53 @@ analysisSettings.plot.show.sisoPartitioned.map = true;
 analysisSettings.plot.show.sisoPartitioned.co2 = true;
 
 outputSettings.saveSubjectFigures = true;
+batchSettings.numSubjectFiguresPerGroup = "all";    % Number, "none", or "all"
 outputSettings.saveBatchFigures = true;
-batchSettings.numSubjectFiguresPerGroup = 1;    % Number, "none", or "all"
 
 %% 9. Excel Export
 
 outputSettings.baseOutputFolder = ...
-    "/Users/amoghn/Desktop/TFA Results test Updated plotting excel11";
-outputSettings.singleSubjectExcelFileName = "subject_tfa_results.xlsx";
-outputSettings.batchSummaryExcelFileName = "batch_tfa_summary.xlsx";
-outputSettings.saveSubjectExcel = true;
-outputSettings.saveBatchExcel = true;
-outputSettings.saveFullFrequencyData = true;
+    "/Users/amoghn/Desktop/TFA Results New Latest";
+outputSettings.saveExcel = true;
+outputSettings.excelFileName = "tfa_results.xlsx";
+
+% Signal and input metrics shared by MISO and SISO
+outputSettings.excelMetrics.signals.mapPower = true;
+outputSettings.excelMetrics.signals.co2Power = true;
+outputSettings.excelMetrics.signals.cbvPower = true;
+outputSettings.excelMetrics.inputs.coherence = true;
+outputSettings.excelMetrics.inputs.phaseWrapped = true;
+outputSettings.excelMetrics.inputs.phaseUnwrapped = true;
+
+% MISO metrics
+outputSettings.excelMetrics.miso.mapGain = true;
+outputSettings.excelMetrics.miso.mapPhaseWrapped = true;
+outputSettings.excelMetrics.miso.mapPhaseUnwrapped = true;
+outputSettings.excelMetrics.miso.co2Gain = true;
+outputSettings.excelMetrics.miso.co2PhaseWrapped = true;
+outputSettings.excelMetrics.miso.co2PhaseUnwrapped = true;
+outputSettings.excelMetrics.miso.multipleCoherence = true;
+outputSettings.excelMetrics.miso.mapPartialCoherence = true;
+outputSettings.excelMetrics.miso.co2PartialCoherence = true;
+outputSettings.excelMetrics.miso.unexplainedFraction = true;
+outputSettings.excelMetrics.miso.residualPower = true;
+outputSettings.excelMetrics.miso.conditionNumber = true;
+
+% SISO metrics
+outputSettings.excelMetrics.siso.mapGain = true;
+outputSettings.excelMetrics.siso.mapPhaseWrapped = true;
+outputSettings.excelMetrics.siso.mapPhaseUnwrapped = true;
+outputSettings.excelMetrics.siso.mapCoherence = true;
+outputSettings.excelMetrics.siso.mapUnexplainedFraction = true;
+outputSettings.excelMetrics.siso.mapResidualPower = true;
+outputSettings.excelMetrics.siso.co2Gain = true;
+outputSettings.excelMetrics.siso.co2PhaseWrapped = true;
+outputSettings.excelMetrics.siso.co2PhaseUnwrapped = true;
+outputSettings.excelMetrics.siso.co2Coherence = true;
+outputSettings.excelMetrics.siso.co2UnexplainedFraction = true;
+outputSettings.excelMetrics.siso.co2ResidualPower = true;
 
 %% Run TFA
-
-if ~analysisSettings.runMISO && ~analysisSettings.runSISO
-    error("Select at least one model by enabling runMISO or runSISO.");
-end
-
-if ~any(analysisSettings.phase.unwrapMethod == ["standard", "custom"])
-    error('phase.unwrapMethod must be "standard" or "custom".');
-end
-
-if ~any(analysisSettings.plot.transferFunctionStyle == ["stem", "line"])
-    error('plot.transferFunctionStyle must be "stem" or "line".');
-end
-
-analysisSettings = normalizeAnalysisFrequencyRange(analysisSettings);
 
 fprintf("\nRun type: %s | MISO: %s | SISO: %s\n", ...
     runType, string(analysisSettings.runMISO), ...
@@ -120,27 +142,9 @@ fprintf("Frequency range: %.3f-%.3f Hz | Welch window: %.1f s\n\n", ...
     analysisSettings.frequencyRangeHz(2), ...
     analysisSettings.pwelch.windowLengthSeconds);
 
-if runType == "single"
-    subjectResults = runSingleSubjectTFA( ...
-        subjectInfo, analysisSettings, outputSettings);
+runResults = runTFA( ...
+    runType, subjectInfo, batchSettings, analysisSettings, outputSettings);
 
-elseif runType == "batch"
-    subjectList = findIEEMSubjects( ...
-        batchSettings.dataFolder, ...
-        batchSettings.groupsToRun);
-
-    if batchSettings.previewOnly
-        previewTable = previewBatchTFA(subjectList, analysisSettings);
-        disp(previewTable)
-        return
-    end
-
-    batchResults = runBatchTFA( ...
-        subjectList, analysisSettings, outputSettings, batchSettings);
-
-elseif runType == "test"
-    testResults = runTestTFA(analysisSettings, outputSettings);
-
-else
-    error('runType must be "single", "batch", or "test".');
+if isfield(runResults, "previewTable")
+    disp(runResults.previewTable)
 end

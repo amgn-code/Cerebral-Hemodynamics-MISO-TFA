@@ -16,11 +16,11 @@ function plotSisoPartitionedPathwayFigure( ...
     figure('Name', figureName, 'NumberTitle', 'off')
     plotLayout = tiledlayout(numel(frequencyBandNames), 3);
 
-    for k = 1:numel(frequencyBandNames)
-        lowerHz = frequencyBandEdgesHz(k);
-        upperHz = frequencyBandEdgesHz(k + 1);
+    for bandIndex = 1:numel(frequencyBandNames)
+        lowerHz = frequencyBandEdgesHz(bandIndex);
+        upperHz = frequencyBandEdgesHz(bandIndex + 1);
 
-        if k == numel(frequencyBandNames)
+        if bandIndex == numel(frequencyBandNames)
             frequencyIndex = sisoResults.f >= lowerHz & sisoResults.f <= upperHz;
         else
             frequencyIndex = sisoResults.f >= lowerHz & sisoResults.f < upperHz;
@@ -46,7 +46,7 @@ function plotSisoPartitionedPathwayFigure( ...
         else
             ylabel(ax, 'Gain (%CBV/mmHg)')
         end
-        title(ax, frequencyBandNames(k) + ' Gain')
+        title(ax, frequencyBandNames(bandIndex) + ' Gain')
         xlim(ax, [lowerHz upperHz])
         grid(ax, 'on')
 
@@ -66,7 +66,7 @@ function plotSisoPartitionedPathwayFigure( ...
         end
         xlabel(ax, 'Frequency (Hz)')
         ylabel(ax, 'Unwrapped phase (rad)')
-        title(ax, frequencyBandNames(k) + ' Unwrapped Phase')
+        title(ax, frequencyBandNames(bandIndex) + ' Unwrapped Phase')
         xlim(ax, [lowerHz upperHz])
         grid(ax, 'on')
 
@@ -75,9 +75,14 @@ function plotSisoPartitionedPathwayFigure( ...
             pathwayResults.coherence.pairwise(frequencyIndex), ...
             'Color', coherenceColor, ...
             'LineWidth', plotSettings.lineWidth.coherence)
+        if plotSettings.showSisoCoherenceReference
+            yline(ax, sisoResults.welchInfo.coherenceThreshold, "--", ...
+                'Color', plotSettings.colors.coherenceReference, ...
+                'LineWidth', plotSettings.lineWidth.coherenceReference);
+        end
         xlabel(ax, 'Frequency (Hz)')
         ylabel(ax, 'Coherence')
-        title(ax, frequencyBandNames(k) + ' Coherence')
+        title(ax, frequencyBandNames(bandIndex) + ' Coherence')
         xlim(ax, [lowerHz upperHz])
         ylim(ax, [0 1])
         grid(ax, 'on')

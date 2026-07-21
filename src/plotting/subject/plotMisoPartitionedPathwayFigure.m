@@ -18,11 +18,11 @@ function plotMisoPartitionedPathwayFigure( ...
     figure('Name', figureName, 'NumberTitle', 'off')
     plotLayout = tiledlayout(numel(frequencyBandNames), 3);
 
-    for k = 1:numel(frequencyBandNames)
-        lowerHz = frequencyBandEdgesHz(k);
-        upperHz = frequencyBandEdgesHz(k + 1);
+    for bandIndex = 1:numel(frequencyBandNames)
+        lowerHz = frequencyBandEdgesHz(bandIndex);
+        upperHz = frequencyBandEdgesHz(bandIndex + 1);
 
-        if k == numel(frequencyBandNames)
+        if bandIndex == numel(frequencyBandNames)
             frequencyIndex = misoResults.f >= lowerHz & misoResults.f <= upperHz;
         else
             frequencyIndex = misoResults.f >= lowerHz & misoResults.f < upperHz;
@@ -48,7 +48,7 @@ function plotMisoPartitionedPathwayFigure( ...
         else
             ylabel(ax, 'Gain (%CBV/mmHg)')
         end
-        title(ax, frequencyBandNames(k) + ' Gain')
+        title(ax, frequencyBandNames(bandIndex) + ' Gain')
         xlim(ax, [lowerHz upperHz])
         grid(ax, 'on')
 
@@ -68,7 +68,7 @@ function plotMisoPartitionedPathwayFigure( ...
         end
         xlabel(ax, 'Frequency (Hz)')
         ylabel(ax, 'Unwrapped phase (rad)')
-        title(ax, frequencyBandNames(k) + ' Unwrapped Phase')
+        title(ax, frequencyBandNames(bandIndex) + ' Unwrapped Phase')
         xlim(ax, [lowerHz upperHz])
         grid(ax, 'on')
 
@@ -84,7 +84,7 @@ function plotMisoPartitionedPathwayFigure( ...
             'LineWidth', plotSettings.lineWidth.coherence)
         xlabel(ax, 'Frequency (Hz)')
         ylabel(ax, 'Coherence')
-        title(ax, frequencyBandNames(k) + ' Coherence')
+        title(ax, frequencyBandNames(bandIndex) + ' Coherence')
         legend(ax, coherenceLabel, 'Multiple coherence', 'Location', 'best')
         xlim(ax, [lowerHz upperHz])
         ylim(ax, [0 1])

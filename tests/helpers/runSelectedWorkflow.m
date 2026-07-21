@@ -4,14 +4,9 @@ function subjectResults = runSelectedWorkflow( ...
 
     [analysisSettings, outputSettings] = createWorkflowTestSettings( ...
         outputFolder, runMISO, runSISO);
-    signalData = createTestSignal(analysisSettings.fsTarget);
-
-    subjectInfo.subjectID = "test";
-    subjectInfo.group = "LC";
-    subjectInfo.session = "simulation";
-    subjectInfo.sourceFile = "Generated test signal";
-
-    subjectResults = runSubjectTFA( ...
-        signalData, subjectInfo, analysisSettings, outputSettings);
+    runResults = runTFA( ...
+        "synthetic", struct(), struct(), ...
+        analysisSettings, outputSettings);
+    subjectResults = runResults.subjectResults{1};
 
 end

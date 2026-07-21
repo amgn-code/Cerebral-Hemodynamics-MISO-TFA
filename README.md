@@ -8,7 +8,7 @@ velocity/CBV. It supports both:
 - SISO analysis: MAP-to-CBV and CO2-to-CBV are solved independently.
 
 The project can analyze one subject, a batch of subjects, or a generated
-test signal.
+synthetic signal.
 
 ## Analysis Models
 
@@ -47,33 +47,32 @@ H_co2cbv = S_co2cbv ./ S_co2co2;
 
 ```text
 main.m
-├── single
-│   └── loadData → runSubjectTFA
-├── batch
-│   └── findIEEMSubjects → runBatchTFA
-│       └── runSingleSubjectTFA for each subject
-└── test
-    └── createTestSignal → runSubjectTFA
+└── runTFA
+    ├── single: load one subject
+    ├── synthetic: generate one subject
+    └── batch: load each discovered subject
+        └── analyzeSubjectTFA for every subject
 ```
 
-`runSubjectTFA` performs the common subject workflow:
+`runTFA` selects the data source and determines whether the subject analysis
+runs once or once per discovered subject. `analyzeSubjectTFA` performs the
+same common workflow for every loaded or generated subject:
 
 1. Preprocess the time-series arrays.
 2. Check the available Welch windows.
-3. Run MISO analysis.
-4. Optionally run SISO analysis.
-5. Calculate frequency-band averages.
-6. Limit the returned results to the selected analysis range.
-7. Create the selected subject figures.
-8. Export the selected Excel results and figures.
+3. Estimate and smooth the shared Welch spectra once.
+4. Run the enabled MISO and/or SISO models from those spectra.
+5. Limit the returned results to the selected analysis range.
+6. Create the selected subject figures.
 
 Batch processing subsequently organizes successful subject results into
-group arrays, means, and standard deviations. The same group structure is
-used for plotting and Excel export.
+group arrays, means, and standard deviations for plotting. After all
+attempted subjects finish, `runTFA` writes the selected Excel metric sheets
+using the same format for single, synthetic, and batch runs.
 
 ## Data Loading and Preprocessing
 
-`loadData` reads the required time, MAP, CO2, and CBV columns from an Excel
+`loadSubjectData` reads the required time, MAP, CO2, and CBV columns from an Excel
 worksheet and stores each signal as a horizontal array:
 
 ```matlab
@@ -83,7 +82,7 @@ signalData.co2
 signalData.cbv
 ```
 
-`btbPreProcessing` then:
+`preprocessTfaSignals` then:
 
 1. Removes samples containing nonfinite values.
 2. Removes leading CO2 zeros and the initial transition region.
@@ -96,13 +95,24 @@ The processed arrays remain horizontal throughout the analysis.
 
 ## Spectral Analysis
 
-MISO and SISO use the same Welch configuration:
+MISO and SISO use spectra from the same Welch calculation. The configuration
+continues to come from `main.m`:
 
 - Window length: `analysisSettings.pwelch.windowLengthSeconds`
 - Window overlap: `analysisSettings.pwelch.windowOverlap`
 - Minimum accepted windows: `analysisSettings.pwelch.minimumWindows`
 - FFT length: the Welch window length in samples
-- Spectral smoothing: `[0.25, 0.5, 0.25]`
+- Spectral smoothing toggle: `analysisSettings.pwelch.smoothingEnabled`
+- Spectral smoothing kernel: `analysisSettings.pwelch.smoothingKernel`
+
+The default 128-second window contains 512 samples at the default 4 Hz
+sampling frequency. Three windows with 50% overlap therefore require 1,024
+samples, corresponding to approximately 256 seconds of recording.
+
+The smoothing kernel is user-configurable in `main.m`. It must contain an
+odd number of nonnegative weights that sum to one. When smoothing is
+disabled, the original Welch auto- and cross-spectra are passed directly
+to the enabled models.
 
 The models can be run independently or together:
 
@@ -111,7 +121,8 @@ analysisSettings.runMISO = true;
 analysisSettings.runSISO = true;
 ```
 
-Only the smoothed power spectra are retained:
+`estimateWelchSpectra` returns the shared smoothed auto- and cross-spectra.
+The model result structures retain the smoothed power spectra:
 
 ```matlab
 results.map.power
@@ -158,6 +169,18 @@ Supported methods are:
 - `"standard"`: MATLAB `unwrap`
 - `"custom"`: the project-specific coherence-weighted unwrapping method
 
+Circular phase means and standard deviations are calculated directly from
+the complex mean resultant vector. The results do not depend on an external
+circular-statistics toolbox.
+
+For every phase aggregation, the wrapped values are summarized using a
+circular mean and circular standard deviation. The circular-mean sequence
+is then unwrapped using the selected phase method. The unwrapped
+representation retains the same circular standard deviation because adding
+phase cycles does not change angular dispersion. The circular standard
+deviation is defined as `sqrt(-2*log(R))`, where `R` is the mean resultant
+length.
+
 The selected method is stored once per model:
 
 ```matlab
@@ -197,8 +220,7 @@ misoResults
 │   └── phase.unwrapped
 ├── diagnostics.conditionNumber
 ├── phaseUnwrapMethod
-├── welchInfo
-└── bandAverages
+└── welchInfo
 ```
 
 ### SISO
@@ -220,8 +242,7 @@ sisoResults
 ├── cbv.power
 ├── inputRelationship
 ├── phaseUnwrapMethod
-├── welchInfo
-└── bandAverages
+└── welchInfo
 ```
 
 Partial and multiple coherence belong to the MISO model. Pairwise
@@ -234,7 +255,7 @@ Configure the project in `main.m`, then select:
 ```matlab
 runType = "single";
 runType = "batch";
-runType = "test";
+runType = "synthetic";
 ```
 
 ### Single
@@ -249,12 +270,20 @@ Set:
 ```matlab
 batchSettings.dataFolder
 batchSettings.groupsToRun
-batchSettings.numSubjectsPerGroup
+batchSettings.targetSuccessfulSubjectsPerGroup
 ```
 
 Each entry in `batchSettings.groupsToRun` is matched to a folder with that
 name. For example, `["MCI"; "NC"; "LC"]` uses the `MCI`, `NC`, and `LC`
-folders. Subject files use names such as:
+folders in that order throughout discovery, processing, group figures, and
+Excel export. Subjects are sorted numerically within each group.
+
+The target subject count refers to successful analyses. Failed subjects
+remain in the status and Excel outputs, and processing continues until the
+requested number of successful subjects is reached or no files remain.
+
+Only one baseline file is accepted for each group and subject ID. Subject
+files use names such as:
 
 ```text
 101_baseline.xlsx
@@ -264,16 +293,16 @@ Setting `batchSettings.previewOnly = true` loads and preprocesses each
 subject and reports whether it contains enough Welch windows without
 running the TFA models.
 
-### Test
+### Synthetic
 
-Test mode calls `createTestSignal`, which returns a deterministic horizontal
-Sho-style signal. MAP contains components at 0.03, 0.10, and 0.30 Hz; CO2
-contains components at 0.05, 0.11, and 0.40 Hz; and both inputs contain a
-shared 0.08 Hz component. CBV is constructed with known pathway-specific
-gains and phase shifts. Its raw CBV variation is scaled around a 50 cm/s
-baseline so the stored Sho gains are recovered directly when the default
-percent-baseline normalization is enabled. The test signal then runs through
-the same preprocessing and analysis workflow used for a real subject.
+Synthetic mode calls `createSyntheticSignal`, which returns a deterministic
+horizontal Sho-style signal. MAP contains components at 0.03, 0.10, and
+0.30 Hz; CO2 contains components at 0.05, 0.11, and 0.40 Hz; and both inputs
+contain a shared 0.08 Hz component. CBV is constructed with known
+pathway-specific gains and phase shifts. Its raw CBV variation is scaled
+around a 50 cm/s baseline so the stored Sho gains are recovered directly
+when the default percent-baseline normalization is enabled. The synthetic
+signal then runs through the same subject analysis used for a real subject.
 
 ## Plotting
 
@@ -292,29 +321,45 @@ Nine complete figure types can be selected in `main.m`:
 Transfer-function gain and phase use stem plots by default. Spectra,
 coherence, condition number, and group mean/SD results use line plots.
 
+Subject SISO coherence plots can show the CARNet ordinary-coherence
+reference selected from the actual number of Welch windows. This line is a
+visual benchmark and does not filter gain or phase. It is not drawn on MISO
+partial- or multiple-coherence plots.
+
 Partitioned figures use the frequency bands defined in `main.m`; the number
 of rows changes automatically with the number of configured bands.
 
 ## Excel Output
 
-Subject workbooks contain:
+Single, synthetic, and batch runs use one metric-based workbook format.
+Each enabled metric receives one sheet per represented group. The group
+sheet order follows the left-to-right order in
+`batchSettings.groupsToRun`. For example, `["MCI", "LC", "NC"]` writes
+MCI, then LC, then NC for each enabled metric.
 
-- `Status`
-- `MISO_Full`
-- `MISO_Bands`
-- `SISO_Full` and `SISO_Bands` when SISO is enabled
-- `MISO_vs_SISO` when SISO is enabled
+The top section of every sheet contains:
 
-Batch workbooks contain:
+- One row per frequency bin in `analysisSettings.frequencyRangeHz`
+- The configured frequency-band label for each bin
+- One column per attempted subject
+- A group Mean column
+- A group SD column
 
-- `Run_Status`
-- `Band_Averages`
-- `Metric_Definitions`
-- Full-frequency metric sheets prefixed with `FF_`
-- Band-average metric sheets prefixed with `BA_`
+After one blank row, the same sheet contains the subject-level band
+averages and their group Mean and SD. Arithmetic metrics use arithmetic
+statistics. Phase metrics use circular group statistics; an unwrapped
+group mean is produced by unwrapping the circular mean.
 
-Batch metric sheets contain subject columns followed by group mean and
-standard-deviation columns.
+Subjects that cannot be analyzed remain visible as columns. The first cell
+below their header contains a short error message, their remaining cells
+are blank, and they are excluded from Mean and SD calculations.
+
+The exported metrics are controlled by the
+`outputSettings.excelMetrics` Boolean structure in `main.m`.
+
+The fields named `power` contain power spectral density estimates produced
+by `cpsd`. Power and residual-power exports are converted to decibels
+before group and band statistics are calculated.
 
 ## Repository Structure
 
@@ -323,14 +368,13 @@ standard-deviation columns.
 ├── main.m
 ├── src
 │   ├── analysis
-│   ├── batch
-│   ├── data_loaders
-│   ├── io
-│   ├── pipelines
+│   ├── data
+│   ├── group
+│   ├── output
+│   ├── phase
 │   ├── plotting
 │   ├── preprocessing
-│   ├── simulation_signals
-│   └── workflows
+│   └── workflow
 └── tests
     └── helpers
 ```
@@ -343,7 +387,6 @@ The current dependency audit reports:
 
 - MATLAB
 - Signal Processing Toolbox
-- Statistics and Machine Learning Toolbox
 
 The project is currently tested with MATLAB R2025b.
 
@@ -355,10 +398,19 @@ Run:
 results = runtests("tests");
 ```
 
-The tests cover preprocessing, frequency-range limiting, MISO results, SISO
-results, phase unwrapping, and band averages. Test mode, plotting, Excel
-export, subject discovery, preview, and batch aggregation are also used as
-integration smoke checks during development.
+The tests cover preprocessing, configurable Welch smoothing,
+frequency-range limiting, MISO results, SISO results, circular phase
+statistics, phase unwrapping, subject-level band summaries, subject
+discovery order, batch readiness, figure toggles, and Excel export.
+
+## Method References
+
+- Panerai RB et al. Transfer function analysis of dynamic cerebral
+  autoregulation: A CARNet white paper 2022 update. *Journal of Cerebral
+  Blood Flow & Metabolism*. DOI: 10.1177/0271678X221119760.
+- Berens P. CircStat: A MATLAB Toolbox for Circular Statistics.
+  *Journal of Statistical Software*. 2009;31(10).
+  DOI: 10.18637/jss.v031.i10.
 
 This project is under active development and is intended for research and
 validation use.
