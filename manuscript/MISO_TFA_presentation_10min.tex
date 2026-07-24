@@ -1,0 +1,748 @@
+% ============================================================================
+% 10-MINUTE BEAMER PRESENTATION
+% ============================================================================
+% Main-talk image files (place beside this .tex file, in figures/, or in
+% Batch_Figures/):
+%   nc_groupoverview.png
+%   mci_groupoverview.png
+%   nc_groupmisomaptocbv.png
+%   mci_groupmisomaptocbv.png
+%   nc_groupmisoco2tocbv.png
+%   mci_groupmisoco2tocbv.png
+%   statistical_frequency_model_nc_gain.png
+%   statistical_frequency_model_mci_gain.png
+%   statistical_model_comparison.png
+%   statistical_group_comparison.png
+%
+% Optional backup images:
+%   statistical_frequency_group_gain.png
+%   statistical_frequency_model_nc_phase.png
+%   statistical_frequency_model_mci_phase.png
+%   statistical_frequency_group_coherence.png
+%   statistical_frequency_group_phase.png
+%   statistical_input_association.png
+%   statistical_pathway_balance.png
+%
+% The \resultimage command checks beside this file, figures/, and
+% Batch_Figures/. If an image is missing, the compiled slide shows a visible
+% placeholder with the required filename.
+%
+% Timing: approximately 14--15 minutes for the 18 main frames, including the
+% title. Everything after \appendix is optional backup.
+% ============================================================================
+
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\graphicspath{{./}{figures/}{Batch_Figures/}}
+
+% ---------------------------------------------------------------------------
+% Visual style
+% ---------------------------------------------------------------------------
+
+\definecolor{ProjectBlue}{RGB}{0,114,189}
+\definecolor{ProjectOrange}{RGB}{217,83,25}
+\definecolor{ProjectNavy}{RGB}{25,55,85}
+\definecolor{ProjectLightBlue}{RGB}{232,243,250}
+\definecolor{ProjectLightOrange}{RGB}{252,238,228}
+\definecolor{ProjectGray}{RGB}{90,95,100}
+\definecolor{ProjectLightGray}{RGB}{244,245,246}
+
+\setbeamercolor{normal text}{fg=black,bg=white}
+\setbeamercolor{structure}{fg=ProjectBlue}
+\setbeamercolor{frametitle}{fg=white,bg=ProjectNavy}
+\setbeamercolor{title}{fg=ProjectNavy}
+\setbeamercolor{subtitle}{fg=ProjectGray}
+\setbeamercolor{block title}{fg=white,bg=ProjectBlue}
+\setbeamercolor{block body}{fg=black,bg=ProjectLightBlue}
+\setbeamercolor{block title alerted}{fg=white,bg=ProjectOrange}
+\setbeamercolor{block body alerted}{fg=black,bg=ProjectLightOrange}
+\setbeamercolor{footline}{fg=ProjectGray,bg=white}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\color{ProjectBlue}$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\color{ProjectOrange}$\bullet$}
+\setbeamertemplate{enumerate item}{\color{ProjectBlue}\insertenumlabel.}
+\setbeamertemplate{frametitle}{%
+    \nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,ht=0.78cm,dp=0.22cm,leftskip=0.42cm]{frametitle}
+        \usebeamerfont{frametitle}\insertframetitle
+    \end{beamercolorbox}}
+\setbeamertemplate{footline}{%
+    \leavevmode
+    \hbox{%
+        \begin{beamercolorbox}[wd=0.84\paperwidth,ht=2.5ex,dp=1.2ex,leftskip=0.4cm]{footline}
+            MISO transfer function analysis of cerebral hemodynamics
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=0.16\paperwidth,ht=2.5ex,dp=1.2ex,rightskip=0.4cm plus1fil]{footline}
+            \hfill\insertframenumber
+        \end{beamercolorbox}}
+    \vskip0pt}
+
+\setlength{\leftmargini}{0.24in}
+\setlength{\leftmarginii}{0.20in}
+
+% ---------------------------------------------------------------------------
+% Reusable commands
+% ---------------------------------------------------------------------------
+
+\newcommand{\PETCOtwo}{P_{\mathrm{ET}}CO_2}
+\newcommand{\COtwo}{CO_2}
+
+% Search beside the .tex file, in figures/, and in Batch_Figures/.
+\newcommand{\resultimage}[2]{%
+    \IfFileExists{#1}{%
+        \includegraphics[width=\linewidth,height=#2,keepaspectratio]{#1}%
+    }{%
+        \IfFileExists{figures/#1}{%
+            \includegraphics[width=\linewidth,height=#2,keepaspectratio]{figures/#1}%
+        }{%
+            \IfFileExists{Batch_Figures/#1}{%
+                \includegraphics[width=\linewidth,height=#2,keepaspectratio]{Batch_Figures/#1}%
+            }{%
+                \fcolorbox{ProjectGray}{ProjectLightGray}{%
+                    \parbox[c][#2][c]{0.92\linewidth}{%
+                        \centering
+                        \Large\color{ProjectGray}\textbf{FIGURE PLACEHOLDER}\par\medskip
+                        \normalsize Upload this file beside the presentation,
+                        into \texttt{figures/}, or into
+                        \texttt{Batch\_Figures/}:\par\medskip
+                        \texttt{\detokenize{#1}}}}%
+            }%
+        }%
+    }%
+}
+
+\newcommand{\takeaway}[1]{%
+    \begin{beamercolorbox}[rounded=true,sep=0.12cm,wd=\linewidth]{block body alerted}
+        \centering\textbf{Takeaway:} #1
+    \end{beamercolorbox}}
+
+\newcommand{\methodbox}[2]{%
+    \fcolorbox{ProjectBlue}{ProjectLightBlue}{%
+        \parbox[c][1.12cm][c]{0.155\linewidth}{%
+            \centering\textbf{#1}\par\scriptsize #2}}}
+
+% ---------------------------------------------------------------------------
+% Title information
+% ---------------------------------------------------------------------------
+
+\title{Separating MAP- and CO$_2$-Associated Contributions to Cerebral Blood
+Flow Velocity}
+\subtitle{A multivariable transfer function analysis in mild cognitive impairment}
+\author{Amogh Naganand}
+\date{July 21, 2026}
+
+\begin{document}
+
+% ============================================================================
+% MAIN TALK: 18 FRAMES INCLUDING TITLE / APPROXIMATELY 14--15 MINUTES
+% ============================================================================
+
+% TALK TRACK (0:00--0:30)
+% Introduce the physiological question in one sentence.
+\begin{frame}[plain]
+    \titlepage
+
+    \vspace{-0.3cm}
+    \begin{center}
+        \color{ProjectNavy}
+        \textbf{Core question:} Does accounting for spontaneous CO$_2$
+        change how we interpret MAP--CBFV dynamics in NC and MCI?
+    \end{center}
+\end{frame}
+
+% TALK TRACK (0:30--1:20)
+% Explain that CBFV reflects multiple overlapping influences. Avoid causal language.
+\begin{frame}{Why this question matters}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.31\textwidth}
+            \begin{block}{Pressure}
+                MAP fluctuations are the standard input used to assess
+                dynamic cerebral autoregulation.
+            \end{block}
+        \end{column}
+        \begin{column}{0.31\textwidth}
+            \begin{alertblock}{Carbon dioxide}
+                CO$_2$ is vasoactive and changes cerebral vascular tone in
+                overlapping frequency ranges.
+            \end{alertblock}
+        \end{column}
+        \begin{column}{0.31\textwidth}
+            \begin{block}{Cerebral output}
+                Transcranial Doppler CBFV reflects the combined behavior of
+                pressure, CO$_2$, and unmeasured mechanisms.
+            \end{block}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.35cm}
+    \begin{center}
+        \Large
+        \color{ProjectBlue}\textbf{MAP}
+        \color{black}$\quad+\quad$
+        \color{ProjectOrange}\textbf{CO$_2$}
+        \color{black}$\quad\longrightarrow\quad$
+        \color{ProjectNavy}\textbf{CBFV}
+    \end{center}
+
+    \vspace{0.25cm}
+    \takeaway{A MAP-only model may mix pressure-associated dynamics with
+    variation shared with CO$_2$.}
+\end{frame}
+
+% TALK TRACK (1:20--2:30)
+% Define every subscript directly so the audience does not need abstract x1, x2, or y notation.
+\begin{frame}{SISO and MISO answer different questions}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.43\textwidth}
+            \begin{block}{Separate SISO models}
+                \centering
+                \[
+                    H_{\mathrm{MAP}}^{\mathrm{SISO}}
+                    =\frac{S_{\mathrm{MAP},\mathrm{CBFV}}}
+                    {S_{\mathrm{MAP},\mathrm{MAP}}}
+                \]
+                \[
+                    H_{\COtwo}^{\mathrm{SISO}}
+                    =\frac{S_{\COtwo,\mathrm{CBFV}}}
+                    {S_{\COtwo,\COtwo}}
+                \]
+                \small Pairwise input--output relationships
+            \end{block}
+        \end{column}
+
+        \begin{column}{0.53\textwidth}
+            \begin{alertblock}{One simultaneous MISO model}
+                \centering
+                \resizebox{0.96\linewidth}{!}{$
+                \begin{bmatrix}
+                    S_{\mathrm{MAP},\mathrm{MAP}} &
+                    S_{\mathrm{MAP},\COtwo}\\
+                    S_{\COtwo,\mathrm{MAP}} &
+                    S_{\COtwo,\COtwo}
+                \end{bmatrix}
+                \begin{bmatrix}
+                    H_{\mathrm{MAP}}^{\mathrm{MISO}}\\
+                    H_{\COtwo}^{\mathrm{MISO}}
+                \end{bmatrix}
+                =
+                \begin{bmatrix}
+                    S_{\mathrm{MAP},\mathrm{CBFV}}\\
+                    S_{\COtwo,\mathrm{CBFV}}
+                \end{bmatrix}
+                $}
+
+                \medskip
+                \small Each pathway is estimated while accounting for the
+                other measured input
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.2cm}
+    \textbf{Central hypothesis:} Simultaneously modeling MAP and CO$_2$ will
+    produce different pathway-specific transfer function estimates than
+    modeling each input separately. These conditional estimates may also
+    reveal NC--MCI differences.
+\end{frame}
+
+% TALK TRACK (2:30--3:05)
+% Keep the workflow on one line. The scientific results receive more time than software details.
+\begin{frame}{Pipeline}
+    \centering
+    \resizebox{0.98\textwidth}{!}{%
+        \methodbox{Input}{single, batch, or synthetic}
+        \hspace{0.08cm}$\longrightarrow$\hspace{0.08cm}
+        \methodbox{Preprocess}{clean, resample, normalize}
+        \hspace{0.08cm}$\longrightarrow$\hspace{0.08cm}
+        \methodbox{Welch spectra}{one shared spectral estimate}
+        \hspace{0.08cm}$\longrightarrow$\hspace{0.08cm}
+        \methodbox{Models}{SISO and MISO}
+        \hspace{0.08cm}$\longrightarrow$\hspace{0.08cm}
+        \methodbox{Output}{plots, statistics, Excel}}
+
+    \vspace{0.65cm}
+    \begin{block}{Consistent analysis path}
+        The same preprocessing and Welch spectra are passed into both models.
+        Subject results are retained for group means, variability, paired model
+        comparisons, and independent NC--MCI comparisons.
+    \end{block}
+
+    \vspace{0.25cm}
+    \takeaway{Model differences reflect the transfer-function formulation,
+    rather than separate preprocessing or spectral estimates.}
+\end{frame}
+
+% TALK TRACK (3:05--3:55)
+% State only the settings that influence interpretation. Do not list every toggle.
+\begin{frame}{Dataset and analysis settings}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{block}{Current cohort}
+                \begin{itemize}
+                    \item \textcolor{ProjectBlue}{\textbf{23 NC}} participants
+                    \item \textcolor{ProjectOrange}{\textbf{52 MCI}} participants
+                    \item All 75 completed the current TFA workflow
+                    \item Similar age, sex, MAP, $\PETCOtwo$, CBFV, and
+                    recording duration
+                    \item MoCA was lower in MCI, as expected
+                \end{itemize}
+            \end{block}
+        \end{column}
+
+        \begin{column}{0.49\textwidth}
+            \begin{alertblock}{Core settings}
+                \begin{itemize}
+                    \item Resampled to 4 Hz
+                    \item CBFV normalized to percent baseline
+                    \item 128-s Hann windows, 50\% overlap
+                    \item Minimum of 3 Welch windows
+                    \item Frequency range: 0--0.35 Hz
+                    \item Bands: VVLF, VLF, LF, HF
+                    \item Same smoothing kernel for every spectrum
+                \end{itemize}
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+
+    \takeaway{With these settings, three Welch windows require at least
+    1,024 samples, or 256 seconds at 4 Hz.}
+\end{frame}
+
+% TALK TRACK (3:55--4:30)
+% Establish the spectra and input relationship before presenting transfer functions.
+\begin{frame}{NC signal and spectral overview}
+    \centering
+    \resultimage{nc_groupoverview.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (4:30--5:05)
+% Use the same four panels to orient the audience to the MCI input and output data.
+\begin{frame}{MCI signal and spectral overview}
+    \centering
+    \resultimage{mci_groupoverview.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (5:05--5:55)
+% Define what the audience will see in the next two result slides.
+\begin{frame}{Reading a transfer-function result}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.31\textwidth}
+            \begin{block}{Gain}
+                \centering
+                \Large $\left|H(f)\right|$
+
+                \normalsize\medskip
+                Magnitude of the frequency-specific CBFV response associated
+                with an input oscillation.
+            \end{block}
+        \end{column}
+        \begin{column}{0.31\textwidth}
+            \begin{block}{Phase}
+                \centering
+                \Large $\arg\!\left[H(f)\right]$
+
+                \normalsize\medskip
+                Timing relationship between the input and CBFV. Group phase
+                uses circular means and circular SD.
+            \end{block}
+        \end{column}
+        \begin{column}{0.31\textwidth}
+            \begin{alertblock}{Coherence}
+                Strength of the linear frequency-specific relationship.
+
+                \medskip
+                SISO uses ordinary coherence; MISO reports pathway-specific
+                partial coherence and combined multiple coherence.
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.35cm}
+    \takeaway{The complete transfer function is frequency-dependent; band
+    averages summarize these curves but do not replace them.}
+\end{frame}
+
+% TALK TRACK (5:55--6:35)
+% Full-size primary result for the NC MAP pathway.
+\begin{frame}{NC: MISO MAP-to-CBFV transfer function}
+    \centering
+    \resultimage{nc_groupmisomaptocbv.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (6:35--7:15)
+% Full-size primary result for the MCI MAP pathway.
+\begin{frame}{MCI: MISO MAP-to-CBFV transfer function}
+    \centering
+    \resultimage{mci_groupmisomaptocbv.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (7:15--7:55)
+% Full-size primary result for the NC CO2 pathway.
+\begin{frame}{NC: MISO CO$_2$-to-CBFV transfer function}
+    \centering
+    \resultimage{nc_groupmisoco2tocbv.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (7:55--8:35)
+% Full-size primary result for the MCI CO2 pathway.
+\begin{frame}{MCI: MISO CO$_2$-to-CBFV transfer function}
+    \centering
+    \resultimage{mci_groupmisoco2tocbv.png}{0.82\textheight}
+\end{frame}
+
+% TALK TRACK (8:35--9:25)
+% Now that the audience has seen the transfer functions, explain how comparisons are tested.
+\begin{frame}{Comparing the Models}
+    \small
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{MISO versus SISO}
+                For each participant and result:
+
+                \[
+                    d=\text{MISO value}-\text{SISO value}
+                \]
+
+                \[
+                    H_0:\ \text{average difference}=0.
+                \]
+            \end{block}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{block}{NC versus MCI}
+                For each MISO result, participant values in NC are compared
+                with participant values in MCI.
+
+                \[
+                    H_0:\ \overline{x}_{\mathrm{NC}}
+                    =\overline{x}_{\mathrm{MCI}}.
+                \]
+            \end{block}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.20cm}
+    \begin{alertblock}{Why adjust the P values?}
+        Testing many results increases the chance of a false-positive finding.
+        Benjamini--Hochberg adjustment accounts for these multiple tests;
+        adjusted $P<0.05$ is treated as evidence of a difference.
+    \end{alertblock}
+\end{frame}
+
+% TALK TRACK (9:25--10:20)
+% Read each column from top to bottom: curves, paired difference, adjusted P value.
+\begin{frame}{NC: frequency-wise MISO versus SISO gain}
+    \centering
+    \resultimage{statistical_frequency_model_nc_gain.png}{0.73\textheight}
+
+    \vspace{0.08cm}
+    \takeaway{NC MAP gain changed relatively little, whereas CO$_2$ gain
+    differed across contiguous mid- and higher-frequency regions.}
+\end{frame}
+
+% TALK TRACK (10:20--11:15)
+% Emphasize the broad CO2 model effect without calling either model ground truth.
+\begin{frame}{MCI: frequency-wise MISO versus SISO gain}
+    \centering
+    \resultimage{statistical_frequency_model_mci_gain.png}{0.73\textheight}
+
+    \vspace{0.08cm}
+    \takeaway{The MCI CO$_2$ pathway showed a broad model effect; MAP gain
+    differences were smaller and concentrated mainly at the lowest frequencies.}
+\end{frame}
+
+% TALK TRACK (11:15--12:10)
+% This is the primary subject-level inference. Point to paired direction and adjusted P values.
+\begin{frame}{Primary band-level evidence for the model effect}
+    \centering
+    \resultimage{statistical_model_comparison.png}{0.69\textheight}
+
+    \vspace{0.08cm}
+    \takeaway{MISO MAP gain was lower in VVLF in both groups, while the
+    larger and more consistent model-related changes occurred in CO$_2$ gain.}
+\end{frame}
+
+% TALK TRACK (12:10--13:05)
+% The primary biological comparison is MISO NC versus MCI at the band level.
+\begin{frame}{NC versus MCI: band-level comparisons}
+    \centering
+    \resultimage{statistical_group_comparison.png}{0.69\textheight}
+
+    \vspace{0.08cm}
+    \takeaway{None of the tested NC--MCI band differences had an adjusted
+    $P<0.05$. The current data therefore did not identify a robust group
+    difference in these MISO metrics.}
+\end{frame}
+
+% TALK TRACK (13:05--14:10)
+% End with what is supported, what is not established, and the next validation steps.
+\begin{frame}{Conclusions and next steps}
+    \begin{enumerate}
+        \item \textbf{Model comparison:} MISO and SISO produced statistically
+        different pathway-specific estimates in several comparisons,
+        particularly for CO$_2$ gain.
+
+        \item \textbf{Group comparison:} The tested MISO metrics did not
+        identify a robust difference between NC and MCI in the current data.
+
+        \item \textbf{Interpretation:} The results support considering
+        multiple measured inputs when estimating autoregulatory dynamics, but
+        adding CO$_2$ alone was not sufficient to establish an NC--MCI marker.
+        Additional inputs, smaller effects, and biological variability remain
+        possible explanations requiring further investigation.
+    \end{enumerate}
+
+    \vspace{0.25cm}
+    \begin{alertblock}{Next steps}
+        \begin{itemize}
+            \item Obtain longer recordings that permit meaningful
+            cross-validation of SISO and MISO predictions.
+            \item Complete the manuscript and prepare it for journal
+            submission or preprint release.
+        \end{itemize}
+    \end{alertblock}
+
+\end{frame}
+
+% ============================================================================
+% BACKUP SLIDES -- NOT PART OF THE 10-MINUTE TALK
+% ============================================================================
+
+\appendix
+
+\begin{frame}{Backup: frequency-band definitions}
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        Band & Frequency interval & Included frequency bins \\
+        \midrule
+        VVLF & $0.005 \leq f < 0.024$ Hz & 0.0078--0.0234 Hz \\
+        VLF  & $0.024 \leq f < 0.070$ Hz & 0.0313--0.0625 Hz \\
+        LF   & $0.070 \leq f < 0.200$ Hz & 0.0703--0.1953 Hz \\
+        HF   & $0.200 \leq f \leq 0.350$ Hz & 0.2031--0.3438 Hz \\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{0.55cm}
+    Frequency resolution:
+    \[
+        \Delta f=\frac{4\ \mathrm{Hz}}{512}=0.0078125\ \mathrm{Hz}.
+    \]
+
+    Band averages were calculated within subject first, so each subject
+    contributed one value per band to the formal band-level tests.
+\end{frame}
+
+\begin{frame}{Backup: SISO and MISO derivation}
+    \small
+    For MAP as one input,
+    \[
+        \mathrm{CBFV}=H_{\mathrm{MAP}}\,\mathrm{MAP}+E,
+        \qquad
+        S_{\mathrm{MAP},\mathrm{CBFV}}
+        =H_{\mathrm{MAP}}S_{\mathrm{MAP},\mathrm{MAP}},
+        \qquad
+        H_{\mathrm{MAP}}
+        =\frac{S_{\mathrm{MAP},\mathrm{CBFV}}}
+        {S_{\mathrm{MAP},\mathrm{MAP}}}.
+    \]
+
+    With MAP and CO$_2$ entered simultaneously,
+    \[
+        \mathrm{CBFV}
+        =H_{\mathrm{MAP}}\,\mathrm{MAP}
+        +H_{\COtwo}\,\COtwo+E,
+    \]
+    \resizebox{0.88\linewidth}{!}{$
+        \underbrace{\begin{bmatrix}
+            S_{\mathrm{MAP},\mathrm{MAP}} & S_{\mathrm{MAP},\COtwo}\\
+            S_{\COtwo,\mathrm{MAP}} & S_{\COtwo,\COtwo}
+        \end{bmatrix}}_{\mathbf S_{\mathrm{inputs}}}
+        \underbrace{\begin{bmatrix}
+            H_{\mathrm{MAP}}^{\mathrm{MISO}}\\
+            H_{\COtwo}^{\mathrm{MISO}}
+        \end{bmatrix}}_{\mathbf H}
+        =
+        \underbrace{\begin{bmatrix}
+            S_{\mathrm{MAP},\mathrm{CBFV}}\\
+            S_{\COtwo,\mathrm{CBFV}}
+        \end{bmatrix}}_{\mathbf S_{\mathrm{input},\mathrm{CBFV}}}
+    $}
+
+    \medskip
+    The implementation solves this spectral system at each frequency using
+    MATLAB matrix left division. The current analysis is unregularized.
+\end{frame}
+
+\begin{frame}{Backup: how phase was summarized}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \begin{block}{Circular mean}
+                \[
+                    C=\frac{1}{n}\sum_i\cos\theta_i,
+                    \qquad
+                    S=\frac{1}{n}\sum_i\sin\theta_i
+                \]
+                \[
+                    \overline\theta=\operatorname{atan2}(S,C)
+                \]
+            \end{block}
+        \end{column}
+        \begin{column}{0.47\textwidth}
+            \begin{alertblock}{Circular spread}
+                \[
+                    R=\sqrt{C^2+S^2}
+                \]
+                \[
+                    s_{\mathrm{circ}}=\sqrt{-2\ln R}
+                \]
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.35cm}
+    Statistics used wrapped phase. For display, the circular group mean was
+    unwrapped across frequency and retained the same circular SD.
+\end{frame}
+
+\begin{frame}{Backup: what a BH-adjusted P value means}
+    \begin{block}{One raw P value}
+        Tests one null hypothesis without accounting for the other tests in
+        the family.
+    \end{block}
+
+    \begin{alertblock}{BH-adjusted P value}
+        Accounts for the number and ranking of related P values. If
+        $P_{\mathrm{BH}}<0.05$, that test is significant while controlling the
+        false discovery rate within the defined family.
+    \end{alertblock}
+
+    \begin{itemize}
+        \item $P_{\mathrm{BH}}>0.05$ does \textbf{not} prove that two curves or
+        groups are the same.
+        \item More subjects can improve power if the underlying effect is
+        consistent, but sample size does not guarantee significance.
+        \item Standard deviation affects P values because it affects the
+        uncertainty of the estimated difference.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: NC frequency-wise phase comparison}
+    \centering
+    \resultimage{statistical_frequency_model_nc_phase.png}{0.75\textheight}
+
+    \takeaway{Phase comparisons use circular paired differences and
+    permutation tests; the displayed group means are circular means.}
+\end{frame}
+
+\begin{frame}{Backup: MCI frequency-wise phase comparison}
+    \centering
+    \resultimage{statistical_frequency_model_mci_phase.png}{0.75\textheight}
+
+    \takeaway{The same circular procedure is used in MCI, with BH adjustment
+    performed within each frequency-comparison curve.}
+\end{frame}
+
+\begin{frame}{Backup: NC--MCI frequency-wise gain}
+    \centering
+    \resultimage{statistical_frequency_group_gain.png}{0.75\textheight}
+
+    \takeaway{The isolated adjusted result at 0.1484 Hz is exploratory and
+    was not accompanied by a robust prespecified band-level group difference.}
+\end{frame}
+
+\begin{frame}{Backup: NC--MCI frequency-wise coherence}
+    \centering
+    \resultimage{statistical_frequency_group_coherence.png}{0.75\textheight}
+
+    \takeaway{Frequency-wise group coherence comparisons are exploratory;
+    primary inference uses subject-level band values.}
+\end{frame}
+
+\begin{frame}{Backup: NC--MCI frequency-wise phase}
+    \centering
+    \resultimage{statistical_frequency_group_phase.png}{0.75\textheight}
+
+    \takeaway{A high adjusted P value means the available data do not provide
+    evidence of a group difference at that frequency.}
+\end{frame}
+
+\begin{frame}{Backup: input coherence and gain change}
+    \centering
+    \resultimage{statistical_input_association.png}{0.73\textheight}
+
+    \takeaway{Several low-frequency associations were significant, but they
+    are exploratory because both variables come from the same spectral matrix.}
+\end{frame}
+
+\begin{frame}{Backup: MAP--CO$_2$ pathway balance}
+    \centering
+    \resultimage{statistical_pathway_balance.png}{0.73\textheight}
+
+    \takeaway{MAP partial coherence became larger than CO$_2$ partial
+    coherence above VVLF, with no corrected NC--MCI difference in balance.}
+\end{frame}
+
+\begin{frame}{Backup: numerical conditioning}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Current observations}
+                \begin{itemize}
+                    \item Median HF condition number: 10.9 NC, 15.4 MCI
+                    \item HF values $>100$: 60/437 NC, 126/988 MCI
+                    \item Maximum: 7,467 NC, 17,366 MCI
+                    \item High values often occurred with low CO$_2$ power or
+                    large input-power imbalance
+                \end{itemize}
+            \end{block}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{alertblock}{Interpretation}
+                \begin{itemize}
+                    \item The raw condition number is scale-dependent.
+                    \item A high value does not automatically prove
+                    physiological collinearity.
+                    \item It does indicate that some estimates may be
+                    sensitive to small spectral changes.
+                    \item Ridge regularization remains a planned sensitivity
+                    decision, not part of the reported solve.
+                \end{itemize}
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Backup: key numeric model comparisons}
+    \scriptsize
+    \centering
+    \begin{tabular}{lllrrrr}
+        \toprule
+        Group & Path & Band & MISO & SISO & Difference & BH $P$ \\
+        \midrule
+        NC  & MAP & VVLF & 1.092 & 1.332 & $-0.240$ & 0.0052 \\
+        MCI & MAP & VVLF & 0.837 & 1.020 & $-0.183$ & 0.0038 \\
+        NC  & MAP & LF   & 2.111 & 2.046 & $+0.065$ & 0.0464 \\
+        NC  & CO$_2$ & LF & 1.761 & 2.498 & $-0.737$ & 0.00052 \\
+        NC  & CO$_2$ & HF & 2.695 & 4.944 & $-2.250$ & 0.00017 \\
+        MCI & CO$_2$ & VLF & 2.066 & 2.850 & $-0.784$ & 0.000083 \\
+        MCI & CO$_2$ & LF & 1.599 & 2.892 & $-1.293$ & 0.0000021 \\
+        MCI & CO$_2$ & HF & 2.823 & 5.458 & $-2.635$ & 0.0052 \\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{0.45cm}
+    Gain units are percentage points of baseline CBFV per mmHg. Differences
+    are MISO minus SISO. BH adjustment covered the 16 primary gain tests.
+\end{frame}
+
+\end{document}

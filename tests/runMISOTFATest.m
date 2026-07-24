@@ -20,6 +20,14 @@ classdef runMISOTFATest < matlab.unittest.TestCase
             testCase.verifyTrue(isfield(results, 'system'));
             testCase.verifyTrue(isfield(results, 'inputRelationship'));
             testCase.verifyTrue(isfield(results, 'diagnostics'));
+            testCase.verifyTrue(isfield( ...
+                results.diagnostics, 'normalizedConditionNumber'));
+            testCase.verifyTrue(isfield( ...
+                results.diagnostics, 'normalizedDeterminant'));
+            testCase.verifyTrue(isfield( ...
+                results.diagnostics, 'minimumNormalizedEigenvalue'));
+            testCase.verifyTrue(isfield( ...
+                results.diagnostics, 'isPoorlyConditioned'));
             testCase.verifyFalse(isfield(results.map.phase, 'anchored'));
             testCase.verifyFalse(isfield(results.co2.phase, 'anchored'));
             testCase.verifyFalse(isfield(results.map.phase, 'display'));
@@ -81,6 +89,9 @@ classdef runMISOTFATest < matlab.unittest.TestCase
                 numel(results.inputRelationship.phase.unwrapped), numFrequencies);
             testCase.verifyEqual( ...
                 numel(results.diagnostics.conditionNumber), numFrequencies);
+            testCase.verifyEqual( ...
+                numel(results.diagnostics.normalizedConditionNumber), ...
+                numFrequencies);
             testCase.verifyLessThanOrEqual(max(results.f), 0.35);
         end
 

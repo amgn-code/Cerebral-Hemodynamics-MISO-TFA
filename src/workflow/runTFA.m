@@ -189,6 +189,9 @@ function runResults = runTFA( ...
             failedSubjectResult.runStatus = runStatus;
             failedSubjectResult.misoResults = [];
             failedSubjectResult.sisoResults = [];
+            failedSubjectResult.physiology = struct();
+            failedSubjectResult.co2Startup = struct();
+            failedSubjectResult.analysisInput = struct();
             subjectFolderName = upper(string(currentSubject.group)) + ...
                 "_" + string(currentSubject.subjectID);
             failedSubjectResult.outputFolder = fullfile( ...
@@ -219,12 +222,16 @@ function runResults = runTFA( ...
         statusTable = vertcat(statusRows{1:numStatusRows});
     end
 
-    %% Calculate and Save Batch Group Figures
+    %% Calculate Batch Group and Statistical Results
 
     groupResults = struct();
+    statisticalResults = struct();
     batchFigureFiles = strings(0, 1);
+    statisticalFigureFiles = strings(0, 1);
     excelFile = "";
     batchFigureErrorMessage = "";
+    statisticalAnalysisErrorMessage = "";
+    statisticalFigureErrorMessage = "";
     excelErrorMessage = "";
 
     if isBatch
@@ -232,6 +239,19 @@ function runResults = runTFA( ...
             subjectResults, batchSettings.groupsToRun, ...
             analysisSettings.runMISO, analysisSettings.runSISO, ...
             analysisSettings.phase);
+
+        if analysisSettings.statistics.enabled
+            try
+                statisticalResults = calculateStatisticalResults( ...
+                    subjectResults, groupResults, analysisSettings);
+            catch errorInfo
+                statisticalAnalysisErrorMessage = ...
+                    string(errorInfo.message);
+                warning( ...
+                    'TFA:StatisticalAnalysisFailed', ...
+                    'Statistical analysis failed: %s', errorInfo.message);
+            end
+        end
 
         if outputSettings.saveBatchFigures
             try
@@ -243,6 +263,23 @@ function runResults = runTFA( ...
                 warning( ...
                     'TFA:GroupFigureOutputFailed', ...
                     'Group figures were not saved: %s', errorInfo.message);
+            end
+
+
+            if ~isempty(fieldnames(statisticalResults))
+                try
+                    statisticalFigureFiles = saveStatisticalFigures( ...
+                        statisticalResults, ...
+                        outputSettings.baseOutputFolder, ...
+                        analysisSettings);
+                catch errorInfo
+                    statisticalFigureErrorMessage = ...
+                        string(errorInfo.message);
+                    warning( ...
+                        'TFA:StatisticalFigureOutputFailed', ...
+                        'Statistical figures were not saved: %s', ...
+                        errorInfo.message);
+                end
             end
         end
 
@@ -267,7 +304,7 @@ function runResults = runTFA( ...
         try
             saveResultsToExcel( ...
                 excelFile, subjectResults, groupsToRun, ...
-                analysisSettings, outputSettings);
+                analysisSettings, outputSettings, statisticalResults);
         catch errorInfo
             excelErrorMessage = string(errorInfo.message);
             excelFile = "";
@@ -284,8 +321,14 @@ function runResults = runTFA( ...
     runResults.subjectResults = subjectResults;
     runResults.statusTable = statusTable;
     runResults.groupResults = groupResults;
+    runResults.statisticalResults = statisticalResults;
     runResults.batchFigureFiles = batchFigureFiles;
+    runResults.statisticalFigureFiles = statisticalFigureFiles;
     runResults.batchFigureErrorMessage = batchFigureErrorMessage;
+    runResults.statisticalAnalysisErrorMessage = ...
+        statisticalAnalysisErrorMessage;
+    runResults.statisticalFigureErrorMessage = ...
+        statisticalFigureErrorMessage;
     runResults.excelFile = excelFile;
     runResults.excelErrorMessage = excelErrorMessage;
     runResults.successfulSubjectCounts = successfulSubjectCounts;

@@ -1,0 +1,1618 @@
+% ============================================================================
+% SECOND FULL MANUSCRIPT DRAFT
+% ============================================================================
+% This file is intentionally self-contained so it can be pasted into a LaTeX
+% editor and compiled without a separate BibTeX file.
+%
+% AUTHOR ACTION markers identify information that must be confirmed from the
+% parent protocol, the principal investigator, or the final analysis plan.
+% The corresponding \draftnote{} boxes remain visible in the compiled document.
+%
+% Draft prepared from the current MATLAB implementation and the results in:
+%   TFA Results New Latest Boss 1/tfa_results.xlsx
+% Current analysis cohort: 23 NC and 52 MCI participants.
+% ============================================================================
+
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{pdflscape}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{float}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!55!black,
+    citecolor=blue!55!black,
+    urlcolor=blue!55!black
+}
+
+\setstretch{1.35}
+\setlength{\parindent}{0.3in}
+\setlength{\parskip}{0.15em}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\PETCOtwo}{P_{\mathrm{ET}}CO_2}
+\newcommand{\CBFV}{\mathrm{CBFV}}
+\newcommand{\MAP}{\mathrm{MAP}}
+\newcommand{\COtwo}{CO_2}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\atanTwo}{\operatorname{atan2}}
+
+% A visible box for decisions that should not be silently filled in.
+\newcommand{\draftnote}[1]{%
+    \par\medskip
+    \noindent\fcolorbox{orange!70!black}{orange!8}{%
+        \parbox{0.94\linewidth}{\textbf{DRAFT NOTE:} #1}}
+    \par\medskip
+}
+
+% A visible figure placeholder. The optional first argument controls height.
+\newcommand{\figureplaceholder}[4][0.22\textheight]{%
+    \begin{figure}[p]
+        \centering
+        \fcolorbox{gray!80}{gray!6}{%
+            \parbox[c][#1][c]{0.91\linewidth}{%
+                \centering
+                \textbf{FIGURE PLACEHOLDER: #2}\par\medskip
+                #3}}
+        \caption{#2. Draft placeholder; replace this caption after the final
+        figure is prepared.}
+        \label{#4}
+    \end{figure}
+}
+
+\title{Separating Mean Arterial Pressure- and Carbon Dioxide-Associated
+Contributions to Cerebral Blood Flow Velocity in Mild Cognitive Impairment
+Using Multivariable Transfer Function Analysis}
+
+% AUTHOR ACTION: Replace placeholders with the final author list and affiliations.
+\author{[Author names and affiliations to be added]}
+\date{Second full draft -- \today}
+
+\begin{document}
+
+\maketitle
+
+\draftnote{Confirm the final title, author order, affiliations, corresponding
+author, target journal, and whether the journal prefers ``cerebral blood
+velocity'' or ``cerebral blood flow velocity.'' This draft uses
+``associated'' instead of ``mediated'' because the observational transfer
+functions do not establish causality.}
+
+\begin{abstract}
+\textbf{Background:} Dynamic cerebral autoregulation is commonly assessed
+with single-input, single-output (SISO) transfer function analysis using mean
+arterial pressure (MAP) as the input and cerebral blood flow velocity (CBFV)
+as the output. CBFV is also affected by carbon dioxide, so a MAP-only model
+may mix pressure-associated and carbon-dioxide-associated dynamics.
+
+\textbf{Objective:} We tested whether simultaneously modeling MAP and
+end-tidal carbon dioxide ($\PETCOtwo$) materially changed pathway-specific
+transfer function estimates and whether the resulting multivariable estimates
+differed between cognitively normal controls (NC) and participants with mild
+cognitive impairment (MCI).
+
+\textbf{Methods:} Baseline MAP, $\PETCOtwo$, and CBFV recordings from 23 NC
+and 52 MCI participants were resampled to 4~Hz. Auto- and cross-spectra were
+estimated using 128-second Hann windows with 50\% overlap and at least three
+Welch windows. Separate SISO models and a two-input, single-output (MISO)
+model were calculated over 0--0.35~Hz. Prespecified bands were 0.005--0.024,
+0.024--0.070, 0.070--0.200, and 0.200--0.350~Hz. Gain comparisons used paired
+tests within participants; NC--MCI comparisons used unequal-variance tests.
+Phase was analyzed with circular statistics and permutation tests. The
+Benjamini--Hochberg (BH) method controlled the false discovery rate within
+prespecified analysis families.
+
+\textbf{Results:} Simultaneous modeling changed gain estimates in both
+groups. MISO MAP gain was lower than SISO MAP gain in the very-very-low-frequency
+band in NC (mean difference $-0.240$, 95\% confidence interval [CI]
+$-0.384$ to $-0.096$, BH-adjusted $P=0.0052$) and MCI ($-0.183$, 95\% CI
+$-0.290$ to $-0.076$, BH-adjusted $P=0.0038$). The larger and more consistent
+changes occurred in the carbon dioxide pathway. MISO $\COtwo$ gain was lower
+than SISO $\COtwo$ gain in the low- and high-frequency bands in NC and in the
+very-low-, low-, and high-frequency bands in MCI (all BH-adjusted $P<0.006$).
+No prespecified band-level NC--MCI difference in MISO gain, partial coherence,
+phase, or MAP-minus-$\COtwo$ pathway balance survived BH correction. An
+exploratory frequency-wise analysis identified higher NC than MCI MISO MAP
+gain at 0.1484~Hz (BH-adjusted $P=0.0366$ within that frequency curve).
+
+\textbf{Conclusions:} Modeling MAP and $\PETCOtwo$ together materially
+changed pathway-specific gain estimates, particularly for the $\COtwo$
+pathway. These results support the methodological premise that MAP-only and
+$\COtwo$-only SISO estimates are not interchangeable with conditional MISO
+estimates. However, the present data did not support the prespecified
+hypothesis of a broad band-level difference in conditional cerebral
+hemodynamics between NC and MCI. The isolated 0.1484-Hz group difference is
+hypothesis-generating and requires confirmation.
+\end{abstract}
+
+\noindent\textbf{Keywords:} cerebral autoregulation; carbon dioxide; mild
+cognitive impairment; transcranial Doppler; transfer function analysis;
+multivariable spectral analysis; coherence
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{Introduction}
+% ============================================================================
+
+The brain requires a continuous supply of oxygen and nutrients, but systemic
+blood pressure changes from moment to moment. Cerebral autoregulation is one
+part of the broader set of mechanisms that helps maintain cerebral perfusion
+despite these changes \cite{Claassen2021}. Dynamic cerebral autoregulation
+(dCA) focuses on the response of cerebral blood flow to relatively rapid or
+spontaneous changes in arterial pressure. In human studies, dCA is often
+estimated from continuous MAP and transcranial Doppler-derived CBFV signals.
+Transfer function analysis (TFA) provides a frequency-specific description of
+this pressure--flow relationship \cite{Panerai2023}.
+
+Cerebrovascular regulation is relevant to mild cognitive impairment (MCI)
+because vascular dysfunction and reduced perfusion may contribute to the
+development or progression of cognitive decline \cite{Kisler2017,Beishon2017}.
+At the same time, the existing dCA literature in MCI is mixed. Individual
+studies have often found limited or no group differences in conventional
+TFA gain and phase \cite{Gommer2012,Tarumi2014}, and a recent systematic review
+did not find consistent evidence of poorer spontaneous dCA in MCI or
+Alzheimer's disease \cite{Heutz2023}. These mixed results may reflect true
+biological heterogeneity, limited sample sizes, different experimental
+conditions, or limitations in how the input--output system is represented.
+
+Standard TFA usually treats MAP as the only input to CBFV. This is useful and
+well established, but it is incomplete. Carbon dioxide is a strong and rapid
+regulator of cerebral vascular tone, and even small changes in arterial carbon
+dioxide can produce substantial changes in cerebral blood flow
+\cite{Hoiland2019}. End-tidal carbon dioxide is not identical to arterial
+carbon dioxide, but it is commonly used as a practical continuous surrogate.
+If MAP and $\PETCOtwo$ fluctuate in overlapping frequency ranges, a MAP-only
+SISO transfer function can contain CBFV variation associated with both MAP
+and $\COtwo$. The same problem applies in reverse to a $\COtwo$-only SISO
+model.
+
+Prior multivariable work provides a basis for addressing this problem.
+Panerai and colleagues modeled spontaneous MAP and $\PETCOtwo$ fluctuations
+together \cite{Panerai2000}. Peng and colleagues later showed that including
+gas-related inputs increased multiple coherence below 0.05~Hz and could alter
+the low-frequency MAP-to-CBFV transfer function \cite{Peng2008}. Their result
+does not mean that every multivariable estimate is automatically more
+accurate. It shows that the univariable estimate and the conditional
+multivariable estimate answer different questions. The SISO model describes
+the total pairwise association between one input and CBFV. The MISO model
+estimates the association of each input with CBFV while accounting for the
+other measured input.
+
+This distinction is important for MCI. A MAP-only group comparison may miss
+or misstate a pressure-associated difference if the groups also differ in
+$\COtwo$ dynamics or in MAP--$\COtwo$ coupling. Conversely, a multivariable
+model may show that an apparent SISO difference is shared with the second
+input. The purpose of the present study was therefore not simply to maximize
+coherence. It was to determine whether simultaneous MAP and $\PETCOtwo$
+modeling materially changes pathway-specific interpretation, and then to use
+that model to compare NC and MCI participants.
+
+\subsection{Central hypothesis and aims}
+
+Our central hypothesis was that simultaneously modeling MAP and $\PETCOtwo$
+would materially alter pathway-specific transfer function estimates relative
+to separate SISO models, particularly where the two inputs share frequency
+content, and that these conditional estimates could reveal whether MAP- and
+$\COtwo$-associated CBFV dynamics differ between NC and MCI.
+
+The aims were distinct tests of this hypothesis:
+
+\begin{enumerate}[leftmargin=0.45in]
+    \item \textbf{Model dependence and pathway separation.} We compared
+    MISO and SISO gain and phase within the same participants. We expected
+    the largest changes where one-input estimates contained information
+    shared with the second input.
+
+    \item \textbf{Input coupling.} We tested whether MAP--$\COtwo$ input
+    coherence was associated with the absolute size of the MISO-minus-SISO
+    gain change. This analysis was methodological and exploratory because
+    the two quantities are derived from the same spectral matrix.
+
+    \item \textbf{Main biological comparison.} We compared NC and MCI using
+    MISO MAP gain, MAP partial coherence, and circular phase after accounting
+    for $\PETCOtwo$. Parallel $\COtwo$-pathway comparisons tested whether any
+    group pattern was pressure-specific.
+
+    \item \textbf{Pathway balance.} We compared the within-subject difference
+    between MAP and $\COtwo$ partial coherence across groups. Positive values
+    indicate a stronger conditional MAP--CBFV association than conditional
+    $\COtwo$--CBFV association in that band.
+\end{enumerate}
+
+Multiple coherence was retained as a descriptive measure of how much CBFV
+power was linearly represented in the fitted two-input model. It was not
+treated as proof that MISO predicts unseen data better than SISO. Such a claim
+would require cross-validation on recordings long enough to estimate a model
+and evaluate it on an independent segment.
+
+% AUTHOR ACTION: Create a clean schematic, not a screenshot from MATLAB.
+\figureplaceholder[0.22\textheight]
+{Conceptual difference between SISO and MISO transfer function analysis}
+{Show MAP-to-CBFV and $\PETCOtwo$-to-CBFV as two separate SISO models on the
+left. On the right, show MAP and $\PETCOtwo$ entering one MISO model, with a
+dashed line between the inputs representing their cross-spectrum. State that
+SISO estimates pairwise associations, whereas MISO estimates each pathway
+conditional on the other measured input.}
+{fig:concept}
+
+% ============================================================================
+\section{Methods}
+% ============================================================================
+
+\subsection{Study design and participants}
+
+This was a cross-sectional secondary analysis of baseline physiological
+recordings from NC and MCI participants. The final TFA cohort contained 23 NC
+and 52 MCI participants. All 75 recordings met the analysis requirement of at
+least three Welch windows after preprocessing. Demographic information was
+available for all NC participants and 51 of 52 MCI participants; MCI 302 was
+present in the physiological dataset but did not have a matching row in the
+available demographic workbook.
+
+The available cognitive descriptors included the Mini-Mental State
+Examination (MMSE) \cite{Folstein1975} and Montreal Cognitive Assessment
+(MoCA) \cite{Nasreddine2005}.
+
+% AUTHOR ACTION: Replace this box using the parent protocol and PI-approved text.
+\draftnote{Add the parent study name, recruitment setting, exact NC and MCI
+diagnostic criteria, inclusion and exclusion criteria, institutional review
+board approval number, informed-consent language, and whether diagnosis was
+amnestic, non-amnestic, single-domain, or multidomain MCI. Confirm how CDR,
+MoCA, neuropsychological testing, and clinical adjudication were used. Do not
+infer these details from the spreadsheet alone.}
+
+\subsection{Physiological recording and signal preparation}
+
+Continuous arterial pressure, middle cerebral artery CBFV, end-tidal carbon
+dioxide, and electrocardiography were acquired during resting baseline. The
+source data were recorded at 500~Hz in the acquisition system and converted
+before the present analysis into time-aligned beat-to-beat MAP and CBFV and
+breath-to-breath $\PETCOtwo$ values. Cardiac R peaks defined the beat intervals.
+The available beat-level signals were visually reviewed before export. No
+short artifacts required interpolation in the recordings included here.
+
+% AUTHOR ACTION: Confirm all hardware and acquisition details.
+\draftnote{Add the recording posture, baseline duration target, arterial
+pressure device and calibration, transcranial Doppler manufacturer and probe
+frequency, insonated artery and side, probe fixation method, capnograph model,
+sampling hardware/software versions, and room/breathing conditions. Confirm
+whether CBFV was unilateral or averaged across hemispheres.}
+
+\subsection{Preprocessing}
+
+The MATLAB workflow first removed rows containing non-finite values in any of
+the time, MAP, $\PETCOtwo$, or CBFV signals. Some exported $\PETCOtwo$ columns
+contained leading zeros and a large startup transition before stable values
+were present. The software removed this startup portion automatically so that
+columns did not need to be edited manually. It identified the first nonzero
+$\PETCOtwo$ value, calculated absolute consecutive changes in the remaining
+signal, and defined unusually large changes using the mean plus one standard
+deviation of the upper 10\% of changes. Samples were removed from the start
+until a nonzero value followed by a change below this data-derived threshold
+was reached.
+
+After startup removal, all signals were linearly resampled to 4~Hz. Mean MAP,
+mean $\PETCOtwo$, and mean CBFV were stored before centering. CBFV was then
+normalized to percent of its recording mean,
+
+\begin{equation}
+    \CBFV_{\%}(t)=100\frac{\CBFV(t)}{\overline{\CBFV}}.
+    \label{eq:cbfv_normalization}
+\end{equation}
+
+The mean was removed from MAP, $\PETCOtwo$, and normalized CBFV before spectral
+estimation. Mean removal eliminates the constant, zero-frequency component so
+that the spectra describe fluctuations around each participant's baseline.
+Polynomial detrending was available in the software but disabled for the
+present analysis to avoid imposing an additional low-frequency transformation.
+
+\subsection{Welch spectral estimation}
+
+Auto- and cross-spectra were estimated using Welch's method
+\cite{Welch1967}. Each segment used a 128-second Hann window with 50\% overlap.
+At 4~Hz, the window length was
+
+\begin{equation}
+    L = 128\ \mathrm{s}\times 4\ \mathrm{samples/s}=512\ \mathrm{samples},
+\end{equation}
+
+with an overlap of 256 samples and a step of 256 samples. Therefore, the
+minimum number of points required for three windows was
+
+\begin{equation}
+    N_{\min}=L+(K-1)(L-L_{\mathrm{overlap}})
+    =512+2(256)=1024\ \mathrm{samples},
+\end{equation}
+
+which corresponds to 256 seconds at 4~Hz. The fast Fourier transform length
+was 512 samples, giving a frequency spacing of
+
+\begin{equation}
+    \Delta f=\frac{f_s}{N_{\mathrm{FFT}}}
+    =\frac{4}{512}=0.0078125\ \mathrm{Hz}.
+\end{equation}
+
+The current full-frequency outputs covered 0--0.35~Hz. With the available
+frequency spacing, the last included frequency was 0.34375~Hz. The same
+three-point smoothing kernel,
+
+\begin{equation}
+    \mathbf{w}=\begin{bmatrix}0.25 & 0.50 & 0.25\end{bmatrix},
+    \label{eq:smoothing_kernel}
+\end{equation}
+
+was convolved with every auto-spectrum and cross-spectrum. Applying the same
+linear smoothing to all spectral quantities preserves their alignment and
+reduces isolated bin-to-bin variation. The smoothing setting and kernel were
+parameterized in the main analysis file.
+
+For complex spectra, this paper uses the convention
+
+\begin{equation}
+    S_{xy}(f)=\mathbb{E}\!\left[X^*(f)Y(f)\right],
+    \label{eq:cross_spectrum_convention}
+\end{equation}
+
+where $^*$ denotes complex conjugation. This convention matters because the
+order of the signals determines the sign of phase.
+
+\subsection{Frequency bands}
+
+Band values were calculated after each subject's frequency-domain model was
+estimated. Each subject therefore contributed one value per band to each
+band-level statistical test; frequency bins were not treated as independent
+participants. Arithmetic metrics were averaged normally across bins. Phase
+was averaged circularly as described below. The lower band edge was included
+and the upper edge was excluded, except that the final band included its upper
+edge.
+
+\begin{table}[H]
+\centering
+\caption{Prespecified frequency bands used in the analysis.}
+\label{tab:bands}
+\begin{tabular}{lll}
+\toprule
+Band & Abbreviation & Frequency range (Hz) \\
+\midrule
+Very-very-low frequency & VVLF & $0.005 \leq f < 0.024$ \\
+Very-low frequency & VLF & $0.024 \leq f < 0.070$ \\
+Low frequency & LF & $0.070 \leq f < 0.200$ \\
+High frequency & HF & $0.200 \leq f \leq 0.350$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Single-input, single-output transfer functions}
+
+For a SISO model with input $x(t)$ and output $y(t)$, the frequency-domain
+model is
+
+\begin{equation}
+    Y(f)=H_{xy}(f)X(f)+E(f),
+    \label{eq:siso_model}
+\end{equation}
+
+where $H_{xy}(f)$ is the transfer function and $E(f)$ is unexplained output.
+Multiplying both sides by $X^*(f)$ and taking the expectation gives
+
+\begin{align}
+    \mathbb{E}[X^*Y]
+    &=H_{xy}\mathbb{E}[X^*X]+\mathbb{E}[X^*E],\\
+    S_{xy}
+    &=H_{xy}S_{xx},
+\end{align}
+
+assuming the residual is uncorrelated with the input. The transfer function
+is therefore
+
+\begin{equation}
+    H_{xy}(f)=\frac{S_{xy}(f)}{S_{xx}(f)}.
+    \label{eq:siso_transfer}
+\end{equation}
+
+Separate SISO transfer functions were calculated for MAP-to-CBFV and
+$\PETCOtwo$-to-CBFV:
+
+\begin{equation}
+    H_{\MAP,y}^{\mathrm{SISO}}
+    =\frac{S_{\MAP,y}}{S_{\MAP,\MAP}},
+    \qquad
+    H_{\COtwo,y}^{\mathrm{SISO}}
+    =\frac{S_{\COtwo,y}}{S_{\COtwo,\COtwo}}.
+\end{equation}
+
+Gain was the magnitude of the complex transfer function,
+
+\begin{equation}
+    G_{xy}(f)=\left|H_{xy}(f)\right|.
+    \label{eq:gain}
+\end{equation}
+
+Because CBFV was expressed as percent of its recording mean and both inputs
+were expressed in mmHg, MAP and $\COtwo$ gains are reported as percentage
+points of baseline CBFV per mmHg.
+
+Wrapped phase was calculated explicitly as
+
+\begin{equation}
+    \phi_{xy}(f)=\atanTwo\!\left(
+    \Imag\{H_{xy}(f)\},
+    \Real\{H_{xy}(f)\}\right),
+    \label{eq:phase}
+\end{equation}
+
+where $\Imag\{\cdot\}$ denotes the imaginary part. In standard notation,
+Equation~\ref{eq:phase} is the complex angle of $H$ and
+returns a wrapped value in $[-\pi,\pi]$. Pairwise magnitude-squared coherence
+was
+
+\begin{equation}
+    \gamma^2_{xy}(f)=
+    \frac{|S_{xy}(f)|^2}{S_{xx}(f)S_{yy}(f)}.
+    \label{eq:ordinary_coherence}
+\end{equation}
+
+The unexplained fraction was $1-\gamma^2_{xy}$, and the corresponding residual
+power was
+
+\begin{equation}
+    S_{ee}(f)=S_{yy}(f)\left[1-\gamma^2_{xy}(f)\right].
+\end{equation}
+
+The CARNet ordinary-coherence reference for three Welch windows is 0.51 and
+for four windows is 0.41 \cite{Panerai2023}. These values were plotted only as
+visual benchmarks on ordinary SISO coherence figures. No frequency bin or
+participant was filtered on the basis of coherence. The ordinary-coherence
+reference was not applied to partial or multiple coherence because those
+statistics have different sampling behavior.
+
+\subsection{Two-input, single-output transfer functions}
+
+The MISO model treated MAP as $x_1(t)$, $\PETCOtwo$ as $x_2(t)$, and normalized
+CBFV as $y(t)$:
+
+\begin{equation}
+    Y(f)=H_1(f)X_1(f)+H_2(f)X_2(f)+E(f).
+    \label{eq:miso_model}
+\end{equation}
+
+Multiplication by each conjugated input and expectation produces the spectral
+normal equations
+
+\begin{align}
+    S_{1y} &= S_{11}H_1+S_{12}H_2,\\
+    S_{2y} &= S_{21}H_1+S_{22}H_2.
+\end{align}
+
+In matrix form,
+
+\begin{equation}
+    \underbrace{
+    \begin{bmatrix}
+        S_{11}(f) & S_{12}(f)\\
+        S_{21}(f) & S_{22}(f)
+    \end{bmatrix}}_{\mathbf{S}_{xx}(f)}
+    \underbrace{
+    \begin{bmatrix}
+        H_1(f)\\H_2(f)
+    \end{bmatrix}}_{\mathbf{H}(f)}
+    =
+    \underbrace{
+    \begin{bmatrix}
+        S_{1y}(f)\\S_{2y}(f)
+    \end{bmatrix}}_{\mathbf{S}_{xy}(f)}.
+    \label{eq:miso_matrix}
+\end{equation}
+
+If the determinant
+
+\begin{equation}
+    D(f)=S_{11}(f)S_{22}(f)-S_{12}(f)S_{21}(f)
+\end{equation}
+
+is nonzero, the two transfer functions can be written as
+
+\begin{align}
+    H_1(f)&=\frac{S_{22}S_{1y}-S_{12}S_{2y}}{D},
+    \label{eq:h1_explicit}\\
+    H_2(f)&=\frac{S_{11}S_{2y}-S_{21}S_{1y}}{D}.
+    \label{eq:h2_explicit}
+\end{align}
+
+The implementation did not calculate the inverse or Equations
+\ref{eq:h1_explicit}--\ref{eq:h2_explicit} directly. At each frequency, MATLAB
+solved
+
+\begin{equation}
+    \mathbf{H}(f)=\mathbf{S}_{xx}(f)\backslash\mathbf{S}_{xy}(f),
+    \label{eq:miso_solve}
+\end{equation}
+
+using matrix left division. No ridge regularization or special singular-matrix
+fallback was applied in the present analysis. Gain and phase for $H_1$ and
+$H_2$ were calculated using Equations~\ref{eq:gain} and \ref{eq:phase}.
+
+\subsubsection{Multiple coherence}
+
+The fitted output power represented by both inputs is
+
+\begin{equation}
+    S_{\widehat{y}\widehat{y}}(f)
+    =\mathbf{S}_{xy}^{H}(f)\mathbf{H}(f),
+\end{equation}
+
+where the superscript $H$ denotes the conjugate transpose. Multiple coherence
+was calculated as
+
+\begin{equation}
+    \gamma^2_{y\cdot 12}(f)=
+    \frac{\Real\left\{\mathbf{S}_{xy}^{H}(f)
+    \mathbf{H}(f)\right\}}{S_{yy}(f)}.
+    \label{eq:multiple_coherence}
+\end{equation}
+
+The MISO unexplained fraction was $1-\gamma^2_{y\cdot 12}$ and residual power
+was $S_{yy}(1-\gamma^2_{y\cdot 12})$. Because Equation
+\ref{eq:multiple_coherence} is calculated on the same data used to estimate
+the model, it was interpreted as in-sample linear representation, not
+out-of-sample predictive accuracy.
+
+\subsubsection{Partial coherence}
+
+Partial coherence measures the remaining linear association between one input
+and the output after removing the linear component associated with the other
+input. For MAP and CBFV conditional on $\PETCOtwo$, the residual cross-spectrum
+and auto-spectra were
+
+\begin{align}
+    S_{1y\cdot2}
+    &=S_{1y}-\frac{S_{12}S_{2y}}{S_{22}},\\
+    S_{11\cdot2}
+    &=S_{11}-\frac{S_{12}S_{21}}{S_{22}},\\
+    S_{yy\cdot2}
+    &=S_{yy}-\frac{S_{y2}S_{2y}}{S_{22}}.
+\end{align}
+
+The conditional MAP--CBFV partial coherence was then
+
+\begin{equation}
+    \gamma^2_{1y\mid2}(f)=
+    \frac{|S_{1y\cdot2}(f)|^2}
+    {\Real\{S_{11\cdot2}(f)S_{yy\cdot2}(f)\}}.
+    \label{eq:partial_map}
+\end{equation}
+
+The conditional $\COtwo$--CBFV partial coherence, $\gamma^2_{2y\mid1}$, was
+calculated by reversing the roles of inputs 1 and 2. Partial coherence was not
+described as the fraction of CBFV caused by a pathway. It is a conditional
+linear association after accounting for the other measured input.
+
+\subsubsection{Input coherence and conditioning}
+
+MAP--$\PETCOtwo$ input coherence was
+
+\begin{equation}
+    \gamma^2_{12}(f)=
+    \frac{|S_{12}(f)|^2}{S_{11}(f)S_{22}(f)}.
+    \label{eq:input_coherence}
+\end{equation}
+
+The numerical condition number of the raw input spectral matrix was also
+stored:
+
+\begin{equation}
+    \kappa\!\left(\mathbf{S}_{xx}(f)\right)
+    =\|\mathbf{S}_{xx}(f)\|\,
+    \|\mathbf{S}_{xx}^{-1}(f)\|.
+    \label{eq:condition_number}
+\end{equation}
+
+A large value indicates that the transfer function solution can be sensitive
+to small spectral changes. However, the raw matrix contains MAP and
+$\PETCOtwo$ in different units and power scales, so its condition number is
+also scale-dependent. It was used as a diagnostic, not an exclusion rule or a
+direct measure of physiological collinearity.
+
+\subsection{Phase representation and circular statistics}
+
+Wrapped phase was the primary representation for statistical analysis.
+Standard MATLAB unwrapping was used for the displayed unwrapped curves. The
+algorithm adds or subtracts $2\pi$ when it detects a discontinuity between
+neighboring frequency bins. This changes the displayed branch of the curve
+without changing its circular direction. An experimental custom unwrapping
+method remained available in the software but was not used for the reported
+results.
+
+Linear averaging is inappropriate for wrapped angles because values just
+below $\pi$ and just above $-\pi$ are close on a circle but far apart
+arithmetically. For phase values $\theta_1,\ldots,\theta_n$, the mean cosine
+and sine components were
+
+\begin{equation}
+    C=\frac{1}{n}\sum_{j=1}^{n}\cos\theta_j,
+    \qquad
+    S=\frac{1}{n}\sum_{j=1}^{n}\sin\theta_j.
+\end{equation}
+
+The circular mean direction was
+
+\begin{equation}
+    \overline{\theta}_{\mathrm{circ}}=\atanTwo(S,C),
+    \label{eq:circular_mean}
+\end{equation}
+
+and the mean resultant length and circular standard deviation were
+
+\begin{equation}
+    R=\sqrt{C^2+S^2},
+    \qquad
+    s_{\mathrm{circ}}=\sqrt{-2\ln R}.
+    \label{eq:circular_sd}
+\end{equation}
+
+These are standard directional-statistics definitions
+\cite{MardiaJupp2000,Berens2009}. Group phase means were first calculated
+circularly from the wrapped subject phases at each frequency. The circular
+mean curve was then unwrapped for display. The same circular standard
+deviation was retained around the wrapped and unwrapped group means because
+adding complete phase cycles does not change circular spread.
+
+\subsection{Statistical analysis}
+
+Statistical analysis was performed at two levels. Prespecified inference used
+one value per subject per band. Frequency-wise tests were exploratory and were
+performed separately at each frequency bin.
+
+All inferential tests were two-sided. Confidence intervals were 95\%, and the
+nominal significance level was 0.05 before the stated multiple-comparison
+adjustments.
+
+\subsubsection{Participant characteristics}
+
+Continuous participant characteristics were summarized as mean, standard
+deviation, and range and compared using Welch's unequal-variance two-sample
+$t$ test \cite{Welch1947}. Sex and medication counts were compared with
+Fisher's exact test. These descriptive comparisons were not treated as the
+primary TFA hypothesis family.
+
+\subsubsection{MISO versus SISO comparisons}
+
+MISO and SISO values came from the same subjects. Arithmetic outcomes were
+therefore compared using paired $t$ tests on
+
+\begin{equation}
+    d_i=x_i^{\mathrm{MISO}}-x_i^{\mathrm{SISO}}.
+\end{equation}
+
+The null hypothesis was $H_0:\mu_d=0$. The standardized paired effect was
+
+\begin{equation}
+    d_z=\frac{\overline{d}}{s_d}.
+\end{equation}
+
+Because gain ratios were skewed in some bands, the median subject-level ratio
+
+\begin{equation}
+    \widetilde{R}=\operatorname{median}_i
+    \left(\frac{x_i^{\mathrm{MISO}}}{x_i^{\mathrm{SISO}}}\right)
+    \label{eq:median_ratio}
+\end{equation}
+
+and its interquartile range were reported as supporting effect descriptions.
+Paired phase differences were wrapped to the shortest angular difference and
+tested with a sign-randomization circular permutation test.
+
+\subsubsection{NC versus MCI comparisons}
+
+For arithmetic outcomes, NC and MCI were compared with Welch's two-sample
+$t$ test. The test statistic was
+
+\begin{equation}
+    t=\frac{\overline{x}_{\mathrm{NC}}-
+    \overline{x}_{\mathrm{MCI}}}
+    {\sqrt{s_{\mathrm{NC}}^2/n_{\mathrm{NC}}+
+    s_{\mathrm{MCI}}^2/n_{\mathrm{MCI}}}}.
+    \label{eq:welch_t}
+\end{equation}
+
+The null hypothesis was equality of group means at the tested band or
+frequency. Hedges' $g$ described the standardized group difference with a
+small-sample correction \cite{Hedges1981}. Independent circular phase tests
+randomly reassigned pooled wrapped phase values to groups while preserving
+group sizes.
+
+\subsubsection{Permutation settings}
+
+Circular tests used 10,000 permutations. For each test, the raw permutation
+$P$ value was
+
+\begin{equation}
+    P=\frac{1+\#\left(T_{\mathrm{perm}}\geq
+    T_{\mathrm{observed}}\right)}{10{,}000+1}.
+\end{equation}
+
+The added one prevents a zero $P$ value. A fixed random seed of 2026 made the
+random permutations reproducible; it did not pull results toward zero or
+change the null hypothesis.
+
+\subsubsection{Multiple-comparison control}
+
+Raw $P$ values answer one test at a time. Because many related bands and
+metrics were tested, the Benjamini--Hochberg procedure controlled the expected
+false discovery rate within prespecified analysis families
+\cite{BenjaminiHochberg1995}. For sorted raw values
+$P_{(1)}\leq\cdots\leq P_{(m)}$, the adjusted values were calculated as
+
+\begin{equation}
+    P^{\mathrm{BH}}_{(i)}=
+    \min_{j\geq i}\left\{1,\frac{m}{j}P_{(j)}\right\}.
+    \label{eq:bh}
+\end{equation}
+
+Statistical significance was defined as $P^{\mathrm{BH}}<0.05$. A value above
+0.05 was interpreted as insufficient evidence to reject the null, not as
+proof that the groups or models were equivalent.
+
+The primary MISO-versus-SISO family contained 16 gain comparisons: two groups,
+two pathways, and four bands. The primary NC--MCI family contained 16 MISO
+comparisons: two pathways, two metrics (gain and partial coherence), and four
+bands. The 32 secondary within-subject model comparisons (coherence and phase)
+were adjusted together. The 36 secondary group comparisons (MISO phase, all
+SISO outcomes, and four pathway-balance comparisons) were adjusted together.
+The 24 input-coherence associations were one exploratory family. The nine
+physiological recording-characteristic tests exported by the workflow were
+also adjusted together, although Table~\ref{tab:participants} reports raw
+descriptive $P$ values for participant and recording characteristics.
+
+\subsubsection{Exploratory frequency-wise tests}
+
+At each included frequency, NC and MCI were compared for MISO gain, partial
+coherence, and wrapped phase. MISO and SISO were also compared within each
+group for gain and phase. BH adjustment was applied across the bins belonging
+to each individual metric/pathway comparison curve. Thus, the adjusted
+$P$-value curve shows where one specific frequency curve provides evidence
+against its null hypothesis after accounting for the bins on that curve. The
+adjustment did not additionally control across every metric and pathway in
+the full project.
+
+% AUTHOR ACTION: This is a genuine analysis-plan decision, not just wording.
+\draftnote{The current exploratory frequency-wise analysis includes the
+0-Hz bin because the configured analysis range begins at 0~Hz, whereas the
+prespecified bands begin at 0.005~Hz. Mean removal should minimize the DC
+component, but the final paper should decide in advance whether to retain or
+exclude 0~Hz from the exploratory family and then rerun that analysis if the
+decision changes.}
+
+\subsection{Software and reproducibility}
+
+The analysis was implemented in MATLAB R2025b using a single workflow for
+single-subject, batch, and synthetic-data runs. The same Welch spectra were
+passed to enabled SISO and MISO models, and the resulting subject-level values
+were passed to plotting, group summarization, statistics, and Excel export.
+The source code includes unit tests for preprocessing, spectral estimation,
+SISO and MISO calculations, circular statistics, BH adjustment, workflow
+settings, statistical analysis, and Excel export.
+
+% AUTHOR ACTION: Add a permanent repository URL and commit identifier at submission.
+\draftnote{Add the final public repository URL, release/commit identifier,
+MATLAB toolbox requirements, data-availability statement, and instructions
+for obtaining any restricted participant data.}
+
+% ============================================================================
+\section{Results}
+% ============================================================================
+
+\subsection{Participants and recording characteristics}
+
+All 23 NC and 52 MCI recordings completed preprocessing and TFA. The NC and
+MCI groups did not differ in usable recording duration, number of Welch
+windows, mean MAP, mean $\PETCOtwo$, mean CBFV, or CVRi (Table
+\ref{tab:participants}). Demographic matching was available for 23 NC and 51
+MCI participants. Age, sex, body size, education, MMSE, blood pressure, heart
+rate, and medication counts were similar between groups. As expected from the
+clinical grouping, MoCA was lower in MCI. The available geriatric depression
+score was also higher in MCI, although values were low in both groups.
+
+\begin{longtable}{p{0.30\linewidth}p{0.25\linewidth}p{0.25\linewidth}p{0.10\linewidth}}
+\caption{Participant and recording characteristics.}
+\label{tab:participants}\\
+\toprule
+Characteristic & NC & MCI & Raw $P$ \\
+\midrule
+\endfirsthead
+\toprule
+Characteristic & NC & MCI & Raw $P$ \\
+\midrule
+\endhead
+\multicolumn{4}{l}{\textit{Demographic and clinical characteristics}}\\
+Age, years & $66.15\pm7.14$ [55.98--80.53] & $64.78\pm6.12$ [55.11--78.75] & 0.430 \\
+Female sex, $n/N$ (\%) & 13/23 (56.5) & 29/51 (56.9) & 1.000 \\
+Height, cm & $169.83\pm7.98$ [157.5--186.5] & $168.35\pm9.05$ [143.5--187.8] & 0.482 \\
+Weight, kg & $78.59\pm16.67$ [50.6--110.6] & $78.90\pm14.71$ [49.9--116.8] & 0.938 \\
+Body mass index, kg/m$^2$ & $27.10\pm4.65$ [20.14--35.31] & $27.74\pm4.03$ [20.27--35.81] & 0.573 \\
+Education, years & $16.22\pm2.37$ [12--20] & $15.65\pm2.39$ [12--19] & 0.345 \\
+MMSE, points & $29.17\pm0.94$ [27--30] & $29.18\pm1.14$ [24--30] & 0.992 \\
+MoCA, points & $27.35\pm1.85$ [24--30] & $24.90\pm2.72$ [17--30] & $<0.001$ \\
+Systolic BP, mmHg & $129.65\pm10.69$ [113--153] & $131.63\pm11.29$ [106--158] & 0.474 \\
+Diastolic BP, mmHg & $73.70\pm8.90$ [61--93] & $74.61\pm7.88$ [56--91] & 0.675 \\
+Heart rate, beats/min & $72.35\pm7.37$ [59--86] & $70.51\pm10.04$ [50--87] & 0.381 \\
+Blood-pressure medication, $n/N$ & 8/23 & 16/47 & 1.000 \\
+Cholesterol medication, $n/N$ & 8/23 & 9/47 & 0.234 \\
+Geriatric depression score & $0.57\pm0.95$ [0--3] & $1.94\pm1.78$ [0--7]$^{a}$ & $<0.001$ \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Physiological recording and analysis characteristics}}\\
+Mean MAP, mmHg & $90.73\pm14.47$ [68.64--116.97] & $95.26\pm13.90$ [67.94--128.48] & 0.214 \\
+Within-recording MAP SD, mmHg & $4.11\pm1.14$ [2.31--7.19] & $4.17\pm1.44$ [1.78--9.50] & 0.843 \\
+Mean $\PETCOtwo$, mmHg & $36.68\pm3.46$ [29.79--42.50] & $36.56\pm2.85$ [31.01--43.04] & 0.890 \\
+Within-recording $\PETCOtwo$ SD, mmHg & $1.41\pm0.68$ [0.58--3.17] & $1.32\pm0.58$ [0.48--3.31] & 0.597 \\
+Mean CBFV, cm/s & $46.43\pm11.75$ [31.98--81.99] & $46.83\pm10.17$ [30.72--82.26] & 0.888 \\
+Within-recording CBFV SD, cm/s & $3.55\pm1.16$ [1.91--6.50] & $3.35\pm1.36$ [1.35--8.66] & 0.519 \\
+CVRi, mmHg/(cm/s) & $2.03\pm0.45$ [1.06--2.89] & $2.14\pm0.60$ [1.13--3.76] & 0.413 \\
+Usable duration, s & $297.35\pm13.02$ [270.5--347.8] & $297.43\pm14.19$ [260.5--338.8] & 0.980 \\
+Welch windows, $n$ & $3.04\pm0.21$ [3--4] & $3.06\pm0.24$ [3--4] & 0.795 \\
+\bottomrule
+\multicolumn{4}{p{0.94\linewidth}}{\footnotesize Values are mean$\pm$SD
+[minimum--maximum] unless otherwise stated. Demographic values use 23 NC and
+51 MCI participants because no demographic row matched MCI 302. Physiological
+recording values use all 23 NC and 52 MCI participants. $^{a}$MCI $n=50$ for
+the geriatric depression score. Medication denominators reflect available
+entries. BP, blood pressure; CBFV, cerebral blood flow velocity; CVRi, mean
+MAP divided by mean CBFV; MMSE, Mini-Mental State Examination; MoCA, Montreal
+Cognitive Assessment; SD, standard deviation.}\\
+\end{longtable}
+
+\subsection{Model dependence of gain}
+
+The primary methodological result was that simultaneous modeling changed
+pathway-specific gain, but the size and frequency pattern of that change were
+not identical for MAP and $\COtwo$ (Table~\ref{tab:model_gain}). In the MAP
+pathway, MISO gain was lower than SISO gain in VVLF for both groups. NC also
+showed a small increase in MISO MAP gain in LF. The mean NC LF difference was
+0.065, and the median subject-level MISO/SISO ratio was 1.028, indicating that
+the statistically detectable effect was small in absolute terms.
+
+The more consistent changes occurred in the $\COtwo$ pathway. NC MISO
+$\COtwo$ gain was lower than SISO gain in LF and HF. MCI MISO $\COtwo$ gain
+was lower in VLF, LF, and HF. The median MISO/SISO ratio in significant
+$\COtwo$ comparisons ranged from 0.52 to 0.74. Thus, the separate $\COtwo$-only
+model generally produced larger gain estimates than the conditional
+$\COtwo$ estimate after MAP was included.
+
+No MISO-versus-SISO phase comparison survived BH adjustment at the band level.
+Partial coherence and ordinary coherence were also compared, but these values
+were not treated as a test of model performance because they answer different
+questions.
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{p{0.48in}p{0.48in}p{0.48in}p{0.62in}p{0.62in}p{1.18in}p{0.62in}p{0.62in}}
+\caption{Primary within-subject comparison of MISO and SISO gain.}
+\label{tab:model_gain}\\
+\toprule
+Group & Path & Band & MISO & SISO & MISO$-$SISO (95\% CI) & Median ratio & BH $P$ \\
+\midrule
+\endfirsthead
+\toprule
+Group & Path & Band & MISO & SISO & MISO$-$SISO (95\% CI) & Median ratio & BH $P$ \\
+\midrule
+\endhead
+NC & MAP & VVLF & 1.092 & 1.332 & $-0.240$ ($-0.384,-0.096$) & 0.837 & \textbf{0.0052} \\
+NC & MAP & VLF  & 1.288 & 1.270 & $0.018$ ($-0.060,0.096$) & 0.997 & 0.6370 \\
+NC & MAP & LF   & 2.111 & 2.046 & $0.065$ ($0.010,0.120$) & 1.028 & \textbf{0.0464} \\
+NC & MAP & HF   & 2.343 & 2.331 & $0.012$ ($-0.036,0.060$) & 1.014 & 0.6370 \\
+NC & $\COtwo$ & VVLF & 4.127 & 4.370 & $-0.243$ ($-0.675,0.189$) & 0.957 & 0.3149 \\
+NC & $\COtwo$ & VLF  & 2.684 & 3.170 & $-0.486$ ($-1.087,0.116$) & 0.816 & 0.1444 \\
+NC & $\COtwo$ & LF   & 1.761 & 2.498 & $-0.737$ ($-1.067,-0.407$) & 0.662 & \textbf{0.00052} \\
+NC & $\COtwo$ & HF   & 2.695 & 4.944 & $-2.250$ ($-3.145,-1.354$) & 0.523 & \textbf{0.00017} \\
+\addlinespace
+MCI & MAP & VVLF & 0.837 & 1.020 & $-0.183$ ($-0.290,-0.076$) & 0.844 & \textbf{0.0038} \\
+MCI & MAP & VLF  & 1.192 & 1.253 & $-0.061$ ($-0.116,-0.006$) & 0.971 & 0.0539 \\
+MCI & MAP & LF   & 1.779 & 1.769 & $0.010$ ($-0.028,0.047$) & 0.994 & 0.6370 \\
+MCI & MAP & HF   & 2.034 & 1.995 & $0.039$ ($-0.001,0.079$) & 1.015 & 0.0863 \\
+MCI & $\COtwo$ & VVLF & 3.089 & 3.328 & $-0.239$ ($-0.493,0.014$) & 0.982 & 0.0931 \\
+MCI & $\COtwo$ & VLF  & 2.066 & 2.850 & $-0.784$ ($-1.106,-0.462$) & 0.743 & \textbf{0.000083} \\
+MCI & $\COtwo$ & LF   & 1.599 & 2.892 & $-1.293$ ($-1.718,-0.869$) & 0.620 & \textbf{0.0000021} \\
+MCI & $\COtwo$ & HF   & 2.823 & 5.458 & $-2.635$ ($-4.275,-0.995$) & 0.682 & \textbf{0.0052} \\
+\bottomrule
+\multicolumn{8}{p{8.2in}}{\footnotesize Values are group means. Gain units are
+percentage points of baseline CBFV per mmHg. Ratios were
+calculated within subject as MISO/SISO and summarized by the median. BH
+adjustment was performed across the 16 primary gain tests. Bold values are
+BH-adjusted $P<0.05$. CI, confidence interval; HF, high frequency; LF, low
+frequency; MCI, mild cognitive impairment; NC, normal control; VLF,
+very-low frequency; VVLF, very-very-low frequency.}\\
+\end{longtable}
+\end{landscape}
+
+% AUTHOR ACTION: Use the actual batch statistics output to make this figure.
+\figureplaceholder[0.28\textheight]
+{Paired subject-level MISO and SISO gain comparisons}
+{Use four panels for MAP VVLF, MAP LF, $\COtwo$ LF, and $\COtwo$ HF, or split
+MAP and $\COtwo$ into two figures. Plot each participant's SISO and MISO band
+values connected by a line, with NC and MCI shown separately. Annotate the
+mean paired difference, 95\% CI, median ratio, raw $P$, and BH-adjusted $P$.
+The figure should show effect size and variability rather than only a
+significance symbol.}
+{fig:model_gain}
+
+\subsection{Coherence structure and pathway balance}
+
+Input coherence was modest across bands and similar between groups
+(Table~\ref{tab:coherence}). Conditional $\COtwo$ partial coherence was
+comparable to or greater than MAP partial coherence in VVLF. MAP partial
+coherence became larger than $\COtwo$ partial coherence from VLF through HF.
+This frequency pattern was present in both NC and MCI. Multiple coherence was
+between approximately 0.58 and 0.75 across bands, but it was interpreted as
+in-sample representation by both inputs rather than predictive validation.
+
+The MAP-minus-$\COtwo$ partial-coherence balance was negative in VVLF and
+positive in VLF, LF, and HF. The balance did not differ between NC and MCI in
+any band after BH adjustment. These findings indicate a similar broad
+frequency-dependent balance of conditional associations in both groups.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Descriptive band coherence values.}
+\label{tab:coherence}
+\begin{tabular}{llcccc}
+\toprule
+Metric & Group & VVLF & VLF & LF & HF \\
+\midrule
+Input MAP--$\COtwo$ coherence & NC  & 0.314 & 0.250 & 0.216 & 0.209 \\
+                              & MCI & 0.262 & 0.264 & 0.215 & 0.190 \\
+MISO MAP partial coherence    & NC  & 0.335 & 0.560 & 0.592 & 0.656 \\
+                              & MCI & 0.276 & 0.548 & 0.671 & 0.656 \\
+MISO $\COtwo$ partial coherence & NC  & 0.409 & 0.346 & 0.221 & 0.225 \\
+                                & MCI & 0.385 & 0.268 & 0.233 & 0.243 \\
+MISO multiple coherence       & NC  & 0.645 & 0.711 & 0.681 & 0.733 \\
+                              & MCI & 0.582 & 0.695 & 0.746 & 0.731 \\
+SISO MAP ordinary coherence   & NC  & 0.388 & 0.542 & 0.584 & 0.647 \\
+                              & MCI & 0.308 & 0.569 & 0.665 & 0.644 \\
+SISO $\COtwo$ ordinary coherence & NC  & 0.456 & 0.300 & 0.198 & 0.209 \\
+                                  & MCI & 0.412 & 0.286 & 0.210 & 0.193 \\
+MAP minus $\COtwo$ partial coherence & NC  & $-0.074$ & 0.214 & 0.370 & 0.431 \\
+                                      & MCI & $-0.109$ & 0.281 & 0.438 & 0.413 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% AUTHOR ACTION: The ordinary coherence line belongs only on SISO panels.
+\figureplaceholder[0.27\textheight]
+{Group coherence structure across frequency}
+{For each group, show MAP--$\COtwo$ input coherence, MAP partial coherence,
+$\COtwo$ partial coherence, and multiple coherence as frequency curves with
+group mean and between-subject SD. In separate SISO panels, show ordinary MAP
+and $\COtwo$ coherence with the CARNet reference line. Do not draw the
+ordinary-coherence threshold on partial or multiple coherence.}
+{fig:coherence}
+
+\subsection{NC versus MCI comparisons}
+
+No prespecified band-level NC--MCI comparison of MISO gain or partial coherence
+survived BH correction (Table~\ref{tab:group_primary}). The largest unadjusted
+gain difference was in the MAP LF band, where NC had higher MISO gain than MCI
+(difference 0.332, 95\% CI 0.024 to 0.640, Hedges' $g=0.622$, raw $P=0.0355$).
+After adjustment across the primary family, the BH-adjusted $P$ value was
+0.335. The largest partial-coherence difference was in the $\COtwo$ VLF band
+(NC minus MCI 0.078, 95\% CI 0.003 to 0.153, raw $P=0.0418$,
+BH-adjusted $P=0.335$). No band-level MISO phase comparison survived the
+secondary phase adjustment.
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{p{0.48in}p{0.60in}p{0.45in}p{0.62in}p{0.62in}p{1.20in}p{0.54in}p{0.58in}}
+\caption{Primary NC versus MCI comparisons of MISO gain and partial coherence.}
+\label{tab:group_primary}\\
+\toprule
+Path & Metric & Band & NC & MCI & NC$-$MCI (95\% CI) & Hedges $g$ & BH $P$ \\
+\midrule
+\endfirsthead
+\toprule
+Path & Metric & Band & NC & MCI & NC$-$MCI (95\% CI) & Hedges $g$ & BH $P$ \\
+\midrule
+\endhead
+MAP & Gain & VVLF & 1.092 & 0.837 & 0.255 ($-0.140,0.649$) & 0.344 & 0.469 \\
+MAP & Gain & VLF  & 1.288 & 1.192 & 0.097 ($-0.092,0.285$) & 0.229 & 0.495 \\
+MAP & Gain & LF   & 2.111 & 1.779 & 0.332 ($0.024,0.640$) & 0.622 & 0.335 \\
+MAP & Gain & HF   & 2.343 & 2.034 & 0.309 ($-0.071,0.689$) & 0.477 & 0.344 \\
+MAP & Partial coh. & VVLF & 0.335 & 0.276 & 0.059 ($-0.034,0.153$) & 0.330 & 0.469 \\
+MAP & Partial coh. & VLF  & 0.560 & 0.548 & 0.012 ($-0.089,0.112$) & 0.061 & 0.870 \\
+MAP & Partial coh. & LF   & 0.592 & 0.671 & $-0.079$ ($-0.174,0.015$) & $-0.414$ & 0.344 \\
+MAP & Partial coh. & HF   & 0.656 & 0.656 & $-0.0002$ ($-0.086,0.086$) & $-0.001$ & 0.996 \\
+\addlinespace
+$\COtwo$ & Gain & VVLF & 4.127 & 3.089 & 1.038 ($-0.214,2.291$) & 0.493 & 0.344 \\
+$\COtwo$ & Gain & VLF  & 2.684 & 2.066 & 0.619 ($-0.426,1.663$) & 0.380 & 0.470 \\
+$\COtwo$ & Gain & LF   & 1.761 & 1.599 & 0.163 ($-0.291,0.616$) & 0.186 & 0.631 \\
+$\COtwo$ & Gain & HF   & 2.695 & 2.823 & $-0.128$ ($-1.095,0.839$) & $-0.064$ & 0.870 \\
+$\COtwo$ & Partial coh. & VVLF & 0.409 & 0.385 & 0.024 ($-0.072,0.121$) & 0.112 & 0.759 \\
+$\COtwo$ & Partial coh. & VLF  & 0.346 & 0.268 & 0.078 ($0.003,0.153$) & 0.548 & 0.335 \\
+$\COtwo$ & Partial coh. & LF   & 0.221 & 0.233 & $-0.011$ ($-0.042,0.019$) & $-0.184$ & 0.631 \\
+$\COtwo$ & Partial coh. & HF   & 0.225 & 0.243 & $-0.017$ ($-0.049,0.014$) & $-0.281$ & 0.487 \\
+\bottomrule
+\multicolumn{8}{p{8.2in}}{\footnotesize BH adjustment was performed across
+the 16 primary group tests. Gain units are percentage points of baseline CBFV
+per mmHg; coherence is unitless. No comparison met BH-adjusted $P<0.05$. CI,
+confidence interval; coh., coherence; HF, high frequency; LF, low frequency;
+MCI, mild cognitive impairment; NC, normal control; VLF, very-low frequency;
+VVLF, very-very-low frequency.}\\
+\end{longtable}
+\end{landscape}
+
+% AUTHOR ACTION: This should be a distribution figure, not only mean bars.
+\figureplaceholder[0.25\textheight]
+{Individual MISO values used in the NC--MCI comparisons}
+{Plot individual NC and MCI values for the most relevant prespecified outcomes:
+MAP gain and partial coherence in VVLF/VLF/LF and $\COtwo$ gain and partial
+coherence in VVLF/VLF/LF. Use a central estimate with a 95\% CI, not mean
+$\pm$SD error bars that extend beyond bounded coherence limits. Report raw and
+BH-adjusted $P$ values. A supplementary figure can contain all four bands.}
+{fig:group_comparison}
+
+\subsection{Exploratory frequency-wise comparisons}
+
+The frequency-wise NC--MCI analysis identified one bin that survived BH
+adjustment within its comparison curve. At 0.1484375~Hz, MISO MAP gain was
+higher in NC than MCI (NC 2.462, MCI 1.710; difference 0.752, 95\% CI 0.334 to
+1.170; Hedges' $g=0.959$; raw $P=0.000813$; BH-adjusted $P=0.0366$). Several
+neighboring bins had raw $P<0.05$, but only the 0.1484-Hz bin survived the
+curve-wise correction. No frequency-wise group phase or partial-coherence bin
+survived its curve-wise BH correction.
+
+Frequency-wise model comparisons showed broad MISO--SISO differences in
+$\COtwo$ gain, especially in MCI, and more limited differences in MAP gain.
+These curves were consistent with the band results: simultaneous modeling had
+a stronger effect on $\COtwo$ gain than on MAP gain. No frequency-wise phase
+comparison survived its curve-wise correction.
+
+% AUTHOR ACTION: This is the main frequency-wise inferential figure.
+\figureplaceholder[0.32\textheight]
+{Exploratory frequency-wise NC--MCI comparison of MISO MAP gain}
+{Top panel: NC and MCI group mean MISO MAP gain with between-subject SD or a
+clearly labeled 95\% CI. Middle panel: NC-minus-MCI mean difference with a
+zero line. Bottom panel: raw and BH-adjusted $P$ curves on a $-\log_{10}(P)$
+axis so small values are visible, with a horizontal line at
+$-\log_{10}(0.05)$. Mark 0.1484~Hz and draw the prespecified band boundaries.
+State in the caption that BH correction was within this 45-bin curve and that
+the result is exploratory.}
+{fig:frequency_group}
+
+% AUTHOR ACTION: Consider supplement if the main paper becomes figure-heavy.
+\figureplaceholder[0.32\textheight]
+{Frequency-wise MISO versus SISO gain comparisons}
+{Create separate NC and MCI figures or a compact multi-panel figure. For MAP
+and $\COtwo$, show the MISO and SISO group curves, their paired difference,
+and the raw/BH-adjusted $P$ curves. Use gain, not phase, in the main version
+because no phase comparison survived adjustment.}
+{fig:frequency_model}
+
+\subsection{Input coherence and model-related gain changes}
+
+MAP--$\COtwo$ input coherence was positively associated with the absolute
+MISO-minus-SISO gain change in several exploratory comparisons. In MCI, the
+associations included MAP VVLF ($\rho=0.551$, BH-adjusted $P=0.00038$), MAP LF
+($\rho=0.363$, BH-adjusted $P=0.0338$), and $\COtwo$ VVLF ($\rho=0.365$,
+BH-adjusted $P=0.0338$). In the pooled cohort, significant associations were
+present for MAP VVLF ($\rho=0.537$, BH-adjusted $P=2.46\times10^{-5}$), MAP
+VLF ($\rho=0.293$, BH-adjusted $P=0.0379$), MAP LF ($\rho=0.283$,
+BH-adjusted $P=0.0421$), $\COtwo$ VVLF ($\rho=0.375$, BH-adjusted $P=0.0080$),
+and $\COtwo$ VLF ($\rho=0.347$, BH-adjusted $P=0.0145$).
+
+These results support the idea that the two models differ more when the inputs
+share more frequency content. However, they were not treated as independent
+biological validation because both input coherence and gain change are
+calculated from the same underlying spectral estimates.
+
+\figureplaceholder[0.25\textheight]
+{Input coherence and the size of model-related gain changes}
+{For all four bands, plot each subject's band-averaged MAP--$\COtwo$ input
+coherence against the absolute MISO-minus-SISO gain change. Use separate MAP
+and $\COtwo$ pathway panels, display NC and MCI with different colors, and
+annotate $n$, Spearman $\rho$, raw $P$, and BH-adjusted $P$. Keep the word
+``exploratory'' in the title or caption.}
+{fig:input_association}
+
+\subsection{Numerical conditioning}
+
+The raw input spectral matrix was more poorly conditioned at some high-frequency
+points. The median HF condition number was 10.9 in NC and 15.4 in MCI. Values
+greater than 100 occurred in 60 of 437 NC and 126 of 988 MCI HF
+frequency-by-subject observations. The maximum values were approximately
+7,467 in NC and 17,366 in MCI. High values tended to occur when $\PETCOtwo$
+power was low or MAP and $\PETCOtwo$ powers were highly imbalanced.
+
+Because the raw condition number depends on the units and scaling of both
+inputs, these observations do not establish severe physiological collinearity.
+They do show that some high-frequency MISO estimates may be sensitive to small
+spectral changes. No regularization or condition-number exclusion was applied.
+
+% AUTHOR ACTION: This sensitivity analysis should be resolved with the PI.
+\draftnote{Before submission, decide whether to add a scale-invariant
+conditioning diagnostic based on the normalized input spectral matrix and
+whether a prespecified ridge sensitivity analysis is needed. Do not add an
+arbitrary ridge constant after seeing the results. If regularization is used,
+justify its scale and show that the main conclusions are stable.}
+
+\figureplaceholder[0.23\textheight]
+{Input spectral-matrix conditioning diagnostics}
+{Suggested supplementary figure: condition number versus frequency for each
+group, plus condition number versus $\PETCOtwo$ power and MAP/$\PETCOtwo$
+power ratio. Clearly state that the plotted raw condition number is
+scale-dependent.}
+{fig:conditioning}
+
+% ============================================================================
+\section{Discussion}
+% ============================================================================
+
+\subsection{Principal findings}
+
+This study asked two related but distinct questions. First, does simultaneous
+MAP and $\PETCOtwo$ modeling materially change pathway-specific transfer
+function estimates? Second, after the pathways are modeled together, do the
+conditional estimates differ between NC and MCI? The answer to the first
+question was yes. The answer to the second was not at the prespecified band
+level.
+
+The clearest methodological result was the reduction in MISO $\COtwo$ gain
+relative to $\COtwo$-only SISO gain. This reduction was present in NC at LF and
+HF and in MCI at VLF, LF, and HF. MISO MAP gain also differed from SISO MAP
+gain, but the changes were smaller and concentrated in VVLF. These findings
+show that the one-input and two-input models are not interchangeable. They do
+not show that the MISO model is universally superior. Rather, the models
+partition shared input--output information differently.
+
+The main biological hypothesis was not supported. None of the prespecified
+band-level NC--MCI differences in MISO gain, partial coherence, phase, or
+pathway balance survived BH correction. This negative result is important.
+It indicates that accounting for spontaneous $\PETCOtwo$ fluctuations did not
+reveal a broad conditional MAP-pathway deficit in the present MCI cohort. The
+finding is compatible with prior reports and systematic reviews showing mixed
+or absent group differences in spontaneous dCA metrics
+\cite{Gommer2012,Tarumi2014,Heutz2023}.
+
+\subsection{Why SISO and MISO gain differed}
+
+A SISO transfer function assigns all linear input--output cross-spectral
+information to one input. If MAP and $\PETCOtwo$ are coupled, and both are
+associated with CBFV, the separate SISO estimates may include shared
+information. The MISO solution uses the full input spectral matrix and
+estimates both transfer functions at the same time. The conditional coefficient
+for one input can therefore decrease when variation shared with the other
+input is accounted for.
+
+The strong reduction in $\COtwo$ gain is consistent with this mechanism. The
+result does not mean that $\COtwo$ is physiologically unimportant. Carbon
+dioxide remains a potent regulator of cerebral blood flow
+\cite{Hoiland2019}. It means that the $\COtwo$-only SISO gain was larger than
+the coefficient assigned specifically to $\PETCOtwo$ after simultaneous MAP
+modeling. In other words, part of the pairwise $\PETCOtwo$--CBFV relationship
+was shared with MAP in the two-input representation.
+
+The pooled positive associations between input coherence and absolute gain
+change further support this interpretation. They are strongest in low
+frequency bands, where prior multivariable work has also shown that gas-related
+inputs can change pressure--flow estimates \cite{Panerai2000,Peng2008}.
+Nevertheless, these associations should remain secondary because they are
+partly mathematically coupled to the same spectral matrix used to calculate
+the transfer functions.
+
+\subsection{Frequency-dependent pathway balance}
+
+The descriptive partial-coherence pattern was physiologically plausible but
+should not be overinterpreted. Conditional $\COtwo$ coherence was comparable
+to or greater than conditional MAP coherence in VVLF. From VLF through HF,
+conditional MAP coherence was larger. This pattern suggests that slow CBFV
+variation contains an important $\COtwo$-associated component, while MAP is
+more strongly associated with CBFV at higher frequencies in the analyzed
+range.
+
+The pathway-balance result was similar in NC and MCI. It therefore provides a
+useful description of frequency-dependent association but not evidence of an
+MCI-specific shift. Moreover, partial coherence is not a direct measure of
+causal contribution. Unmeasured inputs, feedback, measurement noise, and
+nonlinear physiology can all affect the observed spectral relationships.
+
+\subsection{Interpretation of the NC--MCI results}
+
+The absence of BH-significant band differences should not be described as
+proof that NC and MCI are the same. The confidence intervals show the range of
+effects compatible with the current data. For example, NC MAP LF gain was
+higher than MCI before multiplicity adjustment and had a moderate Hedges'
+$g$. The adjusted analysis, however, did not provide enough evidence to
+declare that result across the prespecified family. The correct interpretation
+is that the study did not establish a robust band-level group difference.
+
+The isolated 0.1484-Hz MAP-gain difference deserves follow-up but not a primary
+claim. It survived BH adjustment across the bins of its own curve and was
+surrounded by several smaller raw $P$ values, which is more credible than a
+completely isolated numerical spike. Still, the frequency-wise analyses were
+exploratory, multiple metric/pathway curves were examined, and the finding was
+not a prespecified single-frequency hypothesis. It should therefore be used
+to guide a future targeted analysis or replication rather than to redefine
+the main conclusion of this study.
+
+\subsection{Coherence as a benchmark rather than a filter}
+
+The present analysis retained all frequency bins and used ordinary SISO
+coherence as a visual benchmark. This choice separates data description from
+data deletion. With three Welch windows, the CARNet ordinary-coherence
+reference was 0.51 \cite{Panerai2023}. Much of the $\COtwo$ ordinary coherence,
+especially outside VVLF, was below this reference. Consequently, the high-
+frequency $\COtwo$ gain and phase estimates should be interpreted cautiously
+even when MISO and SISO gains differed statistically.
+
+The ordinary threshold does not transfer directly to partial or multiple
+coherence. Applying the same number to those metrics would imply a sampling
+distribution that has not been established here. Showing the ordinary line
+only on SISO coherence plots is therefore more defensible than filtering the
+full analysis or drawing the same line on every coherence statistic.
+
+\subsection{Phase findings}
+
+No phase comparison survived multiplicity correction. This is not surprising
+given the circular variability of phase, the limited number of Welch windows,
+and abrupt branch changes near $-\pi$ and $\pi$. Circular averaging prevents
+the specific error of treating those boundaries as far apart, and testing the
+wrapped values avoids making inferential results depend on the chosen display
+branch. Unwrapped curves remain useful for visualization, but they should be
+shown as the unwrapped circular mean with the same circular standard deviation.
+
+\subsection{Multiple coherence and prediction}
+
+Multiple coherence was generally higher than either single pairwise coherence
+because two inputs were fitted to the same output on the same data. This is
+expected and does not by itself demonstrate that MISO predicts CBFV better in
+new data. A meaningful prediction comparison would estimate the spectra or
+model on a training segment and evaluate reconstructed CBFV on a separate
+test segment. Most recordings in this cohort provided only three 128-second
+Welch windows, leaving little independent data for both stable estimation and
+testing.
+
+Cross-validation is therefore better suited to a future supplemental analysis
+using longer recordings. A 20-second holdout after the 256-second minimum
+would contain relatively little low-frequency information and would not
+provide a strong test of VVLF or VLF prediction. Longer recordings or an
+experimental design with repeated baseline epochs would allow a more
+defensible training/test separation.
+
+\subsection{Numerical stability}
+
+The MISO solution was obtained without regularization. This keeps the current
+analysis transparent, but some raw spectral matrices were poorly conditioned,
+especially at high frequencies with low $\PETCOtwo$ power. The largest gain
+changes also occurred in higher-frequency $\COtwo$ bands, so numerical
+stability and physiological interpretation cannot be separated completely.
+
+A future sensitivity analysis should first normalize the input spectral
+matrix so that conditioning is not dominated by the different units of MAP
+and $\PETCOtwo$. If regularization is then needed, the ridge scale should be
+defined before viewing group results and justified relative to the normalized
+matrix or measurement-noise level. The smallest ridge that produces stable
+solutions across a prespecified sensitivity range would be preferable to an
+arbitrary constant. The current paper should not claim that such a sensitivity
+analysis was performed unless it is actually added.
+
+\subsection{Strengths}
+
+This study has several strengths. First, it directly compares SISO and MISO
+estimates within the same participants, so model-related changes are not
+confounded by different cohorts. Second, MAP, $\PETCOtwo$, and CBFV share one
+spectral estimation step, and identical smoothing is applied to all auto- and
+cross-spectra. Third, phase means and dispersion use circular rather than
+linear statistics. Fourth, inferential tests use one band value per subject
+and do not treat frequency bins as independent subjects. Fifth, raw and
+BH-adjusted $P$ values, confidence intervals, standardized effects, and median
+gain ratios are exported with the subject-level values used in each test.
+Finally, the workflow is parameterized from one main file and includes tests
+for its major numerical and export components.
+
+\subsection{Limitations}
+
+Several limitations affect interpretation. The study was observational, so
+the transfer functions describe association and do not establish causal MAP-
+or $\COtwo$-mediated effects. $\PETCOtwo$ is a surrogate for arterial carbon
+dioxide and may be influenced by ventilation, dead space, and measurement
+delay. Transcranial Doppler measures velocity rather than volumetric flow and
+assumes that the insonated arterial diameter is sufficiently stable
+\cite{Aaslid1982}. Only baseline spontaneous fluctuations were analyzed, which
+may provide limited input power compared with repeated squat--stand or
+controlled $\COtwo$ challenges.
+
+Most recordings produced only three Welch windows. This meets the configured
+minimum but limits spectral precision, raises the ordinary-coherence reference,
+and prevents strong cross-validation. The $\PETCOtwo$ startup rule was designed
+for the available exports and should be checked in new datasets. The MISO
+model included two inputs, but cerebral blood flow is affected by other
+variables, including oxygen, cardiac output, autonomic activity, metabolism,
+and neurovascular coupling. Feedback between MAP, ventilation, and the
+cerebral circulation also challenges a simple feed-forward linear model.
+
+The raw input-matrix condition number was scale-dependent, and no ridge
+sensitivity analysis was performed. Frequency-domain smoothing makes
+neighboring bins more similar, so frequency-wise $P$ values should not be read
+as independent discoveries. Finally, the NC and MCI sample sizes were unequal,
+one MCI participant lacked demographic data, and the diagnostic composition
+of MCI must be described more fully from the parent protocol.
+
+\subsection{Future work}
+
+The next study should prioritize longer recordings or repeated baseline
+epochs, prospectively defined model-stability criteria, and out-of-sample
+prediction. Controlled MAP oscillations and controlled $\COtwo$ challenges
+could provide stronger and more separable inputs than spontaneous baseline
+variation. A normalized conditioning analysis and prespecified regularization
+sensitivity test would clarify the stability of high-frequency coefficients.
+The 0.1484-Hz MAP-gain finding should be tested as a targeted hypothesis in an
+independent cohort rather than searched for again across the same frequency
+range.
+
+Future biological analyses could also test associations with continuous
+cognitive scores, MCI subtype, vascular risk, medication exposure, or imaging
+markers rather than relying only on a binary NC--MCI comparison. Those analyses
+should be defined before testing and should account for age, sex, education,
+and other relevant covariates when the sample size supports them.
+
+% ============================================================================
+\section{Conclusion}
+% ============================================================================
+
+Simultaneously modeling MAP and $\PETCOtwo$ materially changed transfer
+function gain estimates, with the largest and most consistent changes in the
+$\COtwo$ pathway. This supports the methodological argument that separate
+MAP-only and $\COtwo$-only SISO models can combine information that is
+partitioned differently in a two-input model. In contrast, the current data
+did not show a robust prespecified band-level difference in conditional MAP-
+or $\COtwo$-associated CBFV dynamics between NC and MCI. The results therefore
+support pathway separation as a useful analysis framework, while they do not
+support a broad MCI-specific impairment under resting spontaneous conditions.
+The exploratory difference at 0.1484~Hz and the high-frequency conditioning
+findings provide clear directions for replication and sensitivity analysis.
+
+% ============================================================================
+\section*{Declarations}
+% ============================================================================
+
+\subsection*{Ethics approval and consent to participate}
+% AUTHOR ACTION: Insert PI-approved ethics statement.
+\draftnote{Insert the institutional review board name and approval number,
+and state how written informed consent was obtained.}
+
+\subsection*{Data availability}
+% AUTHOR ACTION: Define what can be shared and under what agreement.
+\draftnote{State whether de-identified physiological data can be shared,
+whether access requires a data-use agreement, and where the synthetic example
+data and analysis code will be deposited.}
+
+\subsection*{Code availability}
+% AUTHOR ACTION: Add final URL and release.
+The MATLAB analysis workflow will be made available at [repository URL and
+archived release to be added].
+
+\subsection*{Funding}
+% AUTHOR ACTION: Insert grant and institutional support.
+[Funding information to be added.]
+
+\subsection*{Conflicts of interest}
+% AUTHOR ACTION: Confirm with every author.
+[Conflict-of-interest statement to be added.]
+
+\subsection*{Author contributions}
+% AUTHOR ACTION: Use CRediT roles if required by the target journal.
+[Author contribution statement to be added.]
+
+\subsection*{Acknowledgments}
+[Acknowledgments to be added.]
+
+% ============================================================================
+\appendix
+\section{Recommended figure set and placement}
+% ============================================================================
+
+The following set keeps the main paper focused while preserving the statistical
+evidence:
+
+\begin{enumerate}[leftmargin=0.45in]
+    \item \textbf{Main Figure 1:} Conceptual SISO-versus-MISO schematic
+    (Figure~\ref{fig:concept}).
+    \item \textbf{Main Figure 2:} Paired subject-level MISO-versus-SISO gain
+    comparisons (Figure~\ref{fig:model_gain}).
+    \item \textbf{Main Figure 3:} Coherence structure across frequency
+    (Figure~\ref{fig:coherence}).
+    \item \textbf{Main Figure 4:} Individual NC and MCI MISO band values
+    (Figure~\ref{fig:group_comparison}).
+    \item \textbf{Main or supplemental Figure 5:} Exploratory 0.1484-Hz
+    MAP-gain result with adjusted $P$ curve (Figure~\ref{fig:frequency_group}).
+    \item \textbf{Supplemental Figure S1:} Full frequency-wise MISO-versus-SISO
+    gain results (Figure~\ref{fig:frequency_model}).
+    \item \textbf{Supplemental Figure S2:} Input coherence associations
+    (Figure~\ref{fig:input_association}).
+    \item \textbf{Supplemental Figure S3:} Conditioning diagnostics
+    (Figure~\ref{fig:conditioning}).
+\end{enumerate}
+
+Representative single-subject raw signals and subject-specific transfer
+function curves could be added as a supplemental quality-control figure. They
+are useful for showing what the input data and model output look like, but they
+should not replace group distributions or confidence intervals.
+
+\section{Items that must be resolved before submission}
+
+\begin{enumerate}[leftmargin=0.45in]
+    \item Confirm participant diagnosis, recruitment, exclusions, IRB, consent,
+    acquisition devices, posture, and recording protocol from the parent study.
+    \item Decide whether the 0-Hz bin remains in exploratory frequency-wise
+    tests.
+    \item Decide with the PI whether normalized conditioning and a prespecified
+    ridge sensitivity analysis are needed. The main reported solve is currently
+    unregularized.
+    \item Decide whether the primary family should remain all four bands or
+    emphasize VVLF/VLF based on the biological hypothesis. This must be decided
+    prospectively for any rerun and reported transparently.
+    \item Confirm whether the Geriatric Depression Scale belongs in the main
+    participant table and whether medication variables are sufficiently
+    complete for publication.
+    \item Confirm how to describe MCI 302, which has TFA results but no matching
+    row in the demographic workbook.
+    \item Add a permanent code release and data-availability statement.
+    \item Select the target journal and reformat title page, abstract length,
+    headings, tables, references, and figure limits.
+\end{enumerate}
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{Claassen2021}
+Claassen JAHR, Thijssen DHJ, Panerai RB, Faraci FM.
+Regulation of cerebral blood flow in humans: physiology and clinical
+implications of autoregulation.
+\textit{Physiol Rev}. 2021;101(4):1487--1559.
+doi:10.1152/physrev.00022.2020.
+
+\bibitem{Panerai2023}
+Panerai RB, Brassard P, Burma JS, et al.; Cerebrovascular Research Network.
+Transfer function analysis of dynamic cerebral autoregulation: A CARNet white
+paper 2022 update.
+\textit{J Cereb Blood Flow Metab}. 2023;43(1):3--25.
+doi:10.1177/0271678X221119760.
+
+\bibitem{Kisler2017}
+Kisler K, Nelson AR, Montagne A, Zlokovic BV.
+Cerebral blood flow regulation and neurovascular dysfunction in Alzheimer
+disease.
+\textit{Nat Rev Neurosci}. 2017;18(7):419--434.
+doi:10.1038/nrn.2017.48.
+
+\bibitem{Beishon2017}
+Beishon L, Haunton VJ, Panerai RB, Robinson TG.
+Cerebral hemodynamics in mild cognitive impairment: A systematic review.
+\textit{J Alzheimers Dis}. 2017;59(1):369--385.
+doi:10.3233/JAD-170181.
+
+\bibitem{Gommer2012}
+Gommer ED, Martens EGHJ, Aalten P, et al.
+Dynamic cerebral autoregulation in subjects with Alzheimer's disease, mild
+cognitive impairment, and controls: evidence for increased peripheral
+vascular resistance with possible predictive value.
+\textit{J Alzheimers Dis}. 2012;30(4):805--813.
+doi:10.3233/JAD-2012-111628.
+
+\bibitem{Tarumi2014}
+Tarumi T, Dunsky DI, Khan MA, et al.
+Dynamic cerebral autoregulation and tissue oxygenation in amnestic mild
+cognitive impairment.
+\textit{J Alzheimers Dis}. 2014;41(3):765--778.
+doi:10.3233/JAD-132018.
+
+\bibitem{Heutz2023}
+Heutz R, Claassen J, Feiner S, et al.
+Dynamic cerebral autoregulation in Alzheimer's disease and mild cognitive
+impairment: A systematic review.
+\textit{J Cereb Blood Flow Metab}. 2023;43(8):1223--1236.
+doi:10.1177/0271678X231173449.
+
+\bibitem{Hoiland2019}
+Hoiland RL, Fisher JA, Ainslie PN.
+Regulation of the cerebral circulation by arterial carbon dioxide.
+\textit{Compr Physiol}. 2019;9(3):1101--1154.
+doi:10.1002/cphy.c180021.
+
+\bibitem{Panerai2000}
+Panerai RB, Simpson DM, Deverson ST, Mahony P, Hayes P, Evans DH.
+Multivariate dynamic analysis of cerebral blood flow regulation in humans.
+\textit{IEEE Trans Biomed Eng}. 2000;47(3):419--423.
+doi:10.1109/10.827312.
+
+\bibitem{Peng2008}
+Peng T, Rowley AB, Ainslie PN, Poulin MJ, Payne SJ.
+Multivariate system identification for cerebral autoregulation.
+\textit{Ann Biomed Eng}. 2008;36(2):308--320.
+doi:10.1007/s10439-007-9412-9.
+
+\bibitem{Welch1967}
+Welch PD.
+The use of fast Fourier transform for the estimation of power spectra: A
+method based on time averaging over short, modified periodograms.
+\textit{IEEE Trans Audio Electroacoust}. 1967;15(2):70--73.
+doi:10.1109/TAU.1967.1161901.
+
+\bibitem{MardiaJupp2000}
+Mardia KV, Jupp PE.
+\textit{Directional Statistics}.
+Chichester, UK: Wiley; 2000.
+
+\bibitem{Berens2009}
+Berens P.
+CircStat: A MATLAB toolbox for circular statistics.
+\textit{J Stat Softw}. 2009;31(10):1--21.
+doi:10.18637/jss.v031.i10.
+
+\bibitem{Welch1947}
+Welch BL.
+The generalization of Student's problem when several different population
+variances are involved.
+\textit{Biometrika}. 1947;34(1--2):28--35.
+doi:10.1093/biomet/34.1-2.28.
+
+\bibitem{Hedges1981}
+Hedges LV.
+Distribution theory for Glass's estimator of effect size and related
+estimators.
+\textit{J Educ Stat}. 1981;6(2):107--128.
+doi:10.2307/1164588.
+
+\bibitem{BenjaminiHochberg1995}
+Benjamini Y, Hochberg Y.
+Controlling the false discovery rate: A practical and powerful approach to
+multiple testing.
+\textit{J R Stat Soc Series B Stat Methodol}. 1995;57(1):289--300.
+doi:10.1111/j.2517-6161.1995.tb02031.x.
+
+\bibitem{Aaslid1982}
+Aaslid R, Markwalder TM, Nornes H.
+Noninvasive transcranial Doppler ultrasound recording of flow velocity in
+basal cerebral arteries.
+\textit{J Neurosurg}. 1982;57(6):769--774.
+doi:10.3171/jns.1982.57.6.0769.
+
+\bibitem{Folstein1975}
+Folstein MF, Folstein SE, McHugh PR.
+``Mini-mental state'': A practical method for grading the cognitive state of
+patients for the clinician.
+\textit{J Psychiatr Res}. 1975;12(3):189--198.
+doi:10.1016/0022-3956(75)90026-6.
+
+\bibitem{Nasreddine2005}
+Nasreddine ZS, Phillips NA, B\'edirian V, et al.
+The Montreal Cognitive Assessment, MoCA: A brief screening tool for mild
+cognitive impairment.
+\textit{J Am Geriatr Soc}. 2005;53(4):695--699.
+doi:10.1111/j.1532-5415.2005.53221.x.
+
+\end{thebibliography}
+
+\end{document}

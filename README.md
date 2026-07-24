@@ -31,10 +31,15 @@ H_mapcbv = H(1);
 H_co2cbv = H(2);
 ```
 
-The current MISO solve intentionally uses the direct spectral-matrix
-solution without regularization or SISO fallback logic. The condition
-number is stored as a diagnostic so alternative solving methods can be
-evaluated later.
+The default MISO solve uses the direct spectral-matrix solution without
+regularization or SISO fallback logic. Standardized ridge regularization is
+available only when it is explicitly enabled. The code never changes the
+solver because a frequency bin looks difficult.
+
+The solver reports the raw condition number as well as scale-normalized
+diagnostics. The normalized condition number, determinant, minimum
+eigenvalue, and reciprocal condition estimate are easier to interpret when
+MAP and CO2 have different units or power.
 
 The SISO transfer functions are:
 
@@ -66,9 +71,10 @@ same common workflow for every loaded or generated subject:
 6. Create the selected subject figures.
 
 Batch processing subsequently organizes successful subject results into
-group arrays, means, and standard deviations for plotting. After all
-attempted subjects finish, `runTFA` writes the selected Excel metric sheets
-using the same format for single, synthetic, and batch runs.
+group arrays, means, and standard deviations. When statistical analysis is
+enabled, the subject-level band values are then passed to the statistical
+tests and matching figures. After all attempted subjects finish, `runTFA`
+writes the selected metric and statistical sheets to the same workbook.
 
 ## Data Loading and Preprocessing
 
@@ -92,6 +98,15 @@ signalData.cbv
 6. Optionally removes each signal mean.
 
 The processed arrays remain horizontal throughout the analysis.
+
+The CO2 startup check no longer assumes that startup ends at a fixed data
+point. The stable start and removed duration are stored for each subject. If
+startup removal changes an otherwise usable recording into one with too few
+Welch windows, the subject is reported as `LateCO2Startup`.
+
+Before detrending, normalization, or mean removal, preprocessing also stores
+the subject's mean and within-recording SD for MAP, PETCO2, and raw CBFV. CVRi
+is calculated as mean MAP divided by mean raw CBFV.
 
 ## Spectral Analysis
 
@@ -142,6 +157,9 @@ Frequency-band averages use:
 analysisSettings.frequencyBandEdgesHz
 analysisSettings.frequencyBandNames
 ```
+
+`calculateSubjectBandValues` is shared by the Excel exporter and statistical
+analysis so every output uses the same band boundaries and averaging rules.
 
 ## Phase
 
@@ -218,7 +236,14 @@ misoResults
 │   ├── coherence
 │   ├── phase.wrapped
 │   └── phase.unwrapped
-├── diagnostics.conditionNumber
+├── diagnostics
+│   ├── conditionNumber
+│   ├── normalizedConditionNumber
+│   ├── normalizedDeterminant
+│   ├── minimumNormalizedEigenvalue
+│   ├── reciprocalConditionEstimate
+│   └── isPoorlyConditioned
+├── regularization
 ├── phaseUnwrapMethod
 └── welchInfo
 ```
@@ -257,6 +282,55 @@ runType = "single";
 runType = "batch";
 runType = "synthetic";
 ```
+
+## Running the NC-Only Approach Paper
+
+The Paper 1 workflow has a separate settings file so manuscript decisions do
+not become hidden defaults in the general pipeline. It runs the NC empirical
+comparison, known-truth simulations, robustness checks, paper tables, and
+publication figures.
+
+```matlab
+settings = approachPaperSettings( ...
+    "/path/to/ieem_data", ...
+    "/path/to/approach_paper_results", ...
+    "quick");
+
+paperResults = runApproachPaper(settings);
+```
+
+Start with the `"quick"` profile. It uses smaller simulation and surrogate
+counts for checking the workflow and figure layout. Change the profile to
+`"paper"` for the final analysis. The paper profile is intentionally large
+and can take substantial time.
+
+The Paper 1 statistical plan uses NC only:
+
+- NC MAP MISO versus SISO gain is the primary family.
+- NC CO2 MISO versus SISO gain is a separate secondary family.
+- Frequency-wise gain and phase results are exploratory.
+- Between-group NC versus MCI tests are disabled.
+
+At every frequency bin, the phase analysis uses each subject's wrapped
+MISO-minus-SISO phase difference and a paired circular permutation test.
+Benjamini-Hochberg adjustment is applied across the bins in each pathway's
+phase curve. The output also reports the principal equivalent delay
+difference:
+
+```text
+delay difference = -wrapped phase difference / (2*pi*frequency)
+```
+
+This delay is defined modulo one period, `1/f`. It should therefore be
+interpreted as a local representation of the wrapped phase difference, not
+as an unrestricted absolute physiological delay.
+
+Every saved model-comparison row contains its `MultiplicityFamily`, raw P
+value, and adjusted P value. Frequency-wise comparison rows also name the
+exploratory curve used as their adjustment family. The approach workflow
+saves the settings, random seeds, software manifest, participant inclusion
+information, solver diagnostics, figure source data, and a single MAT
+result file.
 
 ### Single
 
@@ -329,6 +403,58 @@ partial- or multiple-coherence plots.
 Partitioned figures use the frequency bands defined in `main.m`; the number
 of rows changes automatically with the number of configured bands.
 
+Batch statistical figures are controlled by
+`analysisSettings.plot.show.statistics`. They show the subject values used
+in the tests:
+
+1. Paired SISO-MISO gain estimates
+2. NC-MCI MISO gain and coherence comparisons
+3. NC-MCI comparison of MAP-minus-CO2 pathway balance
+4. Input coherence versus the absolute SISO-MISO gain change
+5. Exploratory full-frequency group and model comparisons
+
+Each full-frequency comparison contains the two mean/SD curves, their
+difference, and the BH-adjusted P value at every frequency. A horizontal
+line marks the configured significance level. These frequency-wise tests
+are exploratory. The predefined band tests remain the primary analysis.
+
+## Statistical Analysis
+
+Batch statistics are enabled with:
+
+```matlab
+analysisSettings.statistics.enabled
+```
+
+The configured group order comes from `batchSettings.groupsToRun`. Primary
+bands, alpha, the circular-permutation count, and the random seed remain
+visible in `main.m`.
+
+The implemented tests are:
+
+- Paired t-tests for arithmetic SISO-MISO comparisons
+- Welch unequal-variance t-tests for continuous group comparisons
+- Circular permutation tests for phase
+- Spearman correlation for input-coherence associations
+- Fisher exact or chi-square tests for categorical participant variables
+- Benjamini-Hochberg adjustment within prespecified analysis families
+
+Optional exploratory frequency-wise tests are controlled by
+`analysisSettings.statistics.frequencyWise`. NC-MCI gain and partial
+coherence use Welch t-tests. Paired SISO-MISO gain uses paired t-tests.
+Wrapped phase uses circular permutation tests. BH adjustment is applied
+across the frequency bins in each enabled comparison curve.
+
+Raw and BH-adjusted P values are retained. Model comparisons are explicitly
+labeled so partial versus ordinary coherence is not interpreted as a test of
+predictive performance. In-sample residual reduction is not used to claim
+that MISO predicts better than SISO.
+
+An optional standardized participant file may be provided through
+`analysisSettings.statistics.participantDataFile`. It must contain one row
+per participant and variables named `SubjectID` and `Group`. This avoids
+embedding a parser for a study-specific demographic workbook.
+
 ## Excel Output
 
 Single, synthetic, and batch runs use one metric-based workbook format.
@@ -357,6 +483,21 @@ are blank, and they are excluded from Mean and SD calculations.
 The exported metrics are controlled by the
 `outputSettings.excelMetrics` Boolean structure in `main.m`.
 
+When `outputSettings.excelStatistics` is true, batch output appends these
+sheets to the same workbook:
+
+- `Participant_Characteristics`
+- `Model_Comparisons`
+- `Group_Comparisons`
+- `Input_Associations`
+- `Frequency_Group_Tests`
+- `Frequency_Model_Tests`
+
+The participant sheet contains both group summaries and individual inclusion
+status. Statistical sheets report sample sizes, estimates, confidence
+intervals where applicable, effect sizes, raw P values, and BH-adjusted P
+values.
+
 The fields named `power` contain power spectral density estimates produced
 by `cpsd`. Power and residual-power exports are converted to decibels
 before group and band statistics are calculated.
@@ -374,6 +515,7 @@ before group and band statistics are calculated.
 │   ├── phase
 │   ├── plotting
 │   ├── preprocessing
+│   ├── statistics
 │   └── workflow
 └── tests
     └── helpers
@@ -387,6 +529,7 @@ The current dependency audit reports:
 
 - MATLAB
 - Signal Processing Toolbox
+- Statistics and Machine Learning Toolbox
 
 The project is currently tested with MATLAB R2025b.
 
@@ -400,8 +543,9 @@ results = runtests("tests");
 
 The tests cover preprocessing, configurable Welch smoothing,
 frequency-range limiting, MISO results, SISO results, circular phase
-statistics, phase unwrapping, subject-level band summaries, subject
-discovery order, batch readiness, figure toggles, and Excel export.
+statistics, phase unwrapping, subject-level band summaries, statistical
+comparisons, BH adjustment, subject discovery order, batch readiness,
+figure toggles, and Excel export.
 
 ## Method References
 
@@ -411,6 +555,10 @@ discovery order, batch readiness, figure toggles, and Excel export.
 - Berens P. CircStat: A MATLAB Toolbox for Circular Statistics.
   *Journal of Statistical Software*. 2009;31(10).
   DOI: 10.18637/jss.v031.i10.
+- Benjamini Y, Hochberg Y. Controlling the false discovery rate: a practical
+  and powerful approach to multiple testing. *Journal of the Royal
+  Statistical Society: Series B*. 1995;57(1):289-300.
+  DOI: 10.1111/j.2517-6161.1995.tb02031.x.
 
 This project is under active development and is intended for research and
 validation use.

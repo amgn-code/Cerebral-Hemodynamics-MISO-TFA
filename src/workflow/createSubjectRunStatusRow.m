@@ -14,6 +14,8 @@ function statusRow = createSubjectRunStatusRow(subjectInfo, runStatus)
     statusRow.NumWelchWindows = runStatus.numWelchWindows;
     statusRow.MinimumWelchWindows = runStatus.minimumWelchWindows;
     statusRow.SignalDurationSeconds = runStatus.signalDurationSeconds;
+    statusRow.CO2StartupRemovedSeconds = ...
+        runStatus.co2StartupRemovedSeconds;
     statusRow.SubjectFiguresSaved = runStatus.subjectFiguresSaved;
     statusRow.FigureStatusMessage = ...
         string(runStatus.figureStatusMessage);

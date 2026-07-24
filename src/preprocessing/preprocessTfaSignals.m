@@ -3,8 +3,8 @@ function processedSignalData = preprocessTfaSignals( ...
 % preprocessTfaSignals Clean, resample, and prepare signals for TFA.
 %
 % The CO2 startup cleanup removes leading zeros and the initial large
-% transition into stable recording values. The accepted startup method is
-% preserved here as one visible, sequential preprocessing procedure.
+% transition into stable recording values. It examines the available CO2
+% changes directly and does not assume that startup ends at a fixed point.
 
     timeRaw = reshape(signalData.t, 1, []);
     mapRaw = reshape(signalData.map, 1, []);
@@ -36,26 +36,28 @@ function processedSignalData = preprocessTfaSignals( ...
     co2Valid = co2Raw(validSamples);
     cbvValid = cbvRaw(validSamples);
 
-    if numel(timeValid) < 31
+    if numel(timeValid) < 3
         error( ...
             'TFA:TooFewSamplesForPreprocessing', ...
-            ['At least 31 finite samples are required for the accepted ' ...
-             'CO2 startup check.']);
+            'At least three finite samples are required for preprocessing.');
     end
 
     %% Remove the CO2 Startup Transition
 
-    if any(co2Valid(25:29) == 0)
-        warning( ...
-            'TFA:Co2StillZeroNearPoint30', ...
-            ['CO2 is still zero within the five points before data point 30. ' ...
-             'This subject should probably be excluded.']);
+    originalStartTimeSeconds = timeValid(1);
+    originalEndTimeSeconds = timeValid(end);
+
+    firstNonzeroIndex = find(co2Valid ~= 0, 1, "first");
+    if isempty(firstNonzeroIndex) || firstNonzeroIndex == numel(co2Valid)
+        error( ...
+            'TFA:NoStableCo2Data', ...
+            'No nonzero CO2 data were available for startup cleanup.');
     end
 
-    % Estimate a large-jump threshold from the upper 10% of CO2 changes
-    % after point 30. This keeps later isolated outliers from defining the
-    % end of the startup transition.
-    co2Jumps = abs(diff(co2Valid(30:end)));
+    % Estimate a large-jump threshold from the nonzero portion of the
+    % recording. The upper group of changes represents unusually large
+    % transitions without tying the calculation to a fixed data point.
+    co2Jumps = abs(diff(co2Valid(firstNonzeroIndex:end)));
     sortedCo2Jumps = sort(co2Jumps);
     upperJumpIndex = max(1, round(0.9*numel(sortedCo2Jumps)));
     upperCo2Jumps = sortedCo2Jumps(upperJumpIndex:end);
@@ -88,6 +90,10 @@ function processedSignalData = preprocessTfaSignals( ...
     co2Valid = co2Valid(keepSamples);
     cbvValid = cbvValid(keepSamples);
 
+    stableStartTimeSeconds = timeValid(1);
+    co2StartupRemovedSeconds = ...
+        stableStartTimeSeconds - originalStartTimeSeconds;
+
     if any(diff(timeValid) <= 0)
         error( ...
             'TFA:InvalidTimeValues', ...
@@ -104,9 +110,23 @@ function processedSignalData = preprocessTfaSignals( ...
     co2Resampled = interp1(timeValid, co2Valid, timeResampled, "linear");
     cbvResampled = interp1(timeValid, cbvValid, timeResampled, "linear");
 
-    %% Select CBV Units for Spectral Analysis
+    %% Calculate Physiological Summaries Before Signal Processing
 
+    mapBaselineMmHg = mean(mapResampled, 'omitnan');
+    co2BaselineMmHg = mean(co2Resampled, 'omitnan');
     cbvBaselineCmPerSec = mean(cbvResampled, 'omitnan');
+
+    mapWithinRecordingSdMmHg = std(mapResampled, 0, 'omitnan');
+    co2WithinRecordingSdMmHg = std(co2Resampled, 0, 'omitnan');
+    cbvWithinRecordingSdCmPerSec = std(cbvResampled, 0, 'omitnan');
+
+    if ~isfinite(mapBaselineMmHg) || ~isfinite(co2BaselineMmHg)
+        error( ...
+            'TFA:InvalidPhysiologicalBaseline', ...
+            'The MAP and CO2 baselines must be finite.');
+    end
+
+    %% Select CBV Units for Spectral Analysis
 
     if ~isfinite(cbvBaselineCmPerSec) || cbvBaselineCmPerSec == 0
         error( ...
@@ -147,5 +167,27 @@ function processedSignalData = preprocessTfaSignals( ...
     processedSignalData.fs = targetSamplingFrequencyHz;
     processedSignalData.cbvBaselineCmPerSec = cbvBaselineCmPerSec;
     processedSignalData.cbvUnits = cbvUnits;
+
+    processedSignalData.physiology.meanMapMmHg = mapBaselineMmHg;
+    processedSignalData.physiology.meanPetco2MmHg = co2BaselineMmHg;
+    processedSignalData.physiology.meanCbvCmPerSec = ...
+        cbvBaselineCmPerSec;
+    processedSignalData.physiology.mapSdMmHg = ...
+        mapWithinRecordingSdMmHg;
+    processedSignalData.physiology.petco2SdMmHg = ...
+        co2WithinRecordingSdMmHg;
+    processedSignalData.physiology.cbvSdCmPerSec = ...
+        cbvWithinRecordingSdCmPerSec;
+    processedSignalData.physiology.cvri = ...
+        mapBaselineMmHg / cbvBaselineCmPerSec;
+
+    processedSignalData.co2Startup.stableStartTimeSeconds = ...
+        stableStartTimeSeconds;
+    processedSignalData.co2Startup.removedDurationSeconds = ...
+        co2StartupRemovedSeconds;
+    processedSignalData.co2Startup.originalStartTimeSeconds = ...
+        originalStartTimeSeconds;
+    processedSignalData.co2Startup.originalEndTimeSeconds = ...
+        originalEndTimeSeconds;
 
 end

@@ -15,6 +15,19 @@ function [analysisSettings, outputSettings] = createWorkflowTestSettings( ...
     analysisSettings.preprocessing.meanRemovalEnabled = true;
     analysisSettings.pwelch = createTestWelchSettings();
     analysisSettings.phase = createTestPhaseSettings("standard");
+    analysisSettings.statistics.enabled = false;
+    analysisSettings.statistics.alpha = 0.05;
+    analysisSettings.statistics.numPhasePermutations = 100;
+    analysisSettings.statistics.randomSeed = 1;
+    analysisSettings.statistics.groupsToCompare = ["NC"; "MCI"];
+    analysisSettings.statistics.primaryBandNames = ["VLF"; "LF"];
+    analysisSettings.statistics.participantDataFile = "";
+    analysisSettings.statistics.frequencyWise.enabled = false;
+    analysisSettings.statistics.frequencyWise.groupComparison.gain = true;
+    analysisSettings.statistics.frequencyWise.groupComparison.coherence = true;
+    analysisSettings.statistics.frequencyWise.groupComparison.phase = true;
+    analysisSettings.statistics.frequencyWise.modelComparison.gain = true;
+    analysisSettings.statistics.frequencyWise.modelComparison.phase = true;
     analysisSettings.plot = defaultPlotSettings();
 
     outputSettings.baseOutputFolder = outputFolder;
@@ -22,6 +35,7 @@ function [analysisSettings, outputSettings] = createWorkflowTestSettings( ...
     outputSettings.saveBatchFigures = false;
     outputSettings.saveExcel = false;
     outputSettings.excelFileName = "tfa_results.xlsx";
+    outputSettings.excelStatistics = false;
 
     outputSettings.excelMetrics.signals.mapPower = false;
     outputSettings.excelMetrics.signals.co2Power = false;

@@ -1,3 +1,27 @@
+%% Paper 1 Analysis
+%{
+clear;
+clc;
+close all;
+
+projectRoot = ...
+    "/Users/amoghn/MATLAB/1) IEEM Cerebrovascular Project/1) TFA MISO/Cerebral-Hemodynamics-MISO-TFA";
+
+cd(projectRoot);
+addpath(genpath(projectRoot));
+
+dataFolder = ...
+    "/Users/amoghn/Downloads/ieem_data";
+
+outputFolder = ...
+    "/Users/amoghn/Desktop/IEEM Dr. Zhang/Approach Paper/Paper 1 Results Quick";
+
+settings = approachPaperSettings( ...
+    dataFolder, outputFolder, "quick");
+
+paperResults = runApproachPaper(settings);
+%}
+
 %% Clean Start
 
 clearvars; clc; close all;
@@ -27,6 +51,14 @@ batchSettings.previewOnly = false;
 
 analysisSettings.runMISO = true;
 analysisSettings.runSISO = true;
+
+% The direct MISO solution remains the default. Standardized ridge is an
+% explicit optional analysis and is never turned on automatically.
+analysisSettings.misoSolver = defaultMisoSolverSettings();
+
+% Set true only when later surrogate or sensitivity analyses need the
+% preprocessed subject signals and shared spectra.
+analysisSettings.retainAnalysisInput = false;
 
 %% 4. Frequency Configuration
 
@@ -67,7 +99,33 @@ analysisSettings.phase.custom.weightPower = 4;
 analysisSettings.phase.custom.expAlpha = 4;
 analysisSettings.phase.custom.minWeight = 0.01;
 
-%% 8. Figures
+%% 8. Statistical Analysis
+
+analysisSettings.statistics.enabled = true;
+analysisSettings.statistics.alpha = 0.05;
+analysisSettings.statistics.numPhasePermutations = 10000;
+analysisSettings.statistics.randomSeed = 2026;
+% Statistical group order follows the batch group order selected above.
+analysisSettings.statistics.groupsToCompare = batchSettings.groupsToRun;
+analysisSettings.statistics.primaryBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
+analysisSettings.statistics.primaryGroups = batchSettings.groupsToRun;
+analysisSettings.statistics.primaryPathways = ["MAP"; "CO2"];
+analysisSettings.statistics.secondaryPathways = strings(0, 1);
+analysisSettings.statistics.withinGroupModelComparison.enabled = true;
+analysisSettings.statistics.betweenGroupComparison.enabled = true;
+% Optional standardized file with one row per subject and SubjectID/Group.
+analysisSettings.statistics.participantDataFile = "";
+
+% Frequency-wise tests are exploratory. Each enabled metric gets an
+% adjusted P-value curve across the configured frequency range.
+analysisSettings.statistics.frequencyWise.enabled = true;
+analysisSettings.statistics.frequencyWise.groupComparison.gain = true;
+analysisSettings.statistics.frequencyWise.groupComparison.coherence = true;
+analysisSettings.statistics.frequencyWise.groupComparison.phase = true;
+analysisSettings.statistics.frequencyWise.modelComparison.gain = true;
+analysisSettings.statistics.frequencyWise.modelComparison.phase = true;
+
+%% 9. Figures
 
 analysisSettings.plot = defaultPlotSettings();
 analysisSettings.plot.transferFunctionStyle = "stem";    % "stem" or "line"
@@ -85,16 +143,24 @@ analysisSettings.plot.show.misoPartitioned.co2 = true;
 analysisSettings.plot.show.sisoPartitioned.map = true;
 analysisSettings.plot.show.sisoPartitioned.co2 = true;
 
+% Statistical figures use the same subject band values as the tests.
+analysisSettings.plot.show.statistics.modelComparison = true;
+analysisSettings.plot.show.statistics.groupComparison = true;
+analysisSettings.plot.show.statistics.pathwayBalance = true;
+analysisSettings.plot.show.statistics.inputAssociation = true;
+analysisSettings.plot.show.statistics.frequencyWiseComparison = true;
+
 outputSettings.saveSubjectFigures = true;
-batchSettings.numSubjectFiguresPerGroup = "all";    % Number, "none", or "all"
+batchSettings.numSubjectFiguresPerGroup = 1;    % Number, "none", or "all"
 outputSettings.saveBatchFigures = true;
 
-%% 9. Excel Export
+%% 10. Excel Export
 
 outputSettings.baseOutputFolder = ...
-    "/Users/amoghn/Desktop/TFA Results New Latest";
+    "/Users/amoghn/Desktop/TFA Results New Latest Boss 1";
 outputSettings.saveExcel = true;
 outputSettings.excelFileName = "tfa_results.xlsx";
+outputSettings.excelStatistics = true;
 
 % Signal and input metrics shared by MISO and SISO
 outputSettings.excelMetrics.signals.mapPower = true;

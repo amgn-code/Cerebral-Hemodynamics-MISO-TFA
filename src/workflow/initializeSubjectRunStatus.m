@@ -9,6 +9,7 @@ function runStatus = initializeSubjectRunStatus(analysisSettings)
     runStatus.minimumWelchWindows = ...
         analysisSettings.pwelch.minimumWindows;
     runStatus.signalDurationSeconds = NaN;
+    runStatus.co2StartupRemovedSeconds = NaN;
     runStatus.subjectFiguresSaved = false;
     runStatus.figureStatusMessage = "Not requested";
 

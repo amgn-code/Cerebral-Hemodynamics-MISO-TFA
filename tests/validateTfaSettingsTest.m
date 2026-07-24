@@ -53,5 +53,20 @@ classdef validateTfaSettingsTest < matlab.unittest.TestCase
                 'TFA:SmoothingKernelDoesNotSumToOne');
         end
 
+        function acceptsOneGroupWhenBetweenGroupTestsAreOff(testCase)
+            [settings, ~] = createWorkflowTestSettings( ...
+                tempname(), true, true);
+            settings.statistics.enabled = true;
+            settings.statistics.groupsToCompare = "NC";
+            settings.statistics.betweenGroupComparison.enabled = false;
+
+            settings = validateTfaSettings(settings);
+
+            testCase.verifyEqual( ...
+                settings.statistics.groupsToCompare, "NC");
+            testCase.verifyFalse( ...
+                settings.statistics.betweenGroupComparison.enabled);
+        end
+
     end
 end

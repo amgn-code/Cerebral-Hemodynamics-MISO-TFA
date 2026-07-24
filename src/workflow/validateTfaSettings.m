@@ -130,6 +130,241 @@ function analysisSettings = validateTfaSettings(analysisSettings)
     analysisSettings.pwelch.smoothingKernel = ...
         double(reshape(smoothingKernel, 1, []));
 
+    %% Optional Analysis Input Retention
+
+    if ~isfield(analysisSettings, "retainAnalysisInput")
+        analysisSettings.retainAnalysisInput = false;
+    end
+    if ~islogical(analysisSettings.retainAnalysisInput) || ...
+            ~isscalar(analysisSettings.retainAnalysisInput)
+        error( ...
+            "TFA:InvalidAnalysisInputRetentionToggle", ...
+            "analysisSettings.retainAnalysisInput must be true or false.");
+    end
+
+    %% MISO Solver Settings
+
+    if ~isfield(analysisSettings, "misoSolver")
+        analysisSettings.misoSolver = defaultMisoSolverSettings();
+    else
+        analysisSettings.misoSolver = validateMisoSolverSettings( ...
+            analysisSettings.misoSolver);
+    end
+
+    %% Statistical Settings
+
+    if ~isfield(analysisSettings, "statistics")
+        analysisSettings.statistics.enabled = false;
+    end
+
+    if ~isfield(analysisSettings.statistics, "enabled")
+        analysisSettings.statistics.enabled = false;
+    end
+
+    if ~analysisSettings.statistics.enabled
+        analysisSettings.statistics.alpha = 0.05;
+        analysisSettings.statistics.numPhasePermutations = 10000;
+        analysisSettings.statistics.randomSeed = 2026;
+        analysisSettings.statistics.groupsToCompare = ["NC"; "MCI"];
+        analysisSettings.statistics.primaryBandNames = ["VLF"; "LF"];
+        analysisSettings.statistics.primaryGroups = ["NC"; "MCI"];
+        analysisSettings.statistics.primaryPathways = ["MAP"; "CO2"];
+        analysisSettings.statistics.secondaryPathways = strings(0, 1);
+        analysisSettings.statistics.participantDataFile = "";
+        analysisSettings.statistics.withinGroupModelComparison.enabled = ...
+            true;
+        analysisSettings.statistics.betweenGroupComparison.enabled = true;
+    else
+        statisticsSettings = analysisSettings.statistics;
+
+        validateattributes( ...
+            statisticsSettings.alpha, {'numeric'}, ...
+            {'real', 'finite', 'scalar', '>', 0, '<', 1}, ...
+            mfilename, 'analysisSettings.statistics.alpha');
+        validateattributes( ...
+            statisticsSettings.numPhasePermutations, {'numeric'}, ...
+            {'real', 'finite', 'scalar', 'integer', 'positive'}, ...
+            mfilename, ...
+            'analysisSettings.statistics.numPhasePermutations');
+        validateattributes( ...
+            statisticsSettings.randomSeed, {'numeric'}, ...
+            {'real', 'finite', 'scalar', 'integer', 'nonnegative'}, ...
+            mfilename, 'analysisSettings.statistics.randomSeed');
+
+        groupsToCompare = upper(string( ...
+            statisticsSettings.groupsToCompare));
+        groupsToCompare = groupsToCompare(:);
+        if isempty(groupsToCompare) || numel(groupsToCompare) > 2 || ...
+                numel(unique(groupsToCompare)) ~= numel(groupsToCompare)
+            error( ...
+                'TFA:InvalidStatisticalGroups', ...
+                ['statistics.groupsToCompare must contain one or two ' ...
+                 'unique groups.']);
+        end
+
+        primaryBandNames = string( ...
+            statisticsSettings.primaryBandNames(:));
+        if any(~ismember(primaryBandNames, frequencyBandNames))
+            error( ...
+                'TFA:UnknownPrimaryBand', ...
+                ['Every statistics.primaryBandNames value must appear ' ...
+                 'in frequencyBandNames.']);
+        end
+
+        analysisSettings.statistics.groupsToCompare = groupsToCompare;
+        analysisSettings.statistics.primaryBandNames = primaryBandNames;
+        analysisSettings.statistics.participantDataFile = string( ...
+            statisticsSettings.participantDataFile);
+
+        if ~isfield(statisticsSettings, "withinGroupModelComparison")
+            statisticsSettings.withinGroupModelComparison.enabled = true;
+        elseif ~isfield( ...
+                statisticsSettings.withinGroupModelComparison, "enabled")
+            statisticsSettings.withinGroupModelComparison.enabled = true;
+        end
+        if ~isfield(statisticsSettings, "betweenGroupComparison")
+            statisticsSettings.betweenGroupComparison.enabled = ...
+                numel(groupsToCompare) == 2;
+        elseif ~isfield( ...
+                statisticsSettings.betweenGroupComparison, "enabled")
+            statisticsSettings.betweenGroupComparison.enabled = ...
+                numel(groupsToCompare) == 2;
+        end
+
+        withinEnabled = ...
+            statisticsSettings.withinGroupModelComparison.enabled;
+        betweenEnabled = ...
+            statisticsSettings.betweenGroupComparison.enabled;
+        if ~islogical(withinEnabled) || ~isscalar(withinEnabled) || ...
+                ~islogical(betweenEnabled) || ~isscalar(betweenEnabled)
+            error( ...
+                'TFA:InvalidStatisticalComparisonToggle', ...
+                ['withinGroupModelComparison.enabled and ' ...
+                 'betweenGroupComparison.enabled must be true or false.']);
+        end
+        if betweenEnabled && numel(groupsToCompare) ~= 2
+            error( ...
+                'TFA:BetweenGroupComparisonNeedsTwoGroups', ...
+                ['betweenGroupComparison.enabled requires exactly two ' ...
+                 'groupsToCompare.']);
+        end
+
+        if ~isfield(statisticsSettings, "primaryGroups")
+            statisticsSettings.primaryGroups = groupsToCompare;
+        end
+        if ~isfield(statisticsSettings, "primaryPathways")
+            statisticsSettings.primaryPathways = ["MAP"; "CO2"];
+        end
+        if ~isfield(statisticsSettings, "secondaryPathways")
+            statisticsSettings.secondaryPathways = strings(0, 1);
+        end
+
+        primaryGroups = upper(string( ...
+            statisticsSettings.primaryGroups));
+        primaryGroups = primaryGroups(:);
+        primaryPathways = upper(string( ...
+            statisticsSettings.primaryPathways));
+        primaryPathways = primaryPathways(:);
+        secondaryPathways = upper(string( ...
+            statisticsSettings.secondaryPathways));
+        secondaryPathways = secondaryPathways(:);
+        knownPathways = ["MAP"; "CO2"];
+
+        if any(~ismember(primaryGroups, groupsToCompare))
+            error( ...
+                'TFA:UnknownPrimaryGroup', ...
+                ['Every statistics.primaryGroups value must appear in ' ...
+                 'groupsToCompare.']);
+        end
+        if any(~ismember(primaryPathways, knownPathways)) || ...
+                any(~ismember(secondaryPathways, knownPathways))
+            error( ...
+                'TFA:UnknownStatisticalPathway', ...
+                'Primary and secondary pathways must be MAP or CO2.');
+        end
+        if any(ismember(primaryPathways, secondaryPathways))
+            error( ...
+                'TFA:OverlappingStatisticalPathways', ...
+                ['A pathway cannot be both primary and secondary in the ' ...
+                 'same analysis.']);
+        end
+
+        analysisSettings.statistics.primaryGroups = primaryGroups;
+        analysisSettings.statistics.primaryPathways = primaryPathways;
+        analysisSettings.statistics.secondaryPathways = ...
+            secondaryPathways;
+        analysisSettings.statistics.withinGroupModelComparison.enabled = ...
+            logical(withinEnabled);
+        analysisSettings.statistics.betweenGroupComparison.enabled = ...
+            logical(betweenEnabled);
+    end
+
+    %% Frequency-Wise Statistical Settings
+
+    if ~isfield(analysisSettings.statistics, "frequencyWise")
+        analysisSettings.statistics.frequencyWise = struct();
+    end
+    if ~isfield(analysisSettings.statistics.frequencyWise, "enabled")
+        analysisSettings.statistics.frequencyWise.enabled = false;
+    end
+    if ~isfield( ...
+            analysisSettings.statistics.frequencyWise, "groupComparison")
+        analysisSettings.statistics.frequencyWise.groupComparison = ...
+            struct();
+    end
+    if ~isfield( ...
+            analysisSettings.statistics.frequencyWise, "modelComparison")
+        analysisSettings.statistics.frequencyWise.modelComparison = ...
+            struct();
+    end
+
+    groupFrequencySettings = ...
+        analysisSettings.statistics.frequencyWise.groupComparison;
+    modelFrequencySettings = ...
+        analysisSettings.statistics.frequencyWise.modelComparison;
+
+    if ~isfield(groupFrequencySettings, "gain")
+        groupFrequencySettings.gain = true;
+    end
+    if ~isfield(groupFrequencySettings, "coherence")
+        groupFrequencySettings.coherence = true;
+    end
+    if ~isfield(groupFrequencySettings, "phase")
+        groupFrequencySettings.phase = true;
+    end
+    if ~isfield(modelFrequencySettings, "gain")
+        modelFrequencySettings.gain = true;
+    end
+    if ~isfield(modelFrequencySettings, "phase")
+        modelFrequencySettings.phase = true;
+    end
+
+    toggleValues = [ ...
+        analysisSettings.statistics.frequencyWise.enabled
+        groupFrequencySettings.gain
+        groupFrequencySettings.coherence
+        groupFrequencySettings.phase
+        modelFrequencySettings.gain
+        modelFrequencySettings.phase];
+    if any(~ismember(toggleValues, [0 1]))
+        error( ...
+            'TFA:InvalidFrequencyWiseToggle', ...
+            'Every statistics.frequencyWise toggle must be true or false.');
+    end
+
+    analysisSettings.statistics.frequencyWise.enabled = logical( ...
+        analysisSettings.statistics.frequencyWise.enabled);
+    groupFrequencySettings.gain = logical(groupFrequencySettings.gain);
+    groupFrequencySettings.coherence = logical( ...
+        groupFrequencySettings.coherence);
+    groupFrequencySettings.phase = logical(groupFrequencySettings.phase);
+    modelFrequencySettings.gain = logical(modelFrequencySettings.gain);
+    modelFrequencySettings.phase = logical(modelFrequencySettings.phase);
+    analysisSettings.statistics.frequencyWise.groupComparison = ...
+        groupFrequencySettings;
+    analysisSettings.statistics.frequencyWise.modelComparison = ...
+        modelFrequencySettings;
+
     %% Phase and Plot Settings
 
     unwrapMethod = string(analysisSettings.phase.unwrapMethod);
@@ -142,6 +377,12 @@ function analysisSettings = validateTfaSettings(analysisSettings)
 
     if ~isfield(analysisSettings, "plot") || isempty(analysisSettings.plot)
         analysisSettings.plot = defaultPlotSettings();
+    end
+
+    if ~isfield(analysisSettings.plot.show.statistics, ...
+            "frequencyWiseComparison")
+        analysisSettings.plot.show.statistics.frequencyWiseComparison = ...
+            false;
     end
 
     transferFunctionStyle = ...

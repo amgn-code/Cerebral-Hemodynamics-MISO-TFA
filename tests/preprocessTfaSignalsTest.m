@@ -43,14 +43,19 @@ classdef preprocessTfaSignalsTest < matlab.unittest.TestCase
             testCase.verifyEqual(result.t(1), 7, AbsTol=1e-12);
         end
 
-        function warnsWhenCo2IsStillZeroBeforePoint30(testCase)
+        function reportsLateCo2StartupDuration(testCase)
             co2 = [zeros(1, 29), createStableCo2(281)];
             signalData = createPreprocessingTestSignal(co2);
 
-            testCase.verifyWarning( ...
-                @() preprocessTfaSignals( ...
-                signalData, 4, preprocessingTestSettings()), ...
-                'TFA:Co2StillZeroNearPoint30');
+            result = preprocessTfaSignals( ...
+                signalData, 4, preprocessingTestSettings());
+
+            testCase.verifyEqual( ...
+                result.co2Startup.stableStartTimeSeconds, 29, ...
+                AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                result.co2Startup.removedDurationSeconds, 29, ...
+                AbsTol=1e-12);
         end
 
         function returnsHorizontalArrays(testCase)
@@ -89,6 +94,21 @@ classdef preprocessTfaSignalsTest < matlab.unittest.TestCase
             testCase.verifyEqual(result.cbv, 100*ones(size(result.cbv)), ...
                 AbsTol=1e-12);
             testCase.verifyEqual(result.cbvUnits, "% baseline CBV");
+        end
+
+        function preservesPhysiologicalSubjectSummaries(testCase)
+            signalData = createPreprocessingTestSignal( ...
+                createStableCo2(281));
+
+            result = preprocessTfaSignals( ...
+                signalData, 4, preprocessingTestSettings());
+
+            testCase.verifyEqual( ...
+                result.physiology.meanMapMmHg, 90, AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                result.physiology.meanCbvCmPerSec, 50, AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                result.physiology.cvri, 1.8, AbsTol=1e-12);
         end
 
         function usesUserSelectedSamplingFrequency(testCase)

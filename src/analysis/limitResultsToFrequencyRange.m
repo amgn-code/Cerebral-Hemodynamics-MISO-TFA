@@ -27,6 +27,14 @@ function results = limitResultsToFrequencyRange( ...
     results.map.power = results.map.power(frequencyIndex);
     results.map.transferFunction = ...
         results.map.transferFunction(frequencyIndex);
+    if isfield(results.map, "transferFunctionUnregularized")
+        results.map.transferFunctionUnregularized = ...
+            results.map.transferFunctionUnregularized(frequencyIndex);
+    end
+    if isfield(results.map, "transferFunctionRidge")
+        results.map.transferFunctionRidge = ...
+            results.map.transferFunctionRidge(frequencyIndex);
+    end
     results.map.gain = results.map.gain(frequencyIndex);
     results.map.phase.wrapped = ...
         results.map.phase.wrapped(frequencyIndex);
@@ -36,6 +44,14 @@ function results = limitResultsToFrequencyRange( ...
     results.co2.power = results.co2.power(frequencyIndex);
     results.co2.transferFunction = ...
         results.co2.transferFunction(frequencyIndex);
+    if isfield(results.co2, "transferFunctionUnregularized")
+        results.co2.transferFunctionUnregularized = ...
+            results.co2.transferFunctionUnregularized(frequencyIndex);
+    end
+    if isfield(results.co2, "transferFunctionRidge")
+        results.co2.transferFunctionRidge = ...
+            results.co2.transferFunctionRidge(frequencyIndex);
+    end
     results.co2.gain = results.co2.gain(frequencyIndex);
     results.co2.phase.wrapped = ...
         results.co2.phase.wrapped(frequencyIndex);
@@ -67,6 +83,21 @@ function results = limitResultsToFrequencyRange( ...
 
         results.diagnostics.conditionNumber = ...
             results.diagnostics.conditionNumber(frequencyIndex);
+
+        diagnosticFields = [ ...
+            "normalizedConditionNumber"
+            "normalizedDeterminant"
+            "minimumNormalizedEigenvalue"
+            "reciprocalConditionEstimate"
+            "isFiniteSystem"
+            "isPoorlyConditioned"];
+        for fieldIndex = 1:numel(diagnosticFields)
+            fieldName = diagnosticFields(fieldIndex);
+            if isfield(results.diagnostics, fieldName)
+                results.diagnostics.(fieldName) = ...
+                    results.diagnostics.(fieldName)(frequencyIndex);
+            end
+        end
     else
         results.map.coherence.pairwise = ...
             results.map.coherence.pairwise(frequencyIndex);

@@ -65,6 +65,9 @@ function sheetCells = createExcelMetricSheet( ...
         if runStage == "TooShortForWelch"
             subjectErrors(subjectIndex) = ...
                 "ERROR: Signal shorter than Welch window";
+        elseif runStage == "LateCO2Startup"
+            subjectErrors(subjectIndex) = ...
+                "ERROR: CO2 stabilized too late for required Welch windows";
         elseif runStage == "InsufficientWelchWindows"
             subjectErrors(subjectIndex) = ...
                 "ERROR: " + string(runStatus.numWelchWindows) + ...
@@ -213,58 +216,15 @@ function sheetCells = createExcelMetricSheet( ...
     frequencyBandNames = string( ...
         analysisSettings.frequencyBandNames(:));
     numBands = numel(frequencyBandNames);
-    bandSubjectValues = NaN(numBands, numGroupSubjects);
-    bandWrappedValues = NaN(numBands, numGroupSubjects);
-    bandUnwrappedValues = NaN(numBands, numGroupSubjects);
-    bandCoherenceValues = NaN(numBands, numGroupSubjects);
+    bandResults = calculateSubjectBandValues( ...
+        frequencyHz, subjectValues, analysisSettings, ...
+        metric.statistic, wrappedValues, coherenceValues);
 
-    for bandIndex = 1:numBands
-        lowerFrequencyHz = frequencyBandEdgesHz(bandIndex);
-        upperFrequencyHz = frequencyBandEdgesHz(bandIndex + 1);
-
-        if bandIndex == numBands
-            frequencyMask = frequencyHz >= lowerFrequencyHz & ...
-                frequencyHz <= upperFrequencyHz;
-        else
-            frequencyMask = frequencyHz >= lowerFrequencyHz & ...
-                frequencyHz < upperFrequencyHz;
-        end
-
-        for subjectIndex = 1:numGroupSubjects
-            if isPhase
-                bandWrappedValues(bandIndex,subjectIndex) = ...
-                    circularMeanPhase( ...
-                        wrappedValues(frequencyMask,subjectIndex));
-                bandCoherenceValues(bandIndex,subjectIndex) = mean( ...
-                    coherenceValues(frequencyMask,subjectIndex), ...
-                    'omitnan');
-            else
-                bandSubjectValues(bandIndex,subjectIndex) = mean( ...
-                    subjectValues(frequencyMask,subjectIndex), ...
-                    'omitnan');
-            end
-        end
-    end
-
-    bandCentersHz = mean( ...
-        [frequencyBandEdgesHz(1:end - 1), ...
-         frequencyBandEdgesHz(2:end)], 2);
-
-    if isPhase
-        for subjectIndex = 1:numGroupSubjects
-            bandUnwrappedValues(:,subjectIndex) = unwrapTfaPhase( ...
-                bandWrappedValues(:,subjectIndex), ...
-                bandCentersHz, ...
-                bandCoherenceValues(:,subjectIndex), ...
-                analysisSettings.phase);
-        end
-
-        if metric.statistic == "phaseUnwrapped"
-            bandSubjectValues = bandUnwrappedValues;
-        else
-            bandSubjectValues = bandWrappedValues;
-        end
-    end
+    bandSubjectValues = bandResults.values;
+    bandWrappedValues = bandResults.wrappedValues;
+    bandUnwrappedValues = bandResults.unwrappedValues;
+    bandCoherenceValues = bandResults.coherenceValues;
+    bandCentersHz = bandResults.centersHz;
 
     %% Calculate Group Statistics Across Subject Band Values
 

@@ -204,5 +204,32 @@ classdef workflowSettingsTest < matlab.unittest.TestCase
             testCase.verifyEmpty( ...
                 runResults.subjectResults{1}.subjectFigureFiles);
         end
+
+        function identifiesCo2StartupThatMakesRecordingTooShort(testCase)
+            outputFolder = tempname();
+            mkdir(outputFolder);
+            testCase.addTeardown(@() rmdir(outputFolder, "s"));
+            signalData = createSyntheticSignal(4);
+            numSamples = 260*4;
+            signalData.t = signalData.t(1:numSamples);
+            signalData.map = signalData.map(1:numSamples);
+            signalData.co2 = signalData.co2(1:numSamples);
+            signalData.cbv = signalData.cbv(1:numSamples);
+            signalData.co2(1:40) = 0;
+            subjectInfo.subjectID = "startup";
+            subjectInfo.group = "NC";
+            subjectInfo.sourceFile = "synthetic";
+            [analysisSettings, outputSettings] = ...
+                createWorkflowTestSettings(outputFolder, true, true);
+
+            subjectResult = analyzeSubjectTFA( ...
+                signalData, subjectInfo, ...
+                analysisSettings, outputSettings);
+
+            testCase.verifyFalse( ...
+                subjectResult.runStatus.analysisSucceeded);
+            testCase.verifyEqual( ...
+                subjectResult.runStatus.runStage, "LateCO2Startup");
+        end
     end
 end
