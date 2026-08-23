@@ -1,0 +1,33 @@
+function [manifestRow, savedFiles] = exportApproachPaperPlot( ...
+    figureHandle, sourceData, figuresFolder, groupNumber, ...
+    plotName, plotTitle, exportSettings)
+% exportApproachPaperPlot Export one plot and register its source data.
+
+    plotFolder = fullfile(figuresFolder, "Plots");
+    sourceFolder = fullfile(figuresFolder, "Source_Data");
+    if ~exist(plotFolder, "dir")
+        mkdir(plotFolder);
+    end
+    if ~exist(sourceFolder, "dir")
+        mkdir(sourceFolder);
+    end
+
+    imageFiles = exportApproachPaperFigure( ...
+        figureHandle, fullfile(plotFolder, plotName), ...
+        exportSettings);
+    if exportSettings.saveFigureSourceData
+        sourceFiles = saveApproachFigureSourceData( ...
+            sourceData, sourceFolder, plotName);
+    else
+        sourceFiles = strings(0, 1);
+    end
+    savedFiles = [imageFiles; sourceFiles];
+
+    manifestRow = table( ...
+        groupNumber, string(plotName), string(plotTitle), ...
+        join(imageFiles, "; "), join(sourceFiles, "; "), ...
+        'VariableNames', { ...
+            'GroupNumber', 'PlotName', 'Title', ...
+            'ImageFiles', 'SourceDataFiles'});
+
+end

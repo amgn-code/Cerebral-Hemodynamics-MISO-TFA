@@ -1,0 +1,551 @@
+                              Annals of Biomedical Engineering (2026) 54:2497–2507                                                                                                                                                                                                                   BIOMEDICAL
+                              https://doi.org/10.1007/s10439-026-04213-7                                                                                                                                                                                                                             ENGINEERING 
+                                                                                                                                                                                                                                                                                                     SOCIETY
+                                  ORIGINAL ARTICLE
+                              PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic 
+                              Dynamics in MCI
+                                                                      1                                                        1                                       2                                    2                                                  1
+                              Suhaib Hashem    · Stanley Yamashiro  · Elizabeth Joe  · Helena Chui  · Vasilis Marmarelis
+                              Received: 22 July 2025 / Accepted: 22 May 2026 / Published online: 10 June 2026 
+                              © The Author(s) 2026
+                              Abstract
+                              Purpose  This study investigates the dynamic regulation of cerebral oxygenation in individuals with mild cognitive impair-
+                              ment (MCI) compared to healthy controls, using a novel pseudorandom binary sequence (PRBS) gas challenge. Traditional 
+                              assessments often overlook frequency-dependent features of cerebrovascular control; this work aims to uncover latent deficits 
+                              through broadband perturbations and nonparametric dynamic modeling.
+                              Methods  Seventeen ApoE4-negative participants (9 controls, 8 MCI) underwent a three-session supine protocol involving 
+                              PRBS-modulated inhalation of hypoxic and hypercapnic gas mixtures. Physiological signals—including near-infrared spec-
+                              troscopy (TOI), arterial pressure (ABP), and end-tidal  CO    (PETCO )—were recorded. Laguerre-based Volterra modeling 
+                                                                                                                                                                        2                       2
+                              and Principal Dynamic Mode (PDM) decomposition were used to analyze the dynamic response of cerebral oxygenation to 
+                              ABP and  CO  stimuli. Group differences were statistically assessed using Welch’s t-tests and repeated measures ANOVA.
+                                                             2
+                              Results  Controls showed significant increases in ventilation and TOI from baseline to stimulation (                                                                                                                                                               ), while MCI 
+                                                                                                                                                                                                                                                                            p < 0.01
+                              did not. Gain of the first  CO  PDM increased in controls during PRBS (p = 0.016) but decreased in MCI. A low-frequency 
+                                                                                                 2
+                                                                               ∼
+                              ABP-derived PDM (   0.014 Hz), consistent with endothelial-dependent vasodilation, was elevated only in controls during 
+                              stimulation. Persistent differences in spectral recovery, kernel profiles, and PDM Gains suggested impaired baroreflex and 
+                              chemoreflex regulation, and possible disruption of cholinergic-linked neurovascular coupling in MCI.
+                              Conclusion  PRBS gas modulation combined with dynamic modeling revealed subtle but significant cerebrovascular control 
+                              impairments in MCI. This methodology enables mechanistic insights into early pathophysiology and may aid future physi-
+                              omarker development.
+                              Keywords  Cerebral autoregulation · Pseudorandom binary sequence (PRBS) · Principal dynamic mode (PDM) · Mild 
+                              cognitive impairment (MCI) · Chemoreflex sensitivity · Alzheimer’s disease
+                              Introduction                                                                                                                                          been widely reported [12, 20, 24, 30]. Specifically, Heutz 
+                                                                                                                                                                                    et al. [12] reported inconsistent findings in dynamic cer-
+                              Cerebral oxygenation dynamics are regulated by the inte-                                                                                              ebral autoregulation across methods and dementia subtypes, 
+                              grated effects of vascular reactivity, metabolic demand,                                                                                              highlighting the need for standardized perturbation-based 
+                              and systemic blood gas levels [5, 7, 11, 13]. In dementia                                                                                             approaches. McKetton et al. [20] demonstrated elevated 
+                              and prodromal stages such as Mild Cognitive Impairment                                                                                                cerebrovascular resistance in MCI using BOLD-CVR map-
+                              (MCI), disruptions in these regulatory mechanisms have                                                                                                ping, while Tomoto et al. [28] found impaired CO  vasomo-
+                                                                                                                                                                                                                                                                                                        2
+                                                                                                                                                                                    tor reactivity in amnestic MCI using transcranial Doppler. 
+                              Associate Editor Joel Stitzel oversaw review of this article.                                                                                         Most studies to date have assessed these impairments under 
+                                                                                                                                                                                    spontaneous or steady-state conditions, limiting the ability 
+                              *        Suhaib Hashem                                                                                                                                to resolve frequency-dependent features of the response [17, 
+                               shashem@usc.edu                                                                                                                                      20, 24]. Although deficits in cerebral autoregulation and vas-
+                              1        Alfred E. Mann Department of Biomedical Engineering,                                                                                         omotor reactivity have been identified, their dynamic char-
+                                       University of Southern California, Los Angeles, CA, USA                                                                                      acterization under controlled perturbations, such as hypoxic 
+                              2        Department of Neurology, Keck School of Medicine of USC,                                                                                     and hypercapnic breathing, remains largely unexplored.
+                                       Los Angeles, CA, USA
+                                                                                                                                                                                                                                                                                             Vol.:(0123456789)
+             2498                                                                                                             S. Hashem et al.
+                Pseudorandom binary sequence (PRBS) stimuli were                 This study represents the first application of PRBS-
+             first introduced into physiological system identification by     induced hypoxic and hypercapnic breathing, combined 
+             Marmarelis to enable broadband probing of system dynam-          with nonparametric dynamic modeling, to assess group 
+             ics across a wide frequency range [21]. PRBS inputs pos-         differences in cerebrovascular regulation. By introducing 
+             sess a flat spectral profile, allowing for uniform excitation    broadband perturbations and using PDM analysis, we aim 
+             of system dynamics and improving the robustness of model         to establish a methodological framework capable of under-
+             estimation compared to relying solely on spontaneous fluc-       standing and detecting early impairments in cerebral oxy-
+             tuations. Subsequent applications demonstrated the utility       genation control that may precede the onset of dementia. 
+             of PRBS in ventilatory control experiments, enabling the         Through this approach, we aim to identify early mechanis-
+             separation of overlapping regulatory mechanisms such as          tic deficits that may underlie the progression from MCI to 
+             chemoreflex and baroreflex contributions [4, 8, 10]. Unlike      dementia.
+             traditional step, ramp, or cyclic stimuli, PRBS allows simul-
+             taneous excitation of both fast and slow dynamic compo-
+             nents within a single experimental session. A comprehensive      Materials and Methods
+             treatment of the mathematical foundations underlying these 
+             techniques, including the Laguerre Expansion Technique           Subject Demographics
+             and Volterra kernel estimation, is provided in Marmarelis 
+             [19].                                                            A total of 17 participants (9 controls, 8 MCI) who do not 
+                Hypoxic and hypercapnic challenges modulate distinct          carry the ApoE4 gene were recruited for this study. All 
+             physiological pathways involved in cerebral blood flow           participants provided written informed consent prior to 
+             regulation. Hypoxia primarily stimulates peripheral chemo-       enrollment. The study protocol was approved by the Insti-
+             receptors located in the carotid bodies, while hypercapnia       tutional Review Board (IRB) at the University of Southern 
+             activates both peripheral and central chemoreceptors, influ-     California. Diagnosis was based on the Clinical Dementia 
+             encing cerebral vascular tone [14, 25]. In addition to chem-     Rating (CDR) obtained prior to data collection. Subjects 
+             oreceptive effects, both stimuli have been shown to impact       were screened to exclude major cardiorespiratory, cerebro-
+             baroreflex sensitivity and autonomic control, further com-       vascular, or unrelated neurological conditions. Participants 
+             plicating the integrated regulation of cerebral oxygenation      were recruited from a larger NIA-funded longitudinal cohort 
+             [1, 31]. In this study, a PRBS breathing protocol was used       (R01-AG058162) at the University of Southern California. 
+             to modulate these inputs dynamically, providing a unique         The requirement for ApoE4-negative genotype further con-
+             opportunity to assess their combined and independent effects     strained the eligible pool, as ApoE4 carriers were excluded 
+             on cerebral oxygenation in both healthy and cognitively          to isolate effects of cognitive status from the known cer-
+             impaired populations.                                            ebrovascular impact of the ApoE4 allele [18]. Although the 
+                Cerebrovascular regulatory mechanisms operate across          resulting sample size is modest, it is consistent with pilot 
+             distinct frequency bands: endothelial and nitric oxide-          investigations of novel perturbation-based paradigms in this 
+             dependent processes reside below 0.02 Hz, neurogenic             population and is sufÏcient for the exploratory, hypothesis-
+             and cholinergic regulation at approximately 0.02–0.04 Hz,        generating aims of this study.
+             myogenic autoregulation at 0.04–0.15 Hz, and respiratory-
+             cardiac influences above 0.15 Hz [7, 16]. A perturbation         PRBS Gas Delivery Setup
+             method that excites all of these bands simultaneously is 
+             therefore essential for characterizing the full spectrum of      To assess cerebral oxygenation dynamics, we developed a 
+             cerebrovascular control.                                         custom gas delivery device employing pseudorandom binary 
+                Building on our prior use of the Laguerre Expansion           sequence (PRBS)-modulated hypoxic and hypercapnic stim-
+             Technique (LET) to model cerebral oxygenation and iden-          uli [4]. Subjects breathed through a disposable thermoplastic 
+             tify impairments in Alzheimer’s disease [22, 24], this study     mouthpiece connected to a pneumotachograph measuring 
+             applies Principal Dynamic Mode (PDM) analysis to com-            expiratory airflow. Real-time detection of exhalation onset, 
+             pare oxygenation dynamics in MCI and control groups.             via an Arduino Uno microcontroller, triggered gas switching 
+             PDM analysis builds on kernel-based modeling by extracting       to synchronize precisely with the respiratory cycle (Fig. 1).
+             distinct dynamic patterns with characteristic spectral pro-         Two independent PRBS signals, each initialized with dis-
+             files, offering a clearer view of the underlying physiological   tinct seeds, controlled four solenoid valves through a four-
+             mechanisms. Unlike subject-specific kernel estimates, PDMs       channel solid-state relay. Each valve connected via T-junc-
+             provide a standardized representation that enables meaning-      tions to a distinct gas mixture. An 8-seed PRBS sequence 
+                                                                                      28 −1 = 255
+             ful comparisons across individuals and experimental groups.      yielded               transitions over a 15-min session which 
+                PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic Dynamics in MCI                                                              2499
+                Fig. 1   Schematic of PRBS setup
+                approximately matches a breathing frequency of 14–18                       to align all channels temporally. The 2 Hz resampling rate 
+                breaths per minute.                                                        provides greater than 4   Nyquist margin for the cerebro-
+                                                                                                                        ×
+                                                                                           vascular dynamics of interest, which reside predominantly 
+                Physiological Measurements                                                 below 0.5 Hz [7]. ABP and NIRS signals were temporally 
+                                                                                           aligned through the common acquisition system and resa-
+                Physiological signals were recorded continuously at 500 Hz                 mpling grid; no additional physiological landmark-based 
+                using:                                                                     alignment was applied.
+                •  Near-Infrared Spectroscopy (Hamamatsu NIRO-300)                         Experimental Protocol
+                   for cortical tissue oxygenation (TOI).
+                •  Non-invasive Blood Pressure Monitor (NIBP100D) for                      Participants completed three consecutive 10–15 min ses-
+                   arterial blood pressure (ABP).                                          sions in the supine position:
+                •  Capnograph (CapnoTek) for end-tidal  CO    (PETCO ).
+                •                                                      2           2
+                   Pulse Oximeter (Nonin 7000 series) for heart rate and                   •  Session 1 (Baseline) Ambient air breathing (10 min)
+                    SpO .
+                •        2                                                                 •  Session 2 (PRBS) Stimulated gas switching using PRBS 
+                   Pneumotachograph (SpiroQuant H) to capture airflow                          (15 min)
+                   and trigger PRBS switching.                                             •  Session 3 (Post) Recovery with ambient air (10 min)
+                Beat-to-beat signals (HR, ABP, SpO          ) and breath-to-breath 
+                                                           2                               Gas composition per PRBS state:
+                signals   (PETCO , tidal volume) were extracted. Tidal vol-
+                                   2
+                ume was calculated as the integral of exhaled flow per                     •  Mixture 1: 21%  O , 0%  CO  (ambient)
+                breath. Ventilation was computed breath-by-breath as:                      •                        2          2
+                                                                                               Mixture 2: 16%  O , 0%  CO
+                                                                                           •                        2          2
+                                   tidal volume                                                Mixture 3: 21%  O , 5%  CO
+               V =                                                                                                  2          2
+                 E     inhalation time + exhalation time                                   •  Mixture 4: 16%  O , 5%  CO
+                                                                                                                    2          2
+                All signals were visually inspected for motion artifacts and 
+                sensor dropouts; no subjects were excluded due to data qual-               Modeling Methodology
+                ity. Signals were then mean-subtracted and high-pass filtered 
+                at 0.005 Hz to remove slow non-stationary drift, and resa-                 We used the Volterra series framework with the Laguerre 
+                mpled to a common 2 Hz grid via cubic spline interpolation                 Expansion Technique (LET) to model the relationship 
+               2500                                                                                                                     S. Hashem et al.
+               between inputs (ABP, PET     CO ) and output (TOI). The first-        the control group and used to project all subject-specific 
+               order model is expressed as: 2                                        kernels. Subject-specific Gains were computed by projecting 
+                                                                                                                          G =kT ⋅
+                            M                        M                               each kernel onto the PDM basis:  j           i    j . Each kernel 
+                                                   k ()x(t−)+(t)                was then expressed as:
+               y(t)=k +        k     ()p(t − )+
+                       0         ABP                     CO2
+                            =0                     =0                                        J
+                                                                             (1)             
+                                                                                     k ()=      G ⋅()                                           (5)
+                                                                                      i            j    j
+               where y(t) is TOI, p(t) is ABP, x(t) is PE      TCO , k  is the                j=1
+                                                                    2   0
+                                     (t)
+               baseline offset, and      is the residual [19]. Each input was               ()                          G
+               convolved with Laguerre basis functions, selecting 5 for              where  j      is the j-th PDM and  j is the associated Gain. 
+               ABP and 4 for  CO  based on Bayesian Information Criterion            These Gains quantify the contribution of each physiological 
+                                  2                                                  mechanism and serve as group-comparable features.
+                                                                      
+               (BIC) minimization. The Laguerre rate parameter   was set 
+               to 0.55 for ABP and 0.85 for CO  . The memory length M for 
+                                                  2                                  Statistical Analysis
+               each input was computed as M = round(−30∕ln) ,  which 
+               ensures sufÏcient time for the Laguerre basis functions to            All physiological metrics and model-derived parameters 
+                               M=50                                   M=185
+               relax, yielding          samples (25 s) for ABP and                   were compared between groups using Welch’s t-tests for 
+               samples (92.5 s) for CO  at the 2 Hz sampling rate. The 
+                                           2                                         session-specific comparisons. To assess within-subject 
+               longer CO  memory accommodates the slower time con-
+                           2                                                         changes across sessions and group-by-session interactions, 
+               stants of chemoreflex-mediated cerebrovascular dynamics               we performed repeated-measures ANOVA (RM-ANOVA) 
+               [19]. Results were verified to be stable across neighboring           with Group (Control vs. MCI) as a between-subjects factor 
+               model orders (4–6 for ABP, 3–5 for CO ).
+                                                           2                         and Session (1, 2, 3) as a within-subjects factor. Post hoc 
+               Estimation via Ordinary Least Squares                                 pairwise comparisons used paired t-tests within each group. 
+                                                                                     To address the possibility that baseline PET    CO  differences 
+                                                                                                                                         2
+               After Laguerre transformation, the model reduces to:                  between groups could confound PDM Gain comparisons, 
+                                                                                     we note that: (a) PET    CO  enters the model as an explicit 
+                                                                                                                  2
+               y = Vc+                                                      (2)     input and signals are mean-subtracted prior to estimation, 
+               where   is the Laguerre-transformed input matrix,   is the            removing baseline operating-point effects by design; (b) 
+                      V                                                 y            RM-ANOVA on raw P ETCO  showed a non-significant 
+                                 c                                                                                     2
+               TOI vector, and   are the coefÏcients estimated via:                  group main effect (               ) and non-significant interac-
+                                                                                                           p = 0.071
+                                                                                     tion (            ). Statistical significance was set at         .
+                      T   −1 T                                                             p = 0.554                                        p < 0.05
+              c =(V V) V y                                                   (3)
+               Model Validation                                                      Results
+               Model prediction accuracy was assessed using normalized               The means and standard deviations of heart rate, oxygen 
+               mean square error (NMSE):                                             saturation, ventilation, mean arterial blood pressure (ABP), 
+                                                                                     end-tidal   CO    (PETCO ), tissue oxygenation index (TOI), 
+                              ∑ y(t)−ŷ(t) 2                                                        2          2
+                                 t (          )                                      and model NMSE values for each session are presented in 
+               NMSE=1−                                                       (4)
+                                ∑t(y(t)−ȳ)2                                         Table 1. Across all sessions, none of the group-wise mean 
+                                                                                     values were significantly different. Repeated-measures 
+                                                                                     ANOVA revealed a significant main effect of Session for 
+                                                                                                                 −8
+               Principal Dynamic Mode (PDM) Analysis                                  PETCO  (                      ) and ventilation (               ), 
+                                                                                              2  p = 2.47 × 10                            p = 0.003
+                                                                                     with no significant Group   Session interactions for PET     CO  
+                                                                                                                 ×                                    2
+               To reduce model complexity and enhance interpretability,              (            ) or ventilation (           ). A significant session 
+                                                                                      p = 0.554                    p = 0.081
+               we decomposed the first-order kernels into orthonormal                effect for S  pO  (            ) was driven by lower baseline 
+                                                                                                     2  p = 0.036
+               dynamic modes via singular value decomposition (SVD)                   SpO2 in MCI subjects.
+               [19]. For each input (ABP and  PETCO2) independently,                    In the control group, both ventilation and TOI val-
+               a kernel matrix K was formed by row-concatenating all                 ues increased significantly from session 1 to session 2 
+               control-group baseline session kernels. SVD was applied:              (           ), while the MCI group showed no significant 
+                                                                                      p < 0.01
+                          T , where the columns of   are the PDMs. The               change (             ). Notably, both groups exhibited sig-
+              K=UV                                    V                                       p > 0.05
+               number of retained PDMs was determined by the number                  nificant increases in P  ETCO2 between sessions 1 and 2 
+               of Laguerre functions used in the initial kernel modeling.            (            ). This suggests that although both groups expe-
+                                                                                      p < 0.005
+               PDMs were extracted from all baseline session kernels in              rienced elevated  PETCO2, only the controls responded with 
+                PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic Dynamics in MCI                                                              2501
+                Table 1   Means and standard                                                Controls                       MCI                            p-value
+                deviations of heart rate (HR), 
+                oxygen saturation  (SpO ),                                                  Mean            SD             Mean            SD
+                                       2
+                ventilation (Ve), mean arterial      Heart rate           Session 1         61.8            10.37          68.22           9.73           0.208
+                blood pressure (ABP), end-
+                tidal   CO    (PETCO ), tissue                            Session 2         62.16           9.82           66.7            8.58           0.325
+                        2         2
+                oxygenation (TOI), and                                    Session 3         60.45           10.39          66.45           8.84           0.218
+                normalized mean square error         SpO                  Session 1         94.87           1.58           93.12           2.39           0.105
+                (NMSE) for controls and MCI               2
+                                                                          Session 2         95.11           1.63           94.81           1.00           0.655
+                                                                          Session 3         95.11           2.12           94.82           1.34           0.744
+                                                     Ventilation          Session 1         8.22            1.02           9.25            1.81           0.180
+                                                                          Session 2         9.30            1.13           9.43            1.54           0.845
+                                                                          Session 3         8.61            1.12           8.84            1.49           0.733
+                                                     ABP                  Session 1         102.86          20.15          105.86          14.87          0.730
+                                                                          Session 2         110.37          15.01          106.56          10.21          0.546
+                                                                          Session 3         107.48          15.89          111.11          19.28          0.680
+                                                     PETCO                Session 1         35.20           1.97           32.35           4.36           0.121
+                                                             2
+                                                                          Session 2         40.78           3.04           38.27           3.14           0.116
+                                                                          Session 3         35.24           2.62           33.65           4.42           0.394
+                                                     TOI                  Session 1         69.83           5.06           67.01           7.30           0.207
+                                                                          Session 2         71.02           4.71           68.79           4.52           0.169
+                                                                          Session 3         69.87           5.34           66.96           5.15           0.117
+                                                     NMSE                 Session 1         0.68            0.13           0.67            0.17           0.921
+                                                                          Session 2         0.57            0.23           0.71            0.15           0.174
+                                                                          Session 3         0.65            0.13           0.66            0.11           0.916
+                compensatory increases in ventilation and cerebral oxygena-                regulated ventilatory response to the stimulus. In session 3, 
+                tion, potentially indicating an intact chemoreflex mechanism               the   PETCO  spectrum in the MCI group does not return to 
+                                                                                                         2
+                in the control group that is attenuated in MCI [23]. Post hoc              its baseline shape and remains elevated across the frequency 
+                analysis confirmed that controls showed a significant ven-                 range, which may reflect impaired C  O  clearance or irregular 
+                                                                                                                                       2
+                tilatory increase from Session 1 to Session 2 (                      ),    recovery of the chemoreflex response [28].
+                                                                        p = 0.006
+                while MCI did not (                 ). This differential ventilatory          TOI spectral profiles were broadly similar between 
+                                       p = 0.634
+                response, despite comparable PET          CO  elevations in both           groups. However, the control group shows a slight increase 
+                                                              2
+                groups, is consistent with attenuated chemoreflex sensitiv-                in TOI power during session 2 above 0.05 Hz, whereas the 
+                ity in MCI.                                                                MCI group shows little change across sessions. These sub-
+                   The power spectral density (PSD) plots of the input sig-                tle spectral shifts suggest that while the global dynamics of 
+                nals (ABP and  PETCO ) and the output signal (TOI) for                     cerebral oxygenation remain comparable, the control group 
+                                            2
+                both control and MCI groups are shown in Fig. 2. Across all                exhibits a slightly more responsive oxygenation profile dur-
+                signals, dominant power resides in the very low-frequency                  ing the PRBS gas challenge.
+                range (         Hz), consistent with the physiological time-                  Together, these findings point to subtle but detectable 
+                        <0.1
+                scales of cerebrovascular regulation [7, 26]. For ABP, the                 dysregulation in the MCI group’s physiological response 
+                MCI group consistently exhibits higher spectral power than                 to induced gas perturbations, particularly in ABP and  CO  
+                the controls across all sessions in the very low-frequency                 dynamics.                                                            2
+                range, which may suggest heightened baseline variability                      The average estimated kernels and their corresponding 
+                or reduced autonomic buffering. Both groups show a sub-                    gain functions for ABP and P  ETCO2 inputs are shown in 
+                tle increase in ABP spectral power around 0.15 Hz during                   Fig. 3. In the time domain, ABP kernels for both groups 
+                session 2, potentially reflecting respiratory or baroreflex                exhibit a biphasic profile with a peak followed by an under-
+                engagement in response to the gas perturbation [15].                       shoot, characteristic of autoregulatory dynamics. However, 
+                   For   PETCO2, both groups demonstrate a clear increase                  the MCI group shows a blunted initial peak and reduced 
+                in spectral power during session 2, as expected from the                   rebound magnitude, suggesting diminished cerebral pressure 
+                imposed PRBS gas modulation. However, the control                          reactivity. For  PETCO , control kernels show a sharp posi-
+                                                                                                                      2
+                group shows relatively lower spectral power above 0.05                     tive peak at approximately 8 s, while MCI kernels display a 
+                Hz compared to the MCI group, suggesting a more tightly                    delayed and more attenuated response.
+       2502                                                S. Hashem et al.
+       Fig. 2   Average spectra of ABP (left), CO2 (middle), and TOI (right) for controls (top) and MCI (bottom) for all 3 sessions
+       Fig. 3   Tissue oxygenation index (TOI) response to PRBS gas perturbation
+                PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic Dynamics in MCI                                                              2503
+                   Gain analysis further supports this distinction; the spec-              baseline and recovery, Table 3. In session 2, controls showed 
+                tral profiles of all extracted PDMs are shown in Fig. 4.                   an elevated Gain in this mode—consistent with transient 
+                The first PE  TCO -derived PDM shows significantly lower                   nitric oxide-mediated vasodilation in response to hypoxic 
+                                    2
+                Gain values in the MCI group during session 2 (                      ),    and hypercapnic gas stress—while MCI subjects showed no 
+                                                                          p = 0.03
+                indicating impaired dynamic cerebrovascular response to                    such modulation. These model-derived features emphasize 
+                hypercapnia, Table 2. Significant group-level differences                  the potential for computational dynamics to reveal subtle 
+                were observed in the fourth ABP-derived PDM, centered                      physiological deficits not captured by resting-state averages. 
+                at 0.014 Hz. This component was significantly lower in                     RM-ANOVA on C  O  PDM 1 Gains confirmed a significant 
+                                                                                                                   2
+                the control group than in MCI during sessions 1 and 3 (p                   Group   Session interaction (p = 0.016), with no significant 
+                                                                                                   ×
+                < 0.05), indicating higher cerebrovascular resistance at                   group main effect (                  ), indicating that the groups 
+                                                                                                                   p = 0.105
+                Fig. 4   Time-domain waveforms (top) and frequency-domain mag-             inputs. Spectral peaks identify distinct regulatory frequency bands: 
+                nitude spectra (bottom) of the Principal Dynamic Modes extracted           endothelial/NO-dependent (<0.02 Hz), neurogenic/cholinergic (0.02–
+                from control-group baseline kernels for ABP (left) and  CO  (right)        0.04 Hz), and myogenic (0.04–0.15 Hz)
+                                                                              2
+                Table 2   Mean (standard                                                     Controls                      MCI                            p-value
+                deviation) values of estimated 
+                Gains of the PDM outputs for                                                 Mean             SD           Mean             SD
+                the   CO  input and TOI output 
+                       2                             CO  – PDM 1           Session 1         0.0007           0.045        0.0173           0.018         0.162
+                and the corresponding p-values           2
+                for the two groups                                         Session 2         0.0238           0.023        0.0073           0.013         0.016
+                                                                           Session 3         0.0131           0.041        0.0097           0.025         0.767
+                                                     CO2 – PDM 2           Session 1         0.0084           0.029        0.0063           0.021         0.811
+                                                                           Session 2         0.0111           0.015        0.0108           0.013         0.948
+                                                                           Session 3         0.0041           0.028        0.0053           0.021         0.888
+                                                     CO2 – PDM 3           Session 1         − 0.0010         0.020        0.0031           0.015         0.515
+                                                                           Session 2         0.0004           0.009        0.0069           0.009         0.043
+                                                                           Session 3         − 0.0089         0.018        0.0049           0.019         0.036
+                                                     CO2 – PDM 4           Session 1         0.0025           0.011        − 0.0066         0.019         0.102
+                                                                           Session 2         0.0081           0.012        0.0121           0.010         0.298
+                                                                           Session 3         0.0003           0.017        0.0063           0.032         0.509
+               2504                                                                                                                     S. Hashem et al.
+               Table 3   Mean (standard                                                Controls                    MCI                         p-value
+               deviation) values of estimated 
+               Gains of the PDM outputs for                                            Mean            SD          Mean            SD
+               the ABP input and TOI output       ABP – PDM 1          Session 1       0.0135          0.014       0.0094          0.007       0.2883
+               and the corresponding p-values 
+               for the two groups                                      Session 2       0.0113          0.014       0.0050          0.005       0.0893
+                                                                       Session 3       0.0113          0.010       0.0070          0.007       0.1573
+                                                  ABP – PDM 2          Session 1       0.0011          0.009       0.0000          0.006       0.6760
+                                                                       Session 2       0.0045          0.006       0.0023          0.005       0.2568
+                                                                       Session 3       0.0018          0.009       0.0060          0.011       0.2372
+                                                  ABP – PDM 3          Session 1       − 0.0009        0.007       − 0.0014        0.004       0.8040
+                                                                       Session 2       − 0.0022        0.006       − 0.0015        0.006       0.7613
+                                                                       Session 3       − 0.0022        0.010       − 0.0031        0.011       0.7988
+                                                  ABP – PDM 4          Session 1       0.0014          0.007       0.0075          0.008       0.0185
+                                                                       Session 2       0.0026          0.005       0.0063          0.006       0.0516
+                                                                       Session 3       0.0002          0.009       0.0087          0.007       0.0042
+                                                  ABP – PDM 5          Session 1       − 0.0006        0.003       − 0.0021        0.005       0.3246
+                                                                       Session 2       − 0.0018        0.004       − 0.0038        0.004       0.1540
+                                                                       Session 3       − 0.0048        0.005       − 0.0013        0.007       0.1128
+               diverge in their dynamic response to perturbation rather than         low-frequency ABP power across sessions, consistent with 
+               differing at baseline. RM-ANOVA confirmed a significant               reduced autonomic buffering. PET          CO  spectral power 
+                                                                                                                                   2
+               group main effect for ABP PDM 4 (                    ),  consistent   increased during PRBS in both groups, but returned to 
+                                                        p = 0.010
+               with persistently higher Gains in MCI across sessions.                baseline in controls by session 3 while remaining elevated 
+                  An additional finding emerged in ABP PDM 5, which                  in MCI—suggesting impaired  CO2 clearance or persistent 
+               showed a significant Session effect (               ) and Group       chemoreflex activation. These spectral differences support 
+                                                        p = 0.015
+                 Session interaction (p = 0.020). In the control group, ABP          a picture of preserved homeostatic recovery in controls but 
+              ×
+               PDM 5 Gains decreased progressively from Session 1 to                 sustained dysregulation in MCI.
+               Session 3 (S2 vs. S3:                 ; S1 vs. S3: p = 0.011),           Dynamic modeling allowed us to move beyond group 
+                                         p = 0.014
+               while MCI subjects showed no significant session-to-session           mean differences and probe the time- and frequency-depend-
+               changes. This pattern may reflect a post-perturbation vascu-          ent structure of cerebrovascular responses. By modeling TOI 
+               lar adaptation that is present in controls but absent in MCI.         as an output of both ABP and  PETCO2 inputs, we were able 
+                                                                                     to assess autoregulatory, chemoreflex, and cholinergic-linked 
+                                                                                     mechanisms under perturbation. These models revealed 
+               Discussion                                                            distinct regulatory dynamics between groups that were not 
+                                                                                     apparent from resting physiological measures alone.
+               This study presents the first application of a pseudorandom              Kernel and Gain function analysis deepened these find-
+               binary sequence (PRBS) breathing protocol to investigate              ings. ABP kernels in controls exhibited a delayed nega-
+               dynamic cerebrovascular regulation in individuals with mild           tive deflection that increased across sessions—consistent 
+               cognitive impairment (MCI). The broadband spectral con-               with baroreflex-mediated vascular resistance modulation. 
+               tent of PRBS-induced perturbations enabled the detection of           This feature was diminished or absent in MCI, indicat-
+               physiologically meaningful dynamics that remain obscured              ing impaired dynamic autoregulation.  PETCO2 kernels 
+               under spontaneous or steady-state conditions. All partici-            increased substantially in controls during PRBS exposure 
+               pants completed the protocol without difÏculty or adverse             and remained elevated in session 3, suggesting a persistent 
+               effects, highlighting its safety and tolerability. Compared to        or adaptive cerebrovascular response. MCI subjects, by con-
+               traditional intermittent gas exposure methods, PRBS breath-           trast, exhibited only transient increases in  PETCO  kernel 
+               ing offers a more compact and controlled stimulus for prob-           magnitude.                                               2
+               ing cerebrovascular responses [29]. Furthermore, all subjects            These findings are consistent with prior cerebrovascular 
+               were ApoE4-negative to isolate effects of cognitive status            modeling studies. Our NMSE values (0.57–0.71) are com-
+               from the well-documented cerebrovascular impact of the                parable to those reported in Marmarelis et al. [22, 24] for 
+               ApoE4 genotype [18].                                                  similar NIRS-based models. The ABP kernel time scales 
+                                                                                               ∼                      ∼
+                  Spectral analysis of the raw signals further differentiated        (peak at  3 s, undershoot at  8 s) align with autoregula-
+               the groups. MCI subjects demonstrated higher baseline                 tory impulse response functions characterized in Claassen 
+                PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic Dynamics in MCI                                                              2505
+                                                                   ∼
+                et al. [7]. The C  O  PDM frequency peaks (   0.019 Hz and                 2.  Impaired autoregulation was evident in MCI, marked 
+                                     2
+               ∼
+                  0.033 Hz) correspond to bands identified in Kvandal                           by absent ABP kernel adaptation and flat PDM 4 Gains 
+                et al. [16]. Critically, the present study uses active PRBS                     across sessions.
+                perturbation rather than spontaneous fluctuations, which                   3.  Chemoreflex activation was captured in  CO  PDM 1, 
+                                                                                                                                                      2
+                enhances signal-to-noise in kernel estimation and may                           which increased significantly during PRBS exposure in 
+                explain the stronger group differentiation observed here.                       the control group but decreased slightly in MCI, indicat-
+                   Principal Dynamic Mode (PDM) analysis provided a                             ing impaired downstream signal integration from pri-
+                global, frequency-resolved perspective, with the spectral                       mary chemoreflex activation.
+                profiles of the extracted PDMs shown in Fig. 4. The fourth                 4.  A dynamic mode in the frequency range associated with 
+                ABP-derived PDM, centered at approximately 0.014 Hz,                            cholinergic regulation  (CO2 PDM 3) was present and 
+                was significantly elevated in controls during session 2                         sustained in controls but absent in MCI, possibly impli-
+                only—possibly reflecting transient endothelial-dependent                        cating basal forebrain dysfunction in impaired individu-
+                vasodilation under gas stress. Its absence in MCI suggests                      als.
+                reduced capacity to modulate vascular resistance dynami-                   5.   Raw   PETCO2 spectra showed incomplete recovery in 
+                cally. The time-domain profile of this mode, which is                           MCI during session 3, suggesting reduced gas clearance 
+                predominantly positive, aligns with known patterns of                           or prolonged chemoreflex engagement.
+                cerebral vascular admittance. ABP PDM 5 exhibited a                        6.  Neuroplastic responses, evidenced by persistent changes 
+                significant Group   Session interaction (                      ),  with         in ventilation, TOI, and  PETCO  dynamics in controls, 
+                                      ×                           p = 0.020                                                           2
+                controls showing progressive Gain decreases from Ses-                           were not observed in MCI–indicating a loss of adaptive 
+                sion 2 to 3 (              ) that were absent in MCI. This find-                flexibility in cerebrovascular control.
+                              p = 0.014
+                ing suggests an additional dimension of post-perturbation 
+                vascular adaptation that is compromised in MCI.                            These findings collectively support the hypothesis that 
+                   Two   CO2-derived PDMs further differentiated the                       MCI is associated with dysfunction across multiple layers 
+                groups. The first  CO2 PDM, a low-pass integrative mode                    of cerebrovascular regulation—including blunted barore-
+                with a mild resonance near 0.033 Hz, showed a marked                       flex adaptation, reduced chemoreflex-linked ventilation, 
+                Gain increase in session 2 for the control group, consistent               and impaired cholinergic support of vascular tone. Nota-
+                with chemoreflex activation in response to the gas chal-                   bly, these deficits were only revealed through the use of 
+                lenge [27]. In contrast, the MCI group exhibited a slight                  broadband perturbation and dynamic modeling, underscor-
+                decrease in Gain, resulting in a significant group difference              ing the limitations of resting-state assessments in identify-
+                during the stimulation period. This divergence suggests                    ing early dysfunction.
+                that while both groups experienced comparable elevations                      By combining PRBS breathing with Laguerre-based 
+                in   PETCO , only the controls engaged the corresponding                   system identification and PDM decomposition, this study 
+                            2
+                regulatory mechanisms effectively.                                         offers a sensitive framework for uncovering latent physi-
+                   The third C  O  PDM, with a strong resonance near                       ological impairments in early cognitive decline. This 
+                                     2
+                0.019 Hz,operating in a frequency range previously attrib-                 approach enables mechanistic interpretation of cerebro-
+                uted to neurogenic or cholinergic vascular regulation [16,                 vascular dynamics and may support future efforts in bio-
+                23], exhibited sustained Gain elevation in controls across                 marker development, stratification of at-risk individuals, 
+                sessions 2 and 3 but remained flat in MCI. This prolonged                  and tracking of therapeutic interventions.
+                response may reflect a neuroplastic adaptation in healthy                     Several alternative explanations for the persistent 
+                individuals, potentially mediated by cholinergic pathways                   PETCO  spectral elevation in MCI during Session 3 
+                                                                                                     2
+                involving the basal forebrain, a region known to degener-                  warrant consideration. These include: slower autonomic 
+                ate early in dementia [3, 6, 9]. Given the basal forebrain’s               recovery, supported by the higher baseline low-frequency 
+                dual role in cortical projection and cerebrovascular reg-                  ABP power and the ABP PDM 5 interaction findings; dif-
+                ulation, these findings may indicate early disruption of                   ferences in metabolic  CO2 production; and the possibil-
+                dynamic cholinergic-vessel coupling in MCI.                                ity that the 10-min recovery period was insufÏcient for 
+                   Taken together, these results support six major                         complete chemoreflex washout in MCI subjects [2]. Nota-
+                conclusions:                                                               bly, mean  PETCO2 values returned to comparable levels 
+                                                                                           by Session 3 (Controls: 35.24, MCI: 33.65, p = 0.394 ), 
+                1.  Gas-induced vasodilation, reflected in increased ABP                   suggesting the spectral elevation reflects altered temporal 
+                    PDM 4 Gain, occurred in controls only during session                   dynamics rather than sustained absolute differences.
+                    2, consistent with transient endothelial-dependent reduc-
+                    tion in cerebrovascular resistance.
+                      2506                                                                                                                                                                                    S. Hashem et al.
+                      Limitations                                                                                               Open Access  This article is licensed under a Creative Commons Attri-
+                                                                                                                                bution 4.0 International License, which permits use, sharing, adapta-
+                      This study has several limitations that should be consid-                                                 tion, distribution and reproduction in any medium or format, as long 
+                      ered when interpreting the findings. First, the sample size                                               as you give appropriate credit to the original author(s) and the source, 
+                                                                                                                                provide a link to the Creative Commons licence, and indicate if changes 
+                       n = 17                                                                                                   were made. The images or other third party material in this article are 
+                      (             ; 9 controls, 8 MCI) is modest, limiting statistical                                        included in the article’s Creative Commons licence, unless indicated 
+                      power and generalizability; the results should be consid-                                                 otherwise in a credit line to the material. If material is not included in 
+                      ered hypothesis-generating. Second, this is a single-site                                                 the article’s Creative Commons licence and your intended use is not 
+                      study, and findings may not generalize to other clinical                                                  permitted by statutory regulation or exceeds the permitted use, you will 
+                      populations. Third, the ApoE4-negative genotype require-                                                  need to obtain permission directly from the copyright holder. To view a 
+                      ment, while scientifically motivated, excludes a significant                                              copy of this licence, visit http://creativecommons.org/licenses/by/4.0/.
+                      proportion of MCI/AD populations. Fourth, NIRS-derived 
+                      TOI captures cortical oxygenation dynamics but does not                                                   References
+                      directly measure cerebral blood flow velocity, which may 
+                      provide complementary information. Fifth, the sequential,                                                   1.   Bristow, J. D., E. B. Brown Jr., D. J. C. Cunningham, R. C. Goode, 
+                      non-counterbalanced session design means that carry-over                                                         M. G. Howson, and P. Sleight. The effects of hypercapnia, hypoxia 
+                      effects from the PRBS session could influence recovery                                                           and ventilation on the baroreflex regulation of the pulse interval. 
+                      dynamics observed in Session 3. Sixth, first-order Volt-                                                         J. Physiol. 216(2):281–302, 1971.
+                      erra modeling was used; nonlinear interactions between                                                      2.   Battisti-Charbonney, A., J. Fisher, and A. S. Bhogal. Cerebrovas-
+                      ABP and C  O  inputs were not captured and may contribute                                                        cular reactivity and brain imaging. J. Physiol. 589(Pt 12):3091–
+                                            2                                                                                          3107, 2011. https:// doi. org/ 10. 1113/ jphys iol. 2011. 205138.
+                      additional explanatory variance. Finally, the 10-min recov-                                                3.  Bartus, R. T., R. L. Dean III., B. Beer, and A. S. Lippa. The 
+                      ery period may be insufÏcient for complete cerebrovascu-                                                         cholinergic hypothesis of geriatric memory dysfunction. Science. 
+                      lar recovery, particularly in MCI subjects with impaired                                                         217(4558):408–414, 1982.
+                      regulatory capacity.                                                                                        4.  Bennett, F. M., P. Reischl, F. S. Grodins, S. M. Yamashiro, and 
+                                                                                                                                       W. E. Fordyce. Dynamics of ventilatory response to exercise in 
+                      Acknowledgements The authors thank the staff of the USC Alz-                                                     humans. J. Appl. Physiol. 51(1):194–203, 1981.
+                      heimer’s Disease Research Center for their support with participant                                        5.  Brown, M. M., J. P. H. Wade, and J. Marshall. Fundamental 
+                      recruitment and data collection.                                                                                 importance of arterial oxygen content in the regulation of cerebral 
+                                                                                                                                       blood flow in man. Brain. 108(1):81–93, 1985.
+                      Author Contributions  SH collected the data, conducted the data analy-                                      6.  Counts, S. E., and E. J. Mufson. The role of nerve growth factor 
+                      sis, and drafted the manuscript. SH and SY developed the breathing                                               receptors in cholinergic basal forebrain degeneration in prodromal 
+                      apparatus. SH, SY, and VM designed the study. VM provided guid-                                                  Alzheimer disease. J. Neuropathol. Exp. Neurol. 64(4):263–272, 
+                      ance on the modeling methodology. EJ and HC contributed to subject                                               2005.
+                      recruitment and clinical interpretation. All authors read and approved                                     7.  Claassen, J. A. H. R., D. H. J. Thijssen, R. B. Panerai, and F. 
+                      the final manuscript.                                                                                            M. Faraci. Regulation of cerebral blood flow in humans: physi-
+                                                                                                                                       ology and clinical implications of autoregulation. Physiol. Rev. 
+                      Funding  Open access funding provided by SCELC, Statewide Califor-                                               101(4):1487–1559, 2021.
+                      nia Electronic Library Consortium. This work was supported by the                                          8.  Dhawale, P., and E. N. Bruce. Estimation of hypoxic ventila-
+                      National Institute on Aging (NIA) under Grant No. R01-AG058162                                                   tory dynamics using pseudorandom inputs. Respir. Physiol. 
+                      and by internal funds from the University of Southern California. The                                            101(3):267–278, 1995.
+                      funding bodies had no role in the design, data collection, analysis, or                                     9.   Davies, P., and A. J. F. Maloney. Selective loss of central choliner-
+                      interpretation of the study.                                                                                     gic neurons in Alzheimer’s disease. The Lancet. 308(8000):1403, 
+                                                                                                                                       1976.
+                      Data Availability  The datasets used and analyzed during the current                                       10.  Ghazanshahi, S. D., and M. C. K. Khoo. Estimation of chemore-
+                      study are available from the corresponding author on reasonable                                                  flex loop gain using pseudorandom binary CO2 stimulation. IEEE 
+                      request.                                                                                                         Trans. Biomed. Eng. 44(5):357–366, 1997.
+                                                                                                                                 11.  Hoiland, R. L., A. R. Bain, M. G. Rieger, D. M. Bailey, and P. 
+                      Declarations                                                                                                     N. Ainslie. Hypoxemia, oxygen content, and the regulation of 
+                                                                                                                                       cerebral blood flow. Am. J. Physiol.-Regul. Integr. Comp. Physiol. 
+                      Conflict of interest The authors declare that they have no conflict of                                           310(5):398–413, 2016.
+                      interest.                                                                                                  12.  Heutz, R., J. Claassen, S. Feiner, A. Davies, D. Gurung, R. B. Pan-
+                                                                                                                                       erai, T. Robinson, and L. C. Beishon. Dynamic cerebral autoregu-
+                      Ethical Approval  This study was approved by the Institutional Review                                            lation in Alzheimer’s disease and mild cognitive impairment: a 
+                      Board (IRB) at the University of Southern California.                                                            systematic review. J. Cereb. Blood Flow Metab. 43(8):1223–1236, 
+                                                                                                                                       2023.
+                      Consent for Publication  Not applicable.                                                                   13.  Johnston, A. J., L. A. Steiner, A. K. Gupta, and D. K. Menon. Cer-
+                                                                                                                                       ebral oxygen vasoreactivity and cerebral tissue oxygen reactivity. 
+                      Consent to Participate  All participants provided written informed con-                                          Br. J. Anaesth. 90(6):774–786, 2003.
+                      sent prior to enrollment.                                                                                  14.  Kumar, P., and N. R. Prabhakar. Peripheral chemoreceptors: func-
+                                                                                                                                       tion and plasticity of the carotid body. Compr. Physiol. 2(1):141–
+                      Clinical Trial Registration  Clinical trial number: not applicable.                                              219, 2012.
+                PRBS Gas Challenges Reveal Impaired Chemoreflex and Cholinergic Dynamics in MCI                                                              2507
+                 15.  Kazimierska, A., M. M. Placek, A. Uryga, P. Wachel, M.                24.  Marmarelis, V. Z., D. C. Shin, and R. Zhang. The dynamic rela-
+                     Burzyńska, and M. Kasprowicz. Assessment of baroreflex sensi-              tionship between cortical oxygenation and end-tidal CO2 transient 
+                     tivity using time-frequency analysis during postural change and            changes is impaired in mild cognitive impairment patients. Front. 
+                     hypercapnia. Comput. Math. Methods Med. 2019(1):4875231,                   Physiol.12:772456, 2021.
+                     2019.                                                                  25.  O’Regan, R. G., and S. Majcherczyk. Role of peripheral chemore-
+                 16.  Kvandal, P., A. Stefanovska, M. Veber, H. D. Kvermmo, and K.              ceptors and central chemosensitivity in the regulation of respira-
+                     A. Kirkebøen. Low-frequency oscillations of the laser Doppler              tion and circulation. J. Exp. Biol. 100(1):23–40, 1982.
+                     perfusion signal in human skin. Microvasc. Res. 72(3):120–127,         26.  Obrig, H., M. Neufang, R. Wenzel, M. Kohl, J. Steinbrink, K. 
+                     2006. https:// doi. org/ 10. 1016/j. mvr. 2006. 05. 001.                   Einhäupl, and A. Villringer. Spontaneous low frequency oscilla-
+                 17.  Li, W., G. Qu, C. Huo, X. Hu, G. Xu, H. Li, and Z. Li. Identifying        tions of cerebral hemodynamics and metabolism in human adults. 
+                     cognitive impairment in elderly using coupling functions between           NeuroImage. 12(6):623–639, 2000.
+                     cerebral oxyhemoglobin and arterial blood pressure. Front. Aging       27.  Smith, C. A., G. M. Blain, K. S. Henderson, and J. A. Dempsey. 
+                     Neurosci.14:904108, 2022.                                                  Peripheral chemoreceptors determine the respiratory sensitivity 
+                 18.  Liu, C.-C., J. Zhao, Y. Fu, Y. Inoue, Y. Ren, Y. Chen, and G. Bu.         of central chemoreceptors to CO2 : role of carotid body CO2 .  J. 
+                     Peripheral ApoE4 enhances Alzheimer’s pathology and impairs                Physiol. 593(18):4225–4243, 2015.
+                     cognition by compromising cerebrovascular function. Nat. Neu-          28.  Tomoto, T., T. Tarumi, J. Chen, E. P. Pasha, C. M. Cullum, and R. 
+                     rosci. 25(8):1020–1033, 2022.                                              Zhang. Cerebral vasomotor reactivity in amnestic mild cognitive 
+                 19.  Marmarelis, V. Z. Nonlinear Dynamic Modeling of Physiological             impairment. J. Alzheimers Dis. 77(1):191–202, 2020.
+                     Systems. Hoboken: IEEE Press/Wiley-Interscience, 2004.                 29.  Wang, H., X. Shi, H. Schenck, J. R. Hall, S. E. Ross, G. P. Kline, 
+                 20.  McKetton, L., M. Cohn, D. F. Tang-Wai, O. Sobczyk, J. DufÏn,              and P. Chen. Intermittent hypoxia training for treating mild cog-
+                     K. R. Holmes, E. A. Bhogal, and D. J. Mikulis. Cerebrovascular             nitive impairment: a pilot study. Am. J. Alzheimers Dis. Other 
+                     resistance in healthy aging and mild cognitive impairment. Front.          Dement. 35:1533317519896725, 2020.
+                     Aging Neurosci. 11:79, 2019.                                           30.  Wang, S., C.-S. Tang, Y. Liu, J. J. Border, R. J. Roman, and F. 
+                 21.  Marmarelis, P. Z., and V. Z. Marmarelis. Analysis of Physiological        Fan. Impact of impaired cerebral blood flow autoregulation on 
+                     Systems: The White-Noise Approach. New York: Plenum Press,                 cognitive impairment. Front. Aging. 3:1077302, 2022.
+                     1978.                                                                  31.  Yamamoto, K., W. Eubank, M. Franzke, and S. MifÒin. Reset-
+                 22.  Marmarelis, V. Z., D. C. Shin, T. Tarumi, and R. Zhang. Compari-          ting of the sympathetic baroreflex is associated with the onset of 
+                     son of model-based indices of cerebral autoregulation and vaso-            hypertension during chronic intermittent hypoxia. Auton. Neuro-
+                     motor reactivity using transcranial Doppler versus near-infrared           sci. 173(1–2):22–27, 2013.
+                     spectroscopy in patients with amnestic mild cognitive impairment. 
+                     J. Alzheimers Dis. 56(1):89–105, 2017.                                Publisher's Note Springer Nature remains neutral with regard to 
+                 23.  Marmarelis, V. Z., D. C. Shin, and R. Zhang. Dysregulation of        jurisdictional claims in published maps and institutional afÏliations.
+                     CO2-driven heart-rate chemoreflex is related closely to impaired 
+                     CO2 dynamic vasomotor reactivity in mild cognitive impairment 
+                     patients. J. Alzheimers Dis. 75(3):855–870, 2020.

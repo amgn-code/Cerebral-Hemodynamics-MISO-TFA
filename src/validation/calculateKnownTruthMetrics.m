@@ -1,7 +1,12 @@
 function metrics = calculateKnownTruthMetrics( ...
     frequencyHz, estimatedTransferFunction, trueTransferFunction, ...
-    frequencyRangeHz, extremeCoefficientThreshold)
+    frequencyRangeHz, extremeCoefficientThreshold, ...
+    phaseMinimumGainFraction)
 % calculateKnownTruthMetrics Compare one estimated pathway with truth.
+
+    if nargin < 6
+        phaseMinimumGainFraction = 0.05;
+    end
 
     frequencyMask = frequencyHz >= frequencyRangeHz(1) & ...
         frequencyHz <= frequencyRangeHz(2);
@@ -28,8 +33,21 @@ function metrics = calculateKnownTruthMetrics( ...
     metrics.gainBias = mean(abs(estimate) - abs(truth));
     metrics.meanAbsoluteGainError = ...
         mean(abs(abs(estimate) - abs(truth)));
-    phaseError = angle(exp(1i*(angle(estimate) - angle(truth))));
-    metrics.meanAbsolutePhaseErrorRadians = mean(abs(phaseError));
+    truthRmsGain = sqrt(mean(abs(truth).^2, "omitnan"));
+    phaseThreshold = max( ...
+        phaseMinimumGainFraction*truthRmsGain, sqrt(eps));
+    phaseDefined = abs(truth) >= phaseThreshold;
+    if any(phaseDefined)
+        phaseError = angle(exp(1i*( ...
+            angle(estimate(phaseDefined)) - ...
+            angle(truth(phaseDefined)))));
+        metrics.meanAbsolutePhaseErrorRadians = mean(abs(phaseError));
+    else
+        % A sufficiently weak true pathway has no reliable phase.
+        metrics.meanAbsolutePhaseErrorRadians = NaN;
+    end
+    metrics.phaseValidFraction = mean(phaseDefined);
+    metrics.phaseGainThreshold = phaseThreshold;
     metrics.integratedComplexError = mean(abs(estimate - truth).^2);
 
     truthEnergy = mean(abs(truth).^2);

@@ -1,0 +1,79 @@
+function summary = createSimulationReferenceStatistics(simulationResults)
+% createSimulationReferenceStatistics Test six reference-condition outcomes.
+
+    observations = simulationResults.observations;
+    reference = observations(observations.IsReferenceObservation, :);
+    settings = simulationResults.settings.statistics;
+
+    metric = [ ...
+        "MAPComplexAdvantage"
+        "MAPGainAdvantage"
+        "MAPPhaseAdvantage"
+        "CO2ComplexAdvantage"
+        "CO2GainAdvantage"
+        "CO2PhaseAdvantage"];
+    pathway = [ ...
+        "MAP"; "MAP"; "MAP"; ...
+        "PETCO2"; "PETCO2"; "PETCO2"];
+    errorComponent = [ ...
+        "Complex"; "Gain"; "Phase"; ...
+        "Complex"; "Gain"; "Phase"];
+    displayLabel = [ ...
+        "MAP complex (primary)"
+        "MAP gain"
+        "MAP phase"
+        "PETCO2 complex"
+        "PETCO2 gain"
+        "PETCO2 phase"];
+    isPrimary = metric == "MAPComplexAdvantage";
+
+    numMetrics = numel(metric);
+    meanAdvantage = NaN(numMetrics, 1);
+    sd = NaN(numMetrics, 1);
+    standardError = NaN(numMetrics, 1);
+    ciLower = NaN(numMetrics, 1);
+    ciUpper = NaN(numMetrics, 1);
+    rawP = NaN(numMetrics, 1);
+    validN = zeros(numMetrics, 1);
+
+    for metricIndex = 1:numMetrics
+        current = calculateSimulationAdvantageStatistics( ...
+            reference.(metric(metricIndex)), ...
+            settings.alpha, settings.minimumValidN);
+        meanAdvantage(metricIndex) = current.mean;
+        sd(metricIndex) = current.sd;
+        standardError(metricIndex) = current.standardError;
+        ciLower(metricIndex) = current.ciLower;
+        ciUpper(metricIndex) = current.ciUpper;
+        rawP(metricIndex) = current.rawP;
+        validN(metricIndex) = current.validN;
+    end
+
+    bhAdjustedP = NaN(numMetrics, 1);
+    bhAdjustedP(~isPrimary) = adjustPValuesBenjaminiHochberg( ...
+        rawP(~isPrimary));
+    reportedP = bhAdjustedP;
+    reportedP(isPrimary) = rawP(isPrimary);
+    isSignificant = isfinite(reportedP) & ...
+        reportedP < settings.alpha;
+    geometricSisoToMisoErrorRatio = 10.^meanAdvantage;
+    adjustmentFamily = repmat( ...
+        "BH across five secondary reference metrics", ...
+        numMetrics, 1);
+    adjustmentFamily(isPrimary) = ...
+        "Prespecified primary comparison; unadjusted";
+
+    summary = table( ...
+        metric, pathway, errorComponent, displayLabel, isPrimary, ...
+        meanAdvantage, sd, standardError, ciLower, ciUpper, ...
+        geometricSisoToMisoErrorRatio, rawP, bhAdjustedP, ...
+        reportedP, isSignificant, validN, adjustmentFamily, ...
+        'VariableNames', { ...
+            'Metric', 'Pathway', 'ErrorComponent', 'DisplayLabel', ...
+            'IsPrimary', 'MeanAdvantage', 'SD', 'StandardError', ...
+            'CILower', 'CIUpper', ...
+            'GeometricSISOToMISOErrorRatio', ...
+            'RawP', 'BHAdjustedP', 'ReportedP', ...
+            'IsSignificant', 'ValidN', 'AdjustmentFamily'});
+
+end

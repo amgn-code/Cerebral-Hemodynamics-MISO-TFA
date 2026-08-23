@@ -116,6 +116,10 @@ function settings = approachPaperSettings( ...
         defaultKnownTruthSimulationSettings(profileName);
     settings.simulation.frequencyRangeHz = ...
         settings.analysis.frequencyRangeHz;
+    settings.simulation.frequencyBandEdgesHz = ...
+        settings.analysis.frequencyBandEdgesHz;
+    settings.simulation.frequencyBandNames = ...
+        settings.analysis.frequencyBandNames;
     settings.simulation.welch = settings.analysis.pwelch;
     settings.simulation.phase = settings.analysis.phase;
 
@@ -146,6 +150,8 @@ function settings = approachPaperSettings( ...
     settings.export.savePdf = true;
     settings.export.savePng = true;
     settings.export.saveFigureSourceData = true;
-    settings.export.figure3RidgeLambda = 0.01;
+    % A value of 2 displays error ratios from 0.01 to 100 on the common
+    % blue-white-orange model-advantage color scale.
+    settings.export.advantageColorLimit = 2;
 
 end

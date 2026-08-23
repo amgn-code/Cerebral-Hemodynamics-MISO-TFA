@@ -1,0 +1,625 @@
+                Journal of Alzheimer’s Disease 56 (2017) 89–105                                                                                 89
+                DOI10.3233/JAD-161004
+                IOSPress
+                Comparison of Model-Based Indices
+                of Cerebral Autoregulation and Vasomotor
+                Reactivity Using Transcranial Doppler
+                versus Near-Infrared Spectroscopy
+                in Patients with Amnestic Mild Cognitive
+                Impairment
+                                            a,∗                 a                      b                       b
+                Vasilis Z. Marmarelis          , Dae C. Shin , Takashi Tarumi and Rong Zhang
+                aBiomedical Simulations Resource Center, University of Southern California, Los Angeles, CA, USA
+                bExercise Physiology & Rehabilitation Center, UT Southwestern Medical Center, Dallas, TX, USA
+                Accepted 17 October 2016
+                Abstract. We recently introduced model-based “physiomarkers” of dynamic cerebral autoregulation and CO2 vasomotor
+                reactivity as an aid for diagnosis of early-stage Alzheimer’s disease (AD) [1], where signiﬁcant impairment of dynamic
+                vasomotorreactivity (DVR)wasobservedinearly-stageADpatientsrelativetoage-matchedcontrols.Milderimpairmentof
+                DVRwasshowninpatientswithamnesticmildcognitiveimpairment(MCI)usingthesameapproachinasubsequentstudy
+                [2]. The advocated approach utilizes subject-speciﬁc data-based models of cerebral hemodynamics to quantify the dynamic
+                effects of resting-state changes in arterial blood pressure and end-tidal CO2 (the putative inputs) upon cerebral blood ﬂow
+                velocity (the putative output) measured at the middle cerebral artery via transcranial Doppler (TCD). The obtained input-
+                output models are then used to compute model-based indices of DCA and DVR from model-predicted responses to an
+                input pressure pulse or an input CO2 pulse, respectively. In this paper, we compare these model-based indices of DVR and
+                DCAin46amnestic MCI patients, relative to 20 age-matched controls, using TCD measurements with their counterparts
+                using Near-Infrared Spectroscopy (NIRS) measurements of blood oxygenation at the lateral prefrontal cortex in 43 patients
+                and 22 age-matched controls. The goal of the study is to assess whether NIRS measurements can be used instead of TCD
+                measurementstoobtainmodel-basedphysiomarkerswithcomparablediagnosticutility. The results corroborate this view in
+                terms of the ability of either output to yield model-based physiomarkers that can differentiate the group of aMCI patients
+                from age-matched healthy controls.
+                Keywords: Alzheimer’s disease, cerebral blood ﬂow, cerebral circulation, mild cognitive impairment
+                                                                                     INTRODUCTION
+                                                                                        There have been many studies that examined the
+                  ∗                                                                  relation between cognitive impairment and cere-
+                   Correspondence to: Prof. Vasilis Z. Marmarelis, Department        brovascular dysfunction [1–20]. Although a possible
+                of Biomedical Engineering, University of Southern California,        causative relation is still debated, the view that the
+                University Park, DRB 160, Los Angeles, CA, 90089 USA. Tel.:
+                +12137400841;Fax:+12137400343; E-mail:vzm@usc.edu.                   two conditions often co-exist is becoming widely
+                ISSN1387-2877/17/$35.00 © 2017 – IOS Press and the authors. All rights reserved
+                This article is published online with Open Access and distributed under the terms of the Creative Commons Attribution Non-Commercial License (CC BY-NC 4.0).
+              90                       V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+              accepted. These studies generally fall into three cat-      pressure and end-tidal CO2) for a ﬂow output. The
+              egories: (1) exploration of the molecular/cellular          latter is usually measured via transcranial Doppler
+              biologicalmechanisms;(2)statisticalanalysisofphe-           (TCD) in the middle cerebral arteries or via near-
+              nomenologicalclinicaldata;(3)quantitativeanalysis           infrared spectroscopy (NIRS) in a local vascular bed
+              of the relation between cognitive impairment and            composed of arterioles, venules, and capillary space
+              measures of cerebral hemodynamics. The present              of the prefrontal cortex. The present study compares
+              study falls in the latter category and seeks to exam-       theresultsofmodelingthecombineddynamiceffects
+              ine the relation of quantitative measures of cerebral       of blood pressure and CO2 variations upon cerebral
+              hemodynamic function with clinical assessments of           ﬂow measured concurrently in the two aforemen-
+              amnestic mild cognitive impairment (MCI)—a tran-            tioned ways.
+              sitional stage between normalagingandAlzheimer’s               In order to place the present study in the proper
+              disease (AD)—as well as elucidate the possible bio-         context relative to the state of the art, we must clar-
+              logical/physiological mechanisms that affect these          ify the key deﬁnitions regarding static or dynamic
+              measuresofcerebralhemodynamics.Themotivation                cerebral autoregulation and CO2 vasomotor reactiv-
+              forthisworkisprovidedbytheviewthattheavailabil-             ity. The term “cerebral autoregulation” was initially
+              ity of such quantitative and objective measures with        used to indicate the homeostatic mechanism of con-
+              diagnostic and/or prognostic utility will improve the       straining the steady-state cerebral ﬂow changes in
+              clinicalmanagementofthesetwomajorpublichealth               response to steady-state changes in arterial blood
+              problems (MCI and AD) as well as other types of             pressure(cf.Lassen’sseminalwork[52]).Thishome-
+              neurodegenerative disease.                                  ostatic mechanism results in a nonlinear steady-state
+                In the quest to discover possible relationshipa           pressure-ﬂow relation that exhibits a plateau in the
+              between cognitive impairment and dysfunction of             middle range of pressures and two rising/declining
+              cerebral hemodynamics, the dominant role has been           segments above/below this middle range. Since this
+              occupied by the quantitative analysis of cerebral           nonlinearcurverelatesthesteady-statevaluesofpres-
+              autoregulation [21–44] that concerns the change             sure and ﬂow, it does not contain any information
+              in cerebral blood ﬂow in response to changes in             about the dynamics of the relation between beat-to-
+              systemicarterialpressure,orthestudyofcerebrovas-            beat variations of blood pressure and ﬂow. In our
+              cularreactivity[1,2,45–48]thatconcernsthechange             work,weanalyzeresting-statespontaneous-variation
+              in cerebral blood ﬂow in response to changes in             datatoextractthedynamicpressure-ﬂowrelationship
+              blood CO2 tension. The latter study typically uti-          (within the plateau of the aforementioned home-
+              lizes models that account for the combined effects          ostatic curve), which contains information distinct
+              of arterial pressure and CO2 changes upon cere-             from the homeostatic curve of steady-state cerebral
+              bral blood ﬂow velocity measured via transcranial           autoregulation [25]. This is the reason why we use
+              Doppler at the middle cerebral arteries. The assess-        the term “DynamicCerebralAutoregulation”(DCA)
+              mentofthesetwoaspectsofcerebralhemodynamics                 to make clear that it is distinct from the celebrated
+              employs either direct observations (e.g., the use of a      homeostatic curve.
+              ratio of steady-state change in cerebral blood ﬂow             The term “cerebrovascular reactivity” (CVR) is
+              in response to prolonged inhalation of CO2 as a             traditionally used to indicate the property of the
+              measure of cerebrovascular reactivity) or indirect          cerebral vasculature to dilate in response to a steady-
+              measures obtained through beat-to-beat data analy-          state elevation of blood CO2 tension that is usually
+              sis (e.g., correlation coefﬁcients, cross-spectral and      induced through CO2 inhalation over several min-
+              phase-shift analysis, regression analysis, and model-       utes (typically 5% CO2 over 5 or 10min). The CVR
+              based indices). The most sophisticated methods of           is measured as the ratio of the steady-state rise in
+              analysis employ dynamic nonlinear or nonstation-            cerebral ﬂow to the inhaled CO2 level. In our work,
+              ary models in open-loop or closed-loop context [1,          we analyze resting-state spontaneous variations in
+              2, 45–51], although the potential beneﬁts of such           end-tidal CO2 (ETCO2) data (a proxy of changes
+              sophisticated (and typically more complex) analysis         in arterial CO2 tension) concurrently with sponta-
+              remain to be evaluated with large cohorts.                  neous changes in the arterial blood pressure (ABP).
+                Amongthemodel-basedapproaches,akeydistinc-                Therefore,ourmodelsquantifythedynamicrelation-
+              tion must be made between models that are static            shipbetweenCO2variationsandcerebralbloodﬂow
+              versus dynamic, linear versus nonlinear, and single-        velocity, measured via TCD or NIRS as indicated
+              input (arterial pressure) versus dual-input (arterial       above. This measure of the dynamic relationship
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                            91
+                between CO2 and cerebral ﬂow (velocity) is termed                      function. The subjects were screened to exclude
+                “Dynamic Vasomotor Reactivity” (DVR) to make                           clinicalhistoriesofstroke,majormedicalandpsychi-
+                clear that it is understood as being distinct from the                 atric disorders, unstable heart diseases, uncontrolled
+                commonlyusedCVR.                                                       hypertension,anddiabetesmellitus.Thegendercom-
+                   Wehave demonstrated in our previous work that                       position, the age (mean and standard deviation), and
+                potentially useful measures of DCA and DVRcanbe                        the neuropsychological scores (MMSE and DLMR)
+                obtained from resting-state spontaneous data using                     of the patients and controls with TCD and NIRS data
+                input-outputmodelsofthedynamicrelationship(lin-                        (separate sets) are given in Table 1.
+                ear or nonlinear) between beat-to-beat changes in                         Allmeasurementsarenon-invasive,safe,andcom-
+                ABPandcerebralbloodﬂowvelocity(CBFV)(DCA)                              fortable for the subjects. The data were collected in
+                or between ETCO2andCBFV(DVR)[1,2,49–51].                               a quiet, environmentally controlled laboratory under
+                Ourworking hypothesis is that quantitative and reli-                   resting seated conditions. After 20min of rest, 5-
+                able measures of these two key aspects of cerebral                     6min recordings were made at an initial sampling
+                hemodynamics (DCA and DVR) may contain valu-                           rate of 1 KHz for (1) ABP measured continuously
+                able diagnostic and prognostic information for AD                      with ﬁnger photo-plethysmography (Finapres); (2)
+                or amnestic MCI, as well as other diseases with a                      ETCO2measuredviaanasalcannulausingcapnog-
+                strong cerebrovascular component (e.g., hyperten-                      raphy(CriticareSystems);(3)CBFVmeasuredinthe
+                sion, diabetes, stroke, traumatic brain injury). Initial               middle cerebral arteries using a 2MHz TCD probe
+                resultsfromADandamnesticMCIpatientsshowthat                            (Multiﬂow, DWL) placed over the temporal win-
+                these patients have impaired DVR relative to age-                      dowandﬁxedatconstantanglewithacustom-made
+                matched controls, with the impairment in AD being                      holder; (4) tissue oxygenation index (TOI), deﬁned
+                moresevere than MCI [1, 2].                                            as the ratio of oxyhemoglobin to total hemoglobin
+                   The key to the extraction of reliable model-based                   multipliedby100,measuredviaNIRS(Hamamatsu).
+                DCAandDVRphysiomarkers(usingTCDorNIRS)                                 Analysiswasperformedonusabledatafromtwosets
+                is the modelingmethodologythathasbeenpioneered                         of patients and controls: (1) 20 healthy controls (10
+                by our lab and employs Principal Dynamic Modes                         male and 10 female) and 46 age-matched patients
+                (PDMs) [54, 55] to obtain reliable hemodynamic                         with amnestic MCI (17 male and 29 female) from
+                modelsfromtheaforementionedmeasurements(typ-                           whomABP,ETCO2,andTCDdatawerecollected;
+                icallyover5-6minasdictatedbyclinicalconstraints).                      (2) 22 healthy controls (11 male and 11 female) and
+                This methodologywillbeappliedinthispaperusing                          43age-matchedpatientswithamnesticMCI(13male
+                TCDorNIRSbeat-to-beat output data from amnes-                          and30female),fromwhomABP,ETCO2,andNIRS
+                tic MCIpatients and age-matched control subjects in                    data were collected. The reason for different num-
+                order to allow comparison of the two types of DVR                      bersofMCIpatientsandcontrolswithTCDorNIRS
+                physiomarkers (obtained from TCD versus NIRS                           data is the presence of occasional gaps in some data-
+                output data).                                                          recordingsthatmadethemunusableforanalysis.The
+                                                                                       results of analysis from the two sets (TCD versus
+                                                                                       NIRSdata)werecompared.Thesubjectsinthesetwo
+                METHODS                                                                sets who had both TCD and NIRS usable recordings
+                                                                                       were 14 controls (5 female and 9 male) and 38 MCI
+                Datacollection                                                         patients (25 female and 13 male).
+                   Time-series data were collected over 5-6min                         Datapreprocessing
+                in healthy controls and age-matched patients with
+                amnestic MCI, who participated voluntarily in this                        The collected sampled data of ABP, ETCO2,
+                study and signed the Informed Consent Form that                        CBFV, and TOI were reduced to beat-to-beat time-
+                hasbeenapprovedbytheInstitutionalReviewBoard                           series data using averages over the respective R-R
+                of the UT Southwestern Medical Center and Texas                        intervals, after removal of occasional measure-
+                Health Presbyterian Hospital Dallas. The diagnosis                     ment artifacts through application of hard-clipping
+                of amnestic MCI was based on modiﬁed Petersen                          at±20%ofaveragevalues.Thesebeat-to-beatvalues
+                criteria [55]. The scores of the Mini-Mental State                     were re-sampled every 0.25s via cubic-spline inter-
+                Exam (MMSE) and the Delayed Logical Memory                             polation and were high-pass ﬁltered (via subtraction
+                Recall (DLMR) test were used to assess memory                          ofa2-minmoving-averageusingaHanningwindow)
+                92                            V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+                                                                                Table 1
+                                 Gender, age, and neuropsychological scores of controls and MCI patients with either TCD or NIRS data
+                             Subjects                   Gender             AgeMean                MMSE                 Delayed Logical
+                                                                                                        †                                ††
+                                                     Composition              (SD)                score             MemoryRecallscore
+                             20Controls                 10male             65.88 (6.27)        29.17 (0.86)              14.28 (2.47)
+                             with TCDdata              10female
+                             46Patients                 17male             66.47 (6.61)        29.09 (1.26)               8.62 (2.35)
+                             with TCDdata              29female
+                             22Controls                 11male             68.15 (6.24)        29.23 (0.97)              14.59 (2.74)
+                             with NIRS data            11female
+                             43Patients                 13male             66.79 (6.34)        29.31 (0.90)               8.74 (2.22)
+                             with NIRS data            30female
+                             †Mini-Mental State Exam (MMSE) scores are not available for two controls and one MCI patient with TCD data,
+                             andforoneMCIpatientwithNIRSdata.††DelayedLogicalMemoryRecallscoresarenotavailableforonecontrol
+                             and one MCI patient with TCD data, and for one MCI patient with NIRS data.
+                to remove the constant baseline and very low fre-                       patientsandcontrols,whicharesubsequentlyusedfor
+                quencytrendsbelow0.01Hz.TheETCO2datawere                                the computation of model-based indices that serve
+                shifted by 1s (to right) to compensate for the latency                  as potential “physiomarkers” in this study. The use
+                of the measurement apparatus. Figure 1 shows illus-                     of PDMs makes the obtained dynamic models com-
+                trative time-series data (both raw and pre-processed)                   pact and allows their accurate estimation from short
+                for one of the control subjects over 5min.                              data-records (5-6min). The PDMs also facilitate the
+                                                                                        physiological interpretation of the obtained models
+                Modeling methods                                                        as discussed below [42–46]. We brieﬂy outline in
+                                                                                        the Supplementary Material the PDM-based model-
+                   For this modeling study, we employ the concept                       ing approach, which is intentionally limited to linear
+                of PDMs to obtain compact dynamic models of the                         modelsinthisstudy. For the many mathematical and
+                relationship between two input signals: ABP and                         computational details of Volterra-type modeling that
+                ETCO2,andoneoutputsignal:eitherCBFVorTOI.                               forms the methodological foundation of PDM-based
+                The data collected from the control subjects in each                    modeling, the reader is referred to the monograph
+                set of groups (with TCD or NIRS data) were used                         [55] and to our recent publications presenting its
+                to obtain the “global” PDMs that are utilized as the                    application to cerebral hemodynamics [1, 2].
+                common“functionalbasis”fortheestimationofdata-                             Four “global” PDMs were found to be adequate
+                basedinput-outputmodelsfortherespectivegroupof                          for each input in this application, whether the output
+                Fig. 1. Illustrative time-series data over about 5 min for one control subject, representing beat-to-beat spontaneous variations of CBFV (top
+                panel), TOI (2nd panel), ABP (3rd panel), and ETCO2 (bottom panel) before (left column) and after (right column) pre-processing. The
+                units are: cm/s for CBFV, % for TOI, and mmHg for ABP and ETCO2.
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                            93
+                Fig. 2. Illustrative example of the model prediction for the TCD-output model (left) and the NIRS-output model (right) in control subject
+                #1. It is evident that the prediction for the TCD-output model is better (NMSE of 26.6% for the TCD-output model versus 54.5% for the
+                NIRS-output model).
+                is CBFV or TOI. The employed global PDMs rep-                          predictionfortheTCD-outputmodelisbetter(NMSE
+                resent a common “functional basis” for efﬁcient                        of26.6%fortheTCD-outputmodelversus54.5%for
+                representation of all kernels for all control subjects.                the NIRS-output model).
+                AlthoughtheglobalPDMsarecommonforallcontrol                               The obtained PDMs for the ABP input are shown
+                subjects, the estimated Gains that deﬁne the rela-                     in Fig. 3 for the TCD/CBFV output (top panels)
+                tive contribution of each global PDM output to the                     and for the NIRS/TOI output (bottom panels) in
+                modelpredictionaresubject-speciﬁcandcanbeused                          the time-domain (left panels) and frequency-domain
+                to characterize the cerebral hemodynamics of each                      (right panels). We observe that the global PDMs
+                subject with regard to the speciﬁc output analyzed                     exhibit distinctive spectral characteristic in the form
+                (CBFV/TCDorTOI/NIRS).ThesameglobalPDMs                                 of resonant peaks that may attain importance for
+                are used for the modeling of the patient data, so that                 the physiological interpretation of the PDM-based
+                theresultingGainestimatescanquantifypossibledif-                       modelwhentherequisite knowledge becomes avail-
+                ferences betweencontrolsandpatientsinthemanner                         able. We also observe that the spectral peaks of
+                by which each PDM output affects the total model                       the PDMs for the NIRS output are generally at
+                output.                                                                lower frequencies and their memory extent is longer
+                                                                                       (about10s for the TCD output versus 35s for the
+                RESULTS                                                                NIRS output). The physiological interpretation of
+                                                                                       the waveforms of the obtained PDMs is potentially
+                   Following the procedure outlined in Methods, we                     valuable, although it requires careful studies in the
+                obtained the four “global” PDMs for the ABP and                        future.
+                ETCO2 inputs, either from the reference set of 20                         The obtained four global PDMs for the ETCO2
+                control subjects (10 male and 10 female) when the                      input are shown in Fig. 4 for the TCD/CBFV output
+                outputisCBFV(measuredviaTCD)orfromtheref-                              (top panels) and for the NIRS/TOI output (bot-
+                erence set of 22 control subjects (11 male and 11                      tom panels) in the time-domain (left panels) and
+                female)whentheoutputisTOI(measuredviaNIRS).                            frequency-domain(rightpanels).Weobservethatthe
+                Wenotethat there are 10 male and 5 female control                      global PDMs exhibit distinctive resonant peaks that
+                subjects who have both TCD and NIRS measure-                           aregenerallyfoundatlowerfrequenciesfortheNIRS
+                ments. The normalized mean-square error (NMSE)                         outputrelativetotheTCDoutput.ThePDMmemory
+                of the model prediction was generally smaller for the                  extentfortheNIRSoutputisagainlonger(about50s
+                TCD/CBFV output (an average of about 37% ver-                          versus 30s for the TCD output). As observed in our
+                sus an average of about 63% for NIRS/TOI output).                      previous TCD studies, the dynamics of the ETCO2
+                An illustrative example of the quality of the model                    PDMsaregenerally slower that the ABP PDMs.
+                prediction is given in Fig. 2 for both types of out-                      AsindicatedinMethods,toobtainthelinearPDM-
+                put in the same control subject. It is evident that the                based model for each subject, we must estimate the
+              94                       V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+              Fig. 3. The four global PDMs for the ABP input obtained from the data of 20 control subjects (10 male and 10 female) for the CBFV output
+              measured via TCD (top) and from the data of 22 control subjects (11 male and 11 female) for the TOI output measured via NIRS (bottom)
+              in the time-domain (left) and frequency-domain (right).
+              Gain of each PDM output for this subject through            panels, respectively. The average responses of the
+              linear regression. These scalar Gains are distinct for      control subjects are shown with blue line and of the
+              eachsubjectandcanbeusedtoquantifythedynamic                 MCI patients are shown with red line. The reduced
+              cerebralautoregulation(DCA)anddynamicvasomo-                average dynamic CO2 vasomotor reactivity is evi-
+              tor reactivity (DVR) of each subject from the model         dent in the MCI patients relative to the controls for
+              predicted response to a step change in the respec-          both types of output, with the difference being more
+              tive input (ABP for DCA and ETCO2 for DVR).                 pronounced for the TOI/NIRS output. There are no
+              Such DCAandDVRindicescanbeobtainedforthe                    discernible differences betweencontrolsandpatients
+              TCDand NIRS measurements separately. It is crit-            in their response to ABP input changes, suggest-
+              ical to note that the model-predicted response to a         ing that the process of cerebral autoregulation is not
+              step change in one input is computed while the other        affected in MCI patients (see Discussion).
+              input is kept at its baseline level (simulated clamp-          It is  instructive to see the average Impulse
+              ing). The average of such model-predicted responses         Response Functions (or, equivalently, 1st order ker-
+              to unit input pulses are shown in Fig. 5 for the            nels) that are obtained for the 2×2 input-output
+              CBFV/TCD output and in Fig. 6 for the TOI/NIRS              combinations, along with one standard deviation
+              output, where the responses to the ABP input and            bounds for the estimates from all controls and all
+              ETCO2input pulses are shown in the left and right           MCI patients. Fig. 7 shows the average 1st order
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                            95
+                Fig. 4. The four global PDMs for the ETCO2 input obtained from the data of 20 control subjects (10 male and 10 female) for the CBFV
+                output measured via TCD (top) and from the data of 22 control subjects (11 male and 11 female) for the TOI output measured via NIRS
+                (bottom) in the time-domain (left) and frequency-domain (right).
+                Fig. 5. Average model-predicted CBFV/TCD responses for all control subjects (blue line) and for all MCI patients (red line) to a unit pulse
+                change (dotted line) of the ABP input (left panel) and of the ETCO2 input (right panel), while the other input is kept at baseline.
+       96          V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+       Fig. 6. Average model-predicted TOI/NIRS responses for all control subjects (blue line) and for all MCI patients (red line) to a unit pulse
+       change (dotted line) of the ABP input (left panel) and of the ETCO2 input (right panel), while the other input is kept at baseline.
+       Fig. 7. Average1storderkernelestimates(±1SDboundsmarkedwithdottedlines)overallcontrols(toppanels)andMCIpatients(bottom
+       panels) for the ABP input (left panels) and ETCO2 input (right panels) when the output is CBFV/TCD.
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                            97
+                kernel estimates (± 1 SD bounds marked with dot-                       Gains, suggestive of DVR impairment in the MCI
+                ted lines) over all controls (top panels) and MCI                      patients (see Discussion).
+                patients (bottom panels) for the ABP input (left pan-                     FortheNIRS/TOIoutputdata,theestimatedGains
+                els) and ETCO2input(right panels) when the output                      of the PDM outputs for the ABP and ETCO2 inputs
+                is CBFV/TCD. The average ABP-to-CBFV kernel                            are showninTables4and5,respectively.TheTables
+                for both controls and patients exhibits a positive peak                showthemean(standarddeviation)valuesoftheesti-
+                at zero lag and a negative undershoot for lags of                      matedGainsfor22controlsubjects (11 male and 11
+                1–3s, consistent with previous studies of cerebral                     female)and43MCIpatients(13maleand30female),
+                autoregulation in healthy subjects [1, 2]. The vari-                   alongwiththecorrespondingp-valuesforeachPDM.
+                ance of these estimates is low. However, we observe                    The obtained p-values indicate that statistically sig-
+                distinctive differences in the average for the ETCO2-                  niﬁcant differences between the estimated Gains for
+                to-CBFV kernels for controls and patients, whereby                     controls and patients exist only for the Gains of the
+                thelatterexhibitslowervaluesintheearlypart(<2-3s                       1st and 4th PDMs of the ETCO2 input (p=0.0226
+                lag) in patients relative to controls. This, along with                and p=0.0358, respectively) for the TOI/NIRS out-
+                the smaller positive values over 3–30s lags for the                    put, whereby the controls exhibit signiﬁcantly larger
+                patients, quantiﬁes the reduced average vasomotor                      Gains, suggestive of DVR impairment in the MCI
+                reactivityintheMCIpatients.Wealsoobservehigher                         patients (see Discussion). The p-values for the Gains
+                variability for the ETCO2-to-CBFV kernels for both                     of the 1st PDM of the ETCO2 input are comparable
+                controls and patients, relative to the ABP-to-CBFV                     for TCD and NIRS output, suggesting that the two
+                kernel estimates.                                                      typesofmeasurementsexhibitsimilardifferentiation
+                   Figure 8 shows the average 1st order kernel esti-                   ability between controls and patients. However, the
+                mates(±1SDboundsmarkedwithdottedlines)over                             TOI output measurement also allows additional dif-
+                all controls (top panels) and MCI patients (bottom                     ferentiation between controls and patients based on
+                panels) for the ABP input (left panels) and ETCO2                      the Gains of the 4th PDM of the ETCO2 input (see
+                input(rightpanels)whentheoutputisTOI/NIRS.We                           Table5).Wenotethatthe1stPDMsofETCO2forthe
+                observe signiﬁcant differences in the average ABP-                     two types of output have integrative characteristics
+                to-TOIandETCO2-to-TOIkernelsbetweencontrols                            (see Discussion).
+                and patients—with most signiﬁcant being the early                         Weproposetheuseofmodel-basedindicesofDCA
+                negative portion of the ETCO2-to-TOI kernel for                        and DVR for each subject/patient that may be used
+                the MCI patients, suggestive of reduced dynamic                        (when fully validated) for diagnostic and/or prog-
+                vasomotor reactivity (see Discussion). The variance                    nostic purposes. The rationale for these indices is
+                of these estimates is comparable for the two inputs                    provided by the differences observed in Figs. 5 and
+                and larger for the TOI/NIRS output relative to the                     6 between the average model-predicted responses of
+                CBFV/TCDoutput.                                                        patients versus controls to pulse changes in each of
+                   We also wish to examine possible statistical dif-                   the inputs (ABP or ETCO2). They are computed
+                ferences in the estimated Gains of the PDM-based                       via simulation of the PDM-based model derived for
+                modelsandtheresultingDCA/DVRindicesbetween                             each subject/patient for unit pulse inputs of ABP or
+                the groups of control subjects and amnestic MCI                        ETCO2(for DCA and DVR, respectively, while the
+                patients in the two sets of data with TCD/CBFV or                      other input remains at baseline) as follows:
+                NIRS/TOI output. For the TCD/CBFV output data,
+                the estimated Gains of the PDM outputs for the ABP                        – DCAindex: the PDM-based model of the sub-
+                and ETCO2 inputs are shown in Tables 2 and 3,                                ject/patient is simulated for a unit ABP input
+                respectively. The Tables show the mean (standard                             pulse,whiletheETCO2inputiskeptatzero,and
+                deviation) values of the estimated Gains for 20 con-                         the resulting response (CBFV or TOI) is used to
+                trol subjects (10 male and 10 female) and 46 MCI                             computetheDCAindexasthedifferenceofthe
+                patients (17 male and 29 female), along with the                             peakresponsevalueminusthesteady-statevalue
+                corresponding p-values for each PDM. The obtained                            at 10sec, according to the schematic in Fig. 9
+                p-values indicate that statistically signiﬁcant differ-                      (left panel).
+                ences between the estimated Gains for controls and                        – DVRindex: the PDM-based model of the sub-
+                patientsexistonlyfortheGainsofthe1stPDMofthe                                 ject/patient is simulated for a unit ETCO2 input
+                ETCO2 input (p=0.0210) for the TDC/CBFV out-                                 pulse, while the ABP input is kept at zero,
+                put, whereby the controls exhibit signiﬁcantly larger                        and the resulting response (CBFV or TOI) is
+               98                           V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+               Fig. 8. Average1storderkernelestimates(±1SDboundsmarkedwithdottedlines)overallcontrols(toppanels)andMCIpatients(bottom
+               panels) for the ABP input (left panels) and ETCO2 input (right panels) when the output is TOI/NIRS.
+                                                                             Table 2
+               Mean(standarddeviation) values of estimated Gains of the PDM outputs for the ABP input and CBFV output of 20 control subjects and 46
+                                                  MCIpatients, and the corresponding p-values for the two groups
+                                    PDM#1                          PDM#2                          PDM#3                          PDM#4
+                            Controls        Patients       Controls        Patients       Controls        Patients       Controls        Patients
+               (σ)          0.7298         0.6826          0.0095         –0.0229        –0.0056         –0.0238        –0.0036         –0.0024
+                            (0.2217)        (0.2445)       (0.1052)        (0.0935)       (0.0772)        (0.0540)       (0.0330)        (0.0596)
+               p                     0.4458                         0.2438                         0.3471                         0.9137
+                                                                             Table 3
+               Mean(standarddeviation) values of estimated Gains of the PDM outputs for the ETCO2 input and CBFV output of 20 control subjects and
+                                                46MCIpatients, and the corresponding p-values for the two groups
+                                   PDM#1                         PDM#2                           PDM#3                          PDM#4
+                           Controls       Patients       Controls        Patients        Controls        Patients       Controls        Patients
+               (σ)         0.2558         0.1249        –0.0761         –0.1298         –0.0054         –0.0266         –0.0058        –0.0036
+                           (0.2098)       (0.1795)        (0.2115)        (0.1666)       (0.0813)        (0.1017)        (0.0599)        (0.0895)
+               p                   0.0210                         0.3218                         0.3736                          0.9074
+                     used to compute the DVR index as the time-                        Thecomputedmodel-basedDCAandDVRindices
+                     averagedresponseovertheﬁrst5s,accordingto                      for the two types of outputs are reported in Tables 6,
+                     the schematic in Fig. 9 (right panel).                         7 and indicate statistically signiﬁcant differences
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                            99
+                                                                                Table 4
+                Mean (standard deviation) of estimated Gains of the PDM outputs for the ABP input and TOI output of 22 control subjects and 43 MCI
+                                                        patients, and corresponding p-values for the two groups
+                                     PDM#1                            PDM#2                           PDM#3                            PDM#4
+                             Controls         Patients        Controls        Patients        Controls         Patients        Controls        Patients
+                (σ)          0.0253          0.0215           0.0086          0.0023         –0.0001          0.0010          0.0019           0.0030
+                             (0.0213)         (0.0183)        (0.0196)        (0.0157)        (0.0137)        (0.0169)         (0.0092)        (0.0103)
+                p                     0.4863                           0.1956                          0.7832                          0.6551
+                                                                                Table 5
+                Mean(standard deviation) of estimated Gains of the PDM outputs for the ETCO2 input and TOI output of 22 control subjects and 43 MCI
+                                                        patients, and corresponding p-values for the two groups
+                                     PDM#1                            PDM#2                           PDM#3                            PDM#4
+                             Controls         Patients       Controls         Patients        Controls         Patients       Controls         Patients
+                (σ)          0.0530          0.0162          0.0106         0.001018          –0.0027         –0.0093         –0.0049         –0.0178
+                             (0.0669)        (0.0348)        (0.0341)         (0.0253)        (0.0329)        (0.0262)        (0.0213)         (0.0255)
+                p                     0.0226                           0.2496                          0.4208                          0.0358
+                Fig. 9. Schematic of the deﬁnition of the DCA index from the model-predicted TOI/NIRS response to a unit pulse change of the ABP input,
+                while the ETCO2 input is kept at baseline (left panel), and of the DVR index from the model-predicted TOI/NIRS response to a unit pulse
+                change of the ETCO2 input, while the ABP input is kept at baseline (right panel).
+                betweencontrolsandpatientsonlyfortheDVRindex                              Since the DVR indices for both types of output
+                for both types of output. This is consistent with the                  appear to have greater ability to delineate patients
+                observed statistically signiﬁcant differences in the                   from controls (see Tables 6 and 7), we examine
+                Gains of the 1st PDM of the ETCO2 input for both                       in Fig. 11 whether a possible combination of the
+                outputs, although the NIRS data also yielded statisti-                 TCD-DVR and NIRS-DVR indices could improve
+                cally different Gains for the 4th PDM of the ETCO2                     further the delineation between the 14 controls (5
+                input. The resulting p-values (0.0476 for TCD-DVR                      female and 9 male), marked with blue circles, and
+                and 0.0050 for NIRS-DVR) imply stronger differen-                      the 38 patients (25 female and 13 male), marked
+                tiation capability using these indices compared to the                 with red triangles, who have both TCD and NIRS
+                Gains.                                                                 recordings. The scatter-plots of Fig. 11 indicate that
+                   An interesting question arises as to whether the                    the combinations corresponding to the dashed lines
+                twoindices (DCAandDVR),derivedfromthesame                              separating the two groups would yield better delin-
+                type of output (CBFV/TCD or TOI/NIRS), contain                         eationbetweenpatientsandcontrols.Intheleftpanel,
+                independent information. This question is addressed                    the separation line is the Fisher Linear Discrimi-
+                in the scatter-plots of Fig. 10 for each type of output,               nantthatyieldsthelowestp-value(p=0.0044)under
+                wherethetwoindicesareshowntohavegreatercor-                            the Gaussian assumption for the underlying distri-
+                relation for the CBFV/TCD output (left panel). The                     butions of the two groups. In the right panel, the
+                correlation coefﬁcient between the TCD indices is                      separation line (termed “diagnostic boundary”) is
+                0.361 (p=0.0028) and between the NIRS indices is                       determined by an iterative optimization algorithm
+                0.028 (p=0.8239).                                                      that minimizes an exponentially weighted sum of
+               100                          V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+                                                                             Table 6
+                                    Mean(standard deviation) of TCD-DCA and TCD-DVR indices for 20 controls and 46 patients
+                                                       TCD-DCAindex                                      TCD-DVRindex
+                                              Controls                  Patients                 Controls                 Patients
+                            (σ)           0.8969 (0.2822)          0.7751 (0.3022)          0.4360 (0.3992)          0.2157 (0.4061)
+                            p                               0.1232                                            0.0476
+                                                                             Table 7
+                                    Mean(standard deviation) of NIRS-DCA and NIRS-DVR indices for 22 controls & 43 patients
+                                                      NIRS-DCAindex                                     NIRS-DVRindex
+                                              Controls                 Patients                 Controls                  Patients
+                            (σ)           0.0699 (0.0601)          0.0480 (0.0467)         0.0566 (0.1086)          –0.0226 (0.0823)
+                            p                              0.1450                                             0.0050
+               Fig. 10. Scatter-plots of TCD-DCA versus TCD-DVR indices (left) and NIRS-DCA versus NIRS-DVR indices (right) for all controls (blue
+               circles) and patients (red triangles) in each type of output recording. The regression lines correspond to correlation coefﬁcients of 0.361
+               (p=0.0028) and 0.028 (p=0.8239) for the TCD and NIRS indices, respectively.
+               false-negatives and false-positives (4 false-negatives               with potential diagnostic/prognostic utility, using
+               and 4 false-positives) and corresponds to a p-value                  non-invasive beat-to-beat data that can be recorded
+               of 0.0049. Since we do not know the actual under-                    reliably, safely and comfortably for the patient.
+               lying distributions of the two groups, we favor the                     The continuously recorded data over 5-6min typ-
+               latter selection (the Diagnostic boundary determined                 ically include ABP, ETCO2, CBFV measured at the
+               by the optimization algorithm), which also yields a                  middle cerebral arteries via TCD, and TOI mea-
+               decent p-value.                                                      sured at the prefrontal cortex via NIRS. Initially,
+                  Another interesting question pertains to the cor-                 we explored the diagnostic utility of such model-
+               relation between the DVR indices (TCD-DVR or                         based “physiomarkers” of DCA and DVR, extracted
+               NIRS-DVR)andthescoresofneuropsychiatric tests                        from ABP, ETCO2, and CBFV/TCD data that were
+               for the patients. Figure 12 shows the scatter-plots of               collectedforthreepathologies(andage-matchedcon-
+               the two types of indices versus the Delayed Logical                  trols): (1) early-stage AD [1], (2) amnestic MCI
+               MemoryRecallscores.                                                  [2], and (3) hypertension-related executive dysfunc-
+                                                                                    tion [57]. Our initial results have shown that the
+                                                                                    model-based physiomarker DVR indicates signiﬁ-
+               DISCUSSION                                                           cant impairment of dynamic vasomotor reactivity in
+                                                                                    all three pathologies at different degrees of sever-
+                  Themainthesisofourworkonmodelingcerebral                          ity as quantiﬁed by the values of the DVR index,
+               hemodynamicsisthatthereexistsarigorous,reliable                      suggesting potential diagnostic utility [1, 2, 57]. Pre-
+               and practical methodology to extract model-based                     vious studies had shown that the progression of
+               “physiomarkers” of dynamic vasomotor reactivity                      cognitive impairment in patients with AD (or other
+               (DVR)anddynamiccerebral autoregulation (DCA),                        forms of dementia and neurodegenerative disease) is
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                          101
+                Fig.11. Scatter-plotsofTCD-DVRversusNIRS-DVRindicesfor14controls(bluecircles)and38patients(redtriangle)whohavebothtypes
+                of output recordings. The dashed line in each plot indicates a possible separation line between the two groups (Fisher’s Linear Discriminant
+                in the left panel, and “diagnostic boundary” in the right panel determined by optimization algorithm) that corresponds to a composite index
+                with p-value smaller than the separate p-values of each index shown in Tables 6 and 7—speciﬁcally, p=0.0044 for Fisher’s Discriminant
+                and p=0.0049 for the “diagnostic boundary. The latter has a slightly higher p-value but yields better classiﬁcation/diagnostic results.
+                Fig. 12. Scatter-plots of TCD-DVR versus Delayed Logical Memory Recall (DLMR) scores (left) for 18 controls (blue circles) and 45
+                patients (red triangles), and NIRS-DVR versus DLMR scores (right) for 22 controls (blue circles) and 42 patients (red triangles) for whom
+                DLMRscoresexist.Thedashedlines suggest possible diagnostic indices that combine the DVR index with the DLMR score.
+                associated with impairment of cerebral vasomotor                       assisted by specialized data collections from “sub-
+                reactivity to hypercapnia [3–15].                                      tractive experimentation” (i.e., the pharmacological
+                   The enabling methodological element of the pro-                     blocking of a mechanism of interest) within the con-
+                posedapproachistheconceptofPDMsthatwehave                              straints of clinical practice.
+                pioneeredinordertoobtaindual-inputortriple-input                          The contribution of this paper is in presenting
+                dynamic models (linear or nonlinear) of cerebral                       results obtained from amnestic MCI patients and
+                hemodynamics (entailing the processes of dynamic                       age-matched controls that examine whether the use
+                cerebral ﬂow autoregulation and CO2 vasomotor                          as output signal of the TCD-measured CBFV or
+                reactivity) in the practical context of relatively short               the NIRS-measured TOI yield reliable and consis-
+                data-records and low signal-to-noise ratio [1, 2, 49,                  tent results in terms of model-based physiomarkers
+                50, 53, 54]. In addition to offering the potential                     of DVR that allow differentiation of MCI patients
+                diagnostic value of model-based physiomarkers, this                    fromage-matchedhealthycontrols.Thisstudyisalso
+                modelcanadvanceourquantitativeunderstandingof                          motivated by the fact that NIRS measurements are
+                the mechanisms subserving these physiological pro-                     easier to implement in a clinical setting than TCD
+                cesses. This is pursued primarily through matching                     measurements and, furthermore, can be combined
+                the observed dynamics of the PDMs with the spe-                        concurrently with other modalities (MRI) in order to
+                ciﬁc dynamics of the mechanisms of interest (to the                    gain greater insight into the hemodynamics of vari-
+                extent the latter are known). This task can be greatly                 ousbrainregionsthatareaffectedbythedisease.The
+              102                      V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+              results of this study suggest that this may indeed be      DVR in AD and MCI patients [1, 2]. For the TOI
+              feasible. The key results are discussed below.             output, the only PDM Gains that have statistically
+                                                                         signiﬁcant differences between patients and controls
+              Impaired dynamic CO2 vasomotor reactivity in               are the 1st and the 4th PDM of the ETCO2 input
+              amnestic MCI patients is indicated by the                  (p=0.0226andp=0.0358,respectively)asshownin
+              model-based physiomarker DVR obtained from                 Table5.Forbothtypesofoutputsignal(CBFV/TCD
+              hemodynamicTCDorNIRSbeat-to-beatoutput                     or TOI/NIRS), the 1st PDM of the ETCO2 input
+              data                                                       indicates a prolonged rise in output values follow-
+                                                                         ing an increase of ETCO2 input. This is the expected
+                In previous studies using CBFV/TCD output sig-           responseofCO2vasomotorreactivity,whichisfound
+              nals, we found that the model-based DVR index              to be reduced in the MCI patients (as quantiﬁed by
+              is signiﬁcantly smaller (p<0.05) for AD, amnes-            the respective DVR indices). We note that the 4th
+              tic MCI, and executive-dysfunction patients relative       PDM of the ETCO2 input for TOI output exhibits
+              to age-matched controls [1, 2, 57]. However, the           a strong resonance around 0.05Hz (see black trace
+              model-based DCA index is not signiﬁcantly differ-          in bottom-right panel of Fig. 4), which is also seen
+              ent in those patients relative to age-matched controls     in the 4th PDM of the ETCO2 input for CBFV out-
+              (p>0.05). In the present study, we found again that        put (with a slight shift in frequency and phase). The
+              the model-based DVR index is signiﬁcantly smaller          physiological mechanisms that underlie these PDMs
+              for this larger cohort (46 patients versus 22 patients     arenotknownatthistimeandrepresentanimportant
+              previously) of amnestic MCI patients relative to age-      objective for future studies, since their proper iden-
+              matchedcontrols,whethertheutilizedoutputsignalis           tiﬁcation will allow potential therapeutic treatments
+              CBFV/TCD(p=0.0476)or TOI/NIRS (p=0.0050),                  of this aberrant condition associated with MCI.
+              asreportedinTables6and7.Thiskeyresultisfurther
+              demonstrated by the signiﬁcant differences observed        TheDCAandDVRindicesforTCDorNIRS
+              intheaverage1storderkernelsshowninFigs.7and8.              output contain different information, and the two
+              TheobserveddifferencesinthekernelsoftheETCO2               DVRindices can be combined into a “composite
+              input are far more pronounced for short lags (<3s for      DVRindex”ofgreaterdiagnostic utility
+              theTCD-outputkernelsand<7sfortheNIRS-output
+              kernels), which suggests that the biological mecha-           In order to assess whether the TCD-based and
+              nismmoreseverelyalteredbyMCIhasfastdynamics                NIRS-based indices of DCA and DVR contain dif-
+              – although some effects are seen for longer lags as        ferentinformationaboutthecerebralhemodynamics,
+              well.                                                      we show in Fig. 10 scatter-plots of the obtained
+                                                                         indicesforpatientsandcontrolsusingthetwotypesof
+              Comparison of estimated Gains of PDM                       output measurement (left: TCD, right: NIRS). These
+              contributions to the output prediction (CBFV or            scatter-plots show greater correlation between DCA
+              TOI) for controls and patients                             andDVRfortheTCDoutput.SincetheDVRindices
+                                                                         arethedifferentiatingonesbetweenpatientsandcon-
+                It is informative to examine the estimated Gains         trols for both types of output (see Tables 6 and 7) and
+              of the various PDM contributions to the model-             they do not contain identical information (since the
+              predicted output (CBFV or TOI). Of particular              TCDismeasuredinthemiddlecerebral arteries and
+              interest is the comparison of these Gains for statis-      the NIRS is measured in a local vascular bed com-
+              tically signiﬁcant differences between patients and        posed of arterioles, venules, and capillary space of
+              controls. As indicated in Tables 2 and 3 reporting         the prefrontal cortex (smaller vessels compared with
+              the average (and standard deviation) values of the         the middle cerebrsal arteries) and probably different
+              estimated Gains in the case of the CBFV output, the        mechanisms of vasoresactivity), we explore in the
+              only PDM Gain that was found to have statistically         scatter-plots of Fig. 11 whether a “composite DVR
+              signiﬁcant difference between patients and controls        index”mayallowgreaterdelineationofcontrolsfrom
+              is the 1st PDM of the ETCO2 input (p=0.0210).              patients. Indeed, the scatter-plots of Fig. 11 indicate
+              The estimated Gains of this PDM contribution are           that the combinations corresponding to the putative
+              muchsmallerfortheMCIpatientsrelativetocontrols             dashedlinesseparatingthetwogroupsinthetwopan-
+              (about half on the average, see Table 3). This is con-     els would yield better delineation between patients
+              sistent with previously reported ﬁndings of reduced        and controls, because they are neither horizontal nor
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                          103
+                vertical. In the left panel, the separation line is the                ACKNOWLEDGMENTS
+                Fisher Linear Discriminant that yields the lowest p-
+                value(p=0.0044)undertheGaussianassumptionfor                              ThisworkwassupportedinpartbytheBiomedical
+                the underlying distributions of the two groups. In the                 Simulations Resource at the University of Southern
+                right panel, the separation line (termed “diagnostic                   California under NIH/NIBIB grant P41-EB001978
+                boundary”)isdeterminedbyaniterativeoptimization                        andNIAR01AG033106-01granttotheUT-SWMC.
+                algorithm that minimizes an exponentially weighted                        Authors’ disclosures available online (http://j-alz.
+                sum of false-negatives and false-positives (3 false-                   com/manuscript-disclosures/16-1004).
+                negatives and 3 false-positives) yielding a p-value of
+                0.00495. Since we do not know whether the actual
+                underlying distributions of the two groups are Gaus-                   SUPPLEMENTARYMATERIAL
+                sian, we favor the latter selection (the diagnostic
+                boundarydeterminedbytheoptimizationalgorithm),                            The supplementary material is available in the
+                whichalsoyieldsthebestclassiﬁcationresult(3false-                      electronic version of this article: http://dx.doi.org/
+                positives and 3 false-negatives).                                      10.3233/JAD-161004.
+                   It may be useful to comment on the distinction
+                between the advocated approach and the autoregu-                       REFERENCES
+                lation index (ARI) that has been used extensively in
+                studies of cerebral autoregulation to date. The ARI                     [1]   Marmarelis VZ, Shin DC, Orme ME, Zhang R (2013)
+                is based on Tieck’s model, which is a second-order                            Model-based quantiﬁcation of cerebral hemodynamics as
+                differential equation (properly discretized for practi-                       a physiomarker for Alzheimer’s disease? Ann Biomed Eng
+                cal application) between an arterial pressure forcing                         41, 2296-2317.
+                (input) and the resultant blood ﬂow velocity (out-                      [2]   Marmarelis VZ, Shin DC, Orme ME, Zhang R (2014)
+                put). As such, it is an autoregressive model/equation                         Model-based physiomarkers of cerebral hemodynamics in
+                                                                                              patients with mild cognitive impairment. Med Eng Phys36,
+                that stands in contrast (mathematical, computational,                         628-637.
+                and conceptual) to the kernel/PDM approach used                         [3]   Sellke FW, Seshadri S, Chui HC, Higashida RT, Lindquist
+                in this paper that is not autoregressive. The ARI                             R, Nilsson PM, Roman GC, Petersen RC, Schneider JA,
+                is derived from the best ﬁt of the actual measure-                            Tzourio C, Arnett DK, Bennett D, Iadecola C, Launer LJ,
+                                                                                              LaurentS,LopezOL,NyenhuisD,GorelickPB,ScuteriA,
+                ment(basedonTieck’smodel)tooneoftentemplate                                   BlackSE,DeCarliC,GreenbergSM(2011)Vascularcontri-
+                responsefunctions.Themodel-basedindicesthatare                                butions to cognitive impairment and dementia: A statement
+                proposed in this paper result from a computation of                           forhealthcareprofessionalsfromtheAHA/ASA.Stroke42,
+                the kernel-based (or, equivalently, the PDM-based)                            2672-2713.
+                                                                                        [4]   Silvestrini M,PasqualettiP,BaruffaldiR,BartoliniM,Han-
+                model prediction to a pressure-input pulse. Most                              doukY,MatteisM,MoffaF,ProvincialiL,VernieriF(2006)
+                importantly, the proposed indices result from the                             Cerebrovascular reactivity and cognitive decline in patients
+                analysis of a two-input model that takes into account                         with Alzheimer’s disease. Stroke 37, 1010-1015.
+                the concurrent effects of ETCO2changes(duringthe                        [5]   de la Torre JC (2002) Alzheimer disease as a vascular dis-
+                                                                                              order. Nosological evidence. Stroke 33, 1152-1162.
+                kernel/PDM estimation process) and, consequently,                       [6]   Iadecola C (2003) Cerebrovascular effects of amyloid-beta
+                leads to signiﬁcantly different results.                                      peptides: Mechanisms and implications for Alzheimer’s
+                   In closing, we emphasize that, although the                                dementia. Cell Mol Neurobiol 23, 681-689.
+                presented initial results are promising, a larger pop-                  [7]   Iadecola C, Gorelick PB (2003) Converging pathogenic
+                                                                                              mechanisms in vascular and neurodegenerative dementia.
+                ulation of MCI patients and control subjects must                             Stroke 34, 335-337.
+                be examined before any ﬁrm conclusions are drawn                        [8]   Hachinski V, Iadecola C (2004) Vascular cognitive impair-
+                regardingthepotentialclinicalutilityoftheproposed                             ment: Introduction. Stroke 35, 2615.
+                                                                                        [9]   Bowler JV (2003) Acetylcholinesterase inhibitors for vas-
+                model-based physiomarkers. Of particular impor-                               cular dementia and Alzheimer’s disease combined with
+                tance is the question of speciﬁcity versus sensitivity                        cerebrovascular disease. Stroke 34, 584-586.
+                thatwillallowdelineationamongvariouscerebrovas-                        [10]   Kalaria RN (2002) Small vessel disease and Alzheimer’s
+                cular diseases using the model-based DVR and DCA                              dementia:Pathologicalconsiderations.CerebrovascDis13,
+                                                                                              48-52.
+                indices. It is also important to explore whether the                   [11]   Murray IVJ, Proza JF, Sohrabji F, Lawler JM (2011) Vas-
+                numericalvaluesoftheDVRindexcanofferreliable                                  cular and metabolic dysfunction in Alzheimer’s disease:
+                quantitative measures of the stage of the amnestic                            Areview. Exp Biol Med 236, 772-782.
+                MCI disease in order to be used for assessing and                      [12]   Bell RD, Zlokovic BV (2009) Neurovascular mechanisms
+                                                                                              and blood-brain barrier disorder in Alzheimer’s disease.
+                monitoring the effects of treatment over time.                                Acta Neuropathol 118, 103-113.
+                104                          V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI
+                [13]  Nicolakakis N, Hamel E (2011) Neurovascular function                   assess dynamics of cerebral autoregulation in stroke and
+                      in Alzheimer’s disease patients and experimental models.               hypertension. Biomed Eng Online 3, 39.
+                      J Cereb Blood Flow Metab 31, 1354-1370.                         [33]   Panerai RB (2008) Cerebral autoregulation: From models
+                [14]  Tong XK, Nicolakakis N, Kocharyan A, Hamel E (2005)                    to clinical applications. Cardiovasc Eng 8, 42-59.
+                      Vascularremodelingversusamyloidbeta-inducedoxidative            [34]   vanBeekAH,ClaassenJA,RikkertMG,JansenRW(2008)
+                      stress in the cerebrovascular dysfunction associated with              Cerebral autoregulation: Overview of current concepts and
+                      Alzheimer’s disease. J Neurosci 25, 11165-11174.                       methodology with special focus on the elderly. J Cereb
+                [15]  Gorelick PB (2004) Risk factors for vascular dementia and              Blood Flow Metab 28, 1071-1085.
+                      Alzheimer disease. Stroke 35, 2620-2622.                        [35]   Czosnyka M, Brady K, Reinhard M, Smielewski P,
+                [16]  SmithEE,GreenbergSM(2009)Amyloid-beta,bloodves-                        Steiner L (2009) Monitoring of cerebrovascular autoreg-
+                      sels and brain function. Stroke 40, 2601-2606.                         ulation: Facts, myths and missing links. Neurocrit Care 10,
+                [17]  Maeda H, Matsumoto M, Handa N, Hougaku H, Ogawa                        373-386.
+                      S, Itoh T, Tsukamoto Y, Kamada T (1993) Reactivity of           [36]   Gommer ED, Shijaku E, MessWH, Reulen JP (2010)
+                      cerebral blood ﬂow to carbon dioxide in various types of               Dynamic cerebral autoregulation: Different signal pro-
+                      ischemic cerebrovascular disease: Evaluation by the tran-              cessing  methods without inﬂuence on results and
+                      scranial Doppler method. Stroke 24, 670-675.                           reproducibility. Med Biol Eng Comput 48, 1243-1250.
+                [18]  TantucciC,BottiniP,FioraniC,DottoriniML,Santeusanio             [37]   TzengYC,AinsliePN,CookeWH,PeeblesKC,WillieCK,
+                      F, Provinciali L, Sorbini CA, CasucciG(2001)Cerebrovas-                MacRaeBA,SmirlJD,HorsmanHM,RickardsCA(2012)
+                      cularreactivityandhypercapnicrespiratorydriveindiabetic                Assessment of cerebral autoregulation: The quandary of
+                      autonomic neuropathy. J Appl Physiol 90, 889-896.                      quantiﬁcation.AmJPhysiolHeartCircPhysiol303,H658-
+                [19]  Cupini LM, Diomedi M, Placidi F, Silvestrini M, Giaco-                 H671.
+                      mini P (2001) Cerebrovascular reactivity and subcortical        [38]   van Beek AH, Lagro J, Olde-Rikkert MG, Zhang R,
+                      infarctions. Arch Neurol 58, 577-581.                                  Claassen JA (2012) Oscillations in cerebral blood ﬂow
+                [20]  Schneider JA, Wilson RS, Bienias JL, Evans DA, Ben-                    andcortical oxygenation in Alzheimer’s disease. Neurobiol
+                      nett DA (2004) Cerebral infarctions and the likelihood of              Aging 33, 428.e21-31.
+                      dementiafromAlzheimerdiseasepathology.Neurology62,              [39]   Tan CO (2012) Deﬁning the characteristic relationship
+                      1148-1155.                                                             between arterial pressure and cerebral ﬂow. J Appl Physiol
+                [21]  Aaslid R, Lindegaard KF, Sorteberg W, Nornes H (1989)                  113, 1194-1200.
+                      Cerebralautoregulationdynamicsinhumans.Stroke20,45-             [40]   TanCO,HamnerJW,TaylorJA(2013)Theroleofmyogenic
+                      52.                                                                    mechanismsinhumancerebrovascularregulation.JPhysiol
+                [22]  Giller CA (1990) The frequency-dependent behavior of                   591, 5095-5105.
+                      cerebral autoregulation. Neurosurgery 27, 362-368.              [41]   Tan CO, Taylor JA (2014) Integrative physiological and
+                [23]  Larsen FS, Olsen KS, Hansen BA, Paulson OB, Knudsen                    computationalapproachestounderstandautonomiccontrol
+                      GM(1994)TranscranialDopplerisvalidfordetermination                     of cerebral autoregulation. Exp Physiol 99(1), 3-15.
+                      of the lower limit of cerebral blood ﬂow autoregulation.        [42]   Kiyoshi N, Kazama K, Younkin L, Younkin SG, Carl-
+                      Stroke 25, 1985-1988.                                                  son GA, Iadecola C (2002) Cerebrovascular autoregulation
+                [24]  Newell DW, Aaslid R, Lam A, Mayberg TS, Winn HR                        is profoundly impaired in mice overexpressing amyloid
+                      (1994) Comparison of ﬂow and velocity during dynamic                   precursor protein. Am J Physiol Heart Circ Physiol 283,
+                      autoregulation testing in humans. Stroke 25, 793-797.                  H315-H323.
+                [25]  Tiecks FP, Lam AM, Aaslid R, Newell DW (1995) Com-              [43]   Claassen JA, Diaz-Arrastia R, Martin-Cook K, Levine BD,
+                      parison of static and dynamic cerebral autoregulation                  Zhang R (2009) Altered cerebral hemodynamics in early
+                      measurements. Stroke 26, 1014-1019.                                    Alzheimerdisease:ApilotstudyusingtranscranialDoppler.
+                [26]  Czosnyka M, Piechnik S, Richards H, Kirkpatrick P,                     J Alzheimers Dis 17, 621-629.
+                      Smielewski P, Pickard J (1997) Contribution of mathe-           [44]   Claassen JA, Zhang R (2011) Cerebral autoregulation in
+                      matical modeling to the interpretation of bedside tests of             Alzheimer’s disease. J Cereb Blood Flow Metab 31, 1572-
+                      cerebrovascularautoregulation.JNeurolNeurosurgPsychi-                  1577.
+                      atry 63, 721-731.                                               [45]   Mitsis GD, Zhang R, Levine BD, Marmarelis VZ (2002)
+                [27]  Zhang R, Zuckerman JH, Giller CA, Levine BD (1998)                     Modeling of nonlinear physiological systems with fast and
+                      Transfer function analysis of dynamic cerebral autoregu-               slow dynamics II: Application to cerebral autoregulation.
+                      lation in humans. Am J Physiol 274, 233-241.                           AnnBiomedEng30,555-565.
+                [28]  Panerai RB, Dawson SL, Potter JF (1999) Linear and non-         [46]   Mitsis GD, Poulin MJ, Robbins PA, Marmarelis VZ (2004)
+                      linear analysis of human dynamic cerebral autoregulation.              Nonlinear modeling of the dynamic effects of arterial pres-
+                      AmJPhysiol277,H1089-H1099.                                             sure and CO2 variations on cerebral blood ﬂow in healthy
+                [29]  Panerai RB, Simpson DM, Deverson ST, Mahony P, Hayes                   humans. IEEE Trans Biomed Eng 51, 1932-1943.
+                      P, Evans DH (2000) Multivariate dynamic analysis of cere-       [47]   Mitsis GD, Zhang R, Levine BD, Marmarelis VZ (2006)
+                      bral blood ﬂow regulation in humans. IEEE Trans Biomed                 Cerebral hemodynamics during orthostatic stress assessed
+                      Eng47,419-423.                                                         bynonlinear modeling. J Appl Physiol 101, 354-366.
+                [30]  Zhang R, Zuckerman JH, Iwasaki K, Wilson TE, Cran-              [48]   Mitsis GD, Zhang R, Levine BD, Tzanalaridou E, Katritsis
+                      dall CG, Levine BD (2002) Autonomic neural control of                  DG, Marmarelis VZ (2009) Nonlinear analysis of auto-
+                      dynamic cerebral autoregulation in humans. Circulation                 nomic control of cerebral hemodynamics. IEEE Eng Med
+                      106, 1814-1820.                                                        Biol 28, 54-62.
+                [31]  Giller CA, Mueller M (2003) Linearity and nonlinearity in       [49]   Marmarelis VZ, Shin DC, Zhang R (2012) Linear and
+                      cerebral hemodynamics. Med Eng Phys 25, 633-646.                       nonlinear modeling of cerebral ﬂow autoregulation using
+                [32]  NovakV,YangAC,LepicovskyL,GoldbergerAL,Lipsitz                         Principal Dynamic Modes. Open Biomed Eng J 6,
+                      LA, Peng CK (2004) Multimodal pressure-ﬂow method to                   42-55.
+                                              V.Z. Marmarelis et al. / Model-Based Indices of Cerebral Vasculature in MCI                          105
+                [50]  Marmarelis VZ, Shin DC, Orme ME, Zhang R (2013)                  [55]   Petersen RC, Doody R, Kurz A, Mohs RC, Morris JC,
+                      Closed-loopdynamicmodelingofcerebralhemodynamics.                       RabinsPV,RitchieK,RossorM,ThalL,WinbladB(2001)
+                      AnnBiomedEng41,1029-1048.                                               Currentconceptsinmildcognitiveimpairment.ArchNeurol
+                [51]  Marmarelis VZ, Shin DC, Orme ME, Zhang R (2014)                         58, 1985-1992.
+                      Time-varying dynamic modeling of cerebral hemodynam-             [56]   MarmarelisVZ(1993)Identiﬁcationofnonlinearbiological
+                      ics. IEEE Trans Biomed Eng 61, 1-11.                                    systemsusingLaguerreexpansionsofkernels.AnnBiomed
+                [52]  Lassen NA (1959) Cerebral blood ﬂow and oxygen con-                     Eng21,573-589.
+                      sumption in man. Physiol Rev 39, 183-238.                        [57]   Hajjar I, Marmarelis VZ, Shin DC, Chui H (2014) Assess-
+                [53]  Marmarelis VZ (1997) Modeling methodology for nonlin-                   ment of cerebrovascular reactivity during resting state
+                      ear physiological systems. Ann Biomed Eng 25, 239-251.                  breathing and its correlation with cognitive function in
+                [54]  Marmarelis VZ (2004) Nonlinear Dynamic Modeling of                      hypertension. Vasc Dis 38, 10-16.
+                      Physiological Systems. Wiley-Interscience & IEEE Press.

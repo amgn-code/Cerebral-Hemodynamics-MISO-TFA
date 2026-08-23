@@ -1,37 +1,15 @@
-%% Paper 1 Analysis
-%{
-clear;
-clc;
-close all;
-
-projectRoot = ...
-    "/Users/amoghn/MATLAB/1) IEEM Cerebrovascular Project/1) TFA MISO/Cerebral-Hemodynamics-MISO-TFA";
-
-cd(projectRoot);
-addpath(genpath(projectRoot));
-
-dataFolder = ...
-    "/Users/amoghn/Downloads/ieem_data";
-
-outputFolder = ...
-    "/Users/amoghn/Desktop/IEEM Dr. Zhang/Approach Paper/Paper 1 Results Quick";
-
-settings = approachPaperSettings( ...
-    dataFolder, outputFolder, "quick");
-
-paperResults = runApproachPaper(settings);
-%}
-
 %% Clean Start
 
 clearvars; clc; close all;
 
 projectRoot = fileparts(mfilename("fullpath"));
 addpath(genpath(fullfile(projectRoot, "src")));
+addpath(genpath(fullfile(projectRoot, "studies", "approachPaper")));
 
 %% 1. Run Mode
 
-runType = "batch";    % Use "single", "batch", or "synthetic"
+runType = "simulation";    % "single", "batch", "demo", or "simulation"
+runType = lower(convertCharsToStrings(runType));
 
 %% 2. Input Data
 
@@ -47,7 +25,82 @@ batchSettings.groupsToRun = ["NC"; "MCI"];   % Example: ["MCI"; "NC"; "LC"]
 batchSettings.targetSuccessfulSubjectsPerGroup = Inf;
 batchSettings.previewOnly = false;
 
-%% 3. Models
+%% 3. Paper 1 Simulation
+
+% "quick" checks execution and figure layout; "paper" runs the final study.
+simulationProfile = "quick";    % "quick" or "paper"
+simulationProfile = lower(convertCharsToStrings(simulationProfile));
+
+% Save all simulation results and exports under this folder.
+simulationOutputFolder = ...
+    "/Users/amoghn/Desktop/IEEM Dr. Zhang/Approach Paper/Paper 1 Results Quick v6";
+
+% Load the Paper 1 defaults; the data folder is unused if empirical analysis is off.
+paperSettings = approachPaperSettings( ...
+    batchSettings.dataFolder, simulationOutputFolder, ...
+    simulationProfile);
+
+% Select the Paper 1 stages and outputs.
+paperSettings.steps.runEmpiricalAnalysis = false;      % Analyze real NC recordings
+paperSettings.steps.runKnownTruthSimulation = true;    % Run the family-based simulation
+paperSettings.steps.runRobustnessAnalysis = false;     % Run NC robustness checks; requires empirical analysis
+paperSettings.steps.createTables = true;               % Export summary CSV and Excel tables
+paperSettings.steps.createFigures = true;              % Export the organized plot library
+
+% Select figure export formats.
+paperSettings.export.savePdf = true;                   % Save PDF figures
+paperSettings.export.savePng = false;                  % Save PNG figures
+paperSettings.export.saveFigureSourceData = true;      % Save CSV values used to draw each plot
+
+simulationSettings = paperSettings.simulation;
+
+% Every family receives all listed durations, noise levels, and alignments.
+if simulationProfile == "quick"
+    simulationSettings.families.numFamilies = 8;
+    simulationSettings.observations.durationSeconds = [256 300 320 896];
+    simulationSettings.observations.outputSnrDb = [Inf 15 0];   % CBFV SNR; Inf adds no noise
+    simulationSettings.observations.inputNoiseSnrDb = [Inf 15 0]; % Separate MAP and PETCO2 noise sweeps
+    simulationSettings.observations.alignmentErrorSeconds = [-3 0 3]; % Negative shifts PETCO2 later
+else   % "paper"
+    simulationSettings.families.numFamilies = 1000;
+    simulationSettings.observations.durationSeconds = ...
+        [256 300 320 384 512 640 896];
+    simulationSettings.observations.outputSnrDb = ...
+        [Inf 30 20 15 10 5 0];                       % CBFV SNR; Inf adds no noise
+    simulationSettings.observations.inputNoiseSnrDb = ...
+        [Inf 30 20 15 10 5 0];                       % Separate MAP and PETCO2 noise sweeps
+    simulationSettings.observations.alignmentErrorSeconds = ...
+        [-6 -3 0 3 6];                               % Negative shifts PETCO2 later
+end
+
+% These balanced values describe physiology and stay fixed within a family.
+simulationSettings.families.targetCoherenceValues = 0.05:0.10:0.95;
+simulationSettings.families.spectralSimilarityValues = 0:0.20:1;
+simulationSettings.families.petco2ToMapFluctuationSdRatioValues = ...
+    [0.05 0.10 0.25 0.50 1 2];
+simulationSettings.families.petco2ToMapBandGainRatioValues = ...
+    [0.10 0.25 0.50 1 2 4];
+simulationSettings.families.co2DelaySecondsValues = [0 2 4 6 8 10];
+
+% Non-duration experiments use this standard duration and state it in their titles.
+simulationSettings.observations.referenceDurationSeconds = 300;
+simulationSettings.observations.referenceOutputSnrDb = 15;
+simulationSettings.observations.runInputNoiseExperiment = true;  % Run separate MAP and PETCO2 noise sweeps
+simulationSettings.observations.runAlignmentExperiment = true;   % Run PETCO2 timing-error sweep
+
+simulationSettings.estimators.ridgeLambdas = [0.001 0.01 0.1];   % Sensitivity only; direct MISO stays primary
+
+% Focused estimator checks at the reference observation.
+simulationSettings.estimatorSensitivity.windowLengthSeconds = ...
+    [64 75 100 128 150];                                        % Welch window sensitivity
+simulationSettings.estimatorSensitivity.windowOverlap = ...
+    [0.25 0.50 0.75];                                           % Welch overlap sensitivity
+
+% Statistical markers compare paired MISO and SISO errors across families.
+simulationSettings.statistics.alpha = 0.05;
+simulationSettings.statistics.minimumValidN = 3;
+
+%% 4. Models
 
 analysisSettings.runMISO = true;
 analysisSettings.runSISO = true;
@@ -60,7 +113,7 @@ analysisSettings.misoSolver = defaultMisoSolverSettings();
 % preprocessed subject signals and shared spectra.
 analysisSettings.retainAnalysisInput = false;
 
-%% 4. Frequency Configuration
+%% 5. Frequency Configuration
 
 % Results and figures are limited to this frequency range.
 analysisSettings.frequencyRangeHz = [0 0.35];
@@ -71,7 +124,22 @@ analysisSettings.frequencyBandEdgesHz = ...
     [0.005; 0.024; 0.070; 0.200; 0.350];
 analysisSettings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
 
-%% 5. Preprocessing
+% Use this same frequency configuration throughout the Paper 1 workflow.
+paperSettings.analysis.frequencyRangeHz = ...
+    analysisSettings.frequencyRangeHz;
+paperSettings.analysis.frequencyBandEdgesHz = ...
+    analysisSettings.frequencyBandEdgesHz;
+paperSettings.analysis.frequencyBandNames = ...
+    analysisSettings.frequencyBandNames;
+simulationSettings.frequencyRangeHz = ...
+    analysisSettings.frequencyRangeHz;
+simulationSettings.frequencyBandEdgesHz = ...
+    analysisSettings.frequencyBandEdgesHz;
+simulationSettings.frequencyBandNames = ...
+    analysisSettings.frequencyBandNames;
+paperSettings.simulation = simulationSettings;
+
+%% 6. Preprocessing
 
 analysisSettings.fsTarget = 4;
 analysisSettings.preprocessing.normalizeCbv = true;
@@ -79,7 +147,7 @@ analysisSettings.preprocessing.detrendEnabled = false;
 analysisSettings.preprocessing.detrendOrder = 1;
 analysisSettings.preprocessing.meanRemovalEnabled = true;
 
-%% 6. Welch Spectral Analysis
+%% 7. Welch Spectral Analysis
 
 analysisSettings.pwelch.windowLengthSeconds = 128;
 analysisSettings.pwelch.windowOverlap = 0.5;
@@ -88,7 +156,7 @@ analysisSettings.pwelch.minimumWindows = 3;
 analysisSettings.pwelch.smoothingEnabled = true;
 analysisSettings.pwelch.smoothingKernel = [0.25 0.50 0.25];
 
-%% 7. Phase
+%% 8. Phase
 
 analysisSettings.phase.unwrapMethod = "standard";    % "standard" or "custom"
 analysisSettings.phase.custom.windowSize = 11;
@@ -99,7 +167,7 @@ analysisSettings.phase.custom.weightPower = 4;
 analysisSettings.phase.custom.expAlpha = 4;
 analysisSettings.phase.custom.minWeight = 0.01;
 
-%% 8. Statistical Analysis
+%% 9. Statistical Analysis
 
 analysisSettings.statistics.enabled = true;
 analysisSettings.statistics.alpha = 0.05;
@@ -125,7 +193,7 @@ analysisSettings.statistics.frequencyWise.groupComparison.phase = true;
 analysisSettings.statistics.frequencyWise.modelComparison.gain = true;
 analysisSettings.statistics.frequencyWise.modelComparison.phase = true;
 
-%% 9. Figures
+%% 10. Figures
 
 analysisSettings.plot = defaultPlotSettings();
 analysisSettings.plot.transferFunctionStyle = "stem";    % "stem" or "line"
@@ -154,7 +222,7 @@ outputSettings.saveSubjectFigures = true;
 batchSettings.numSubjectFiguresPerGroup = 1;    % Number, "none", or "all"
 outputSettings.saveBatchFigures = true;
 
-%% 10. Excel Export
+%% 11. Excel Export
 
 outputSettings.baseOutputFolder = ...
     "/Users/amoghn/Desktop/TFA Results New Latest Boss 1";
@@ -198,18 +266,32 @@ outputSettings.excelMetrics.siso.co2Coherence = true;
 outputSettings.excelMetrics.siso.co2UnexplainedFraction = true;
 outputSettings.excelMetrics.siso.co2ResidualPower = true;
 
-%% Run TFA
+%% Run Selected Workflow
 
-fprintf("\nRun type: %s | MISO: %s | SISO: %s\n", ...
-    runType, string(analysisSettings.runMISO), ...
-    string(analysisSettings.runSISO));
-fprintf("Frequency range: %.3f-%.3f Hz | Welch window: %.1f s\n\n", ...
-    analysisSettings.frequencyRangeHz(1), ...
-    analysisSettings.frequencyRangeHz(2), ...
-    analysisSettings.pwelch.windowLengthSeconds);
+if runType == "simulation"
+    paperSettings.analysis.pwelch = analysisSettings.pwelch;
+    paperSettings.analysis.phase = analysisSettings.phase;
+    simulationSettings.welch = analysisSettings.pwelch;
+    simulationSettings.phase = analysisSettings.phase;
+    paperSettings.simulation = simulationSettings;
+    fprintf( ...
+        "\nRun type: simulation | Profile: %s | Families: %d\n\n", ...
+        simulationProfile, simulationSettings.families.numFamilies);
+    runResults = runApproachPaper(paperSettings);
+else
+    fprintf("\nRun type: %s | MISO: %s | SISO: %s\n", ...
+        runType, string(analysisSettings.runMISO), ...
+        string(analysisSettings.runSISO));
+    fprintf( ...
+        "Frequency range: %.3f-%.3f Hz | Welch window: %.1f s\n\n", ...
+        analysisSettings.frequencyRangeHz(1), ...
+        analysisSettings.frequencyRangeHz(2), ...
+        analysisSettings.pwelch.windowLengthSeconds);
 
-runResults = runTFA( ...
-    runType, subjectInfo, batchSettings, analysisSettings, outputSettings);
+    runResults = runTFA( ...
+        runType, subjectInfo, batchSettings, ...
+        analysisSettings, outputSettings);
+end
 
 if isfield(runResults, "previewTable")
     disp(runResults.previewTable)

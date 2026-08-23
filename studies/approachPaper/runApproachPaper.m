@@ -4,7 +4,7 @@ function paperResults = runApproachPaper(settings)
     studyFolder = fileparts(mfilename("fullpath"));
     projectRoot = fileparts(fileparts(studyFolder));
     addpath(genpath(fullfile(projectRoot, "src")));
-    addpath(studyFolder);
+    addpath(genpath(studyFolder));
 
     validateApproachPaperPaths(settings);
     if ~exist(settings.outputFolder, "dir")
@@ -71,10 +71,13 @@ function paperResults = runApproachPaper(settings)
     end
 
     if settings.steps.createFigures
-        fprintf("Creating publication figures.\n");
-        paperResults.figureFiles = createAndSaveFigures( ...
+        fprintf("Creating organized plot groups.\n");
+        paperResults.plotResults = exportApproachPaperPlotGroups( ...
             paperResults, analysisSettings, settings);
+        paperResults.figureFiles = ...
+            paperResults.plotResults.savedFiles;
     else
+        paperResults.plotResults = struct();
         paperResults.figureFiles = strings(0, 1);
     end
 
@@ -113,143 +116,6 @@ function validateApproachPaperPaths(settings)
                 "TFA:MissingApproachPaperDataFolder", ...
                 ['Choose an existing settings.dataFolder before running ' ...
                  'the NC empirical analysis.']);
-        end
-    end
-
-end
-
-function savedFiles = createAndSaveFigures( ...
-    paperResults, analysisSettings, settings)
-% createAndSaveFigures Build, export, and close every available figure.
-
-    figureFolder = fullfile(settings.outputFolder, "Figures");
-    sourceFolder = fullfile(figureFolder, "Source_Data");
-    if ~exist(figureFolder, "dir")
-        mkdir(figureFolder);
-    end
-    if settings.export.saveFigureSourceData && ...
-            ~exist(sourceFolder, "dir")
-        mkdir(sourceFolder);
-    end
-
-    savedFiles = strings(0, 1);
-
-    figureHandle = plotApproachFigure1Concept();
-    savedFiles = [savedFiles; exportApproachPaperFigure( ...
-        figureHandle, fullfile(figureFolder, "figure_1_concept"), ...
-        settings.export)];
-    close(figureHandle);
-
-    if ~isempty(fieldnames(paperResults.simulation))
-        [figureHandle, sourceData] = ...
-            plotApproachFigure2Identifiability( ...
-                paperResults.simulation);
-        savedFiles = [savedFiles; exportApproachPaperFigure( ...
-            figureHandle, ...
-            fullfile(figureFolder, "figure_2_identifiability"), ...
-            settings.export)];
-        if settings.export.saveFigureSourceData
-            saveSourceData(sourceData, sourceFolder, "figure_2");
-        end
-        close(figureHandle);
-
-        [figureHandle, sourceData] = ...
-            plotApproachFigure3KnownTruth( ...
-                paperResults.simulation, ...
-                settings.export.figure3RidgeLambda);
-        savedFiles = [savedFiles; exportApproachPaperFigure( ...
-            figureHandle, ...
-            fullfile(figureFolder, "figure_3_known_truth"), ...
-            settings.export)];
-        if settings.export.saveFigureSourceData
-            saveSourceData(sourceData, sourceFolder, "figure_3");
-        end
-        close(figureHandle);
-
-        [figureHandle, sourceData] = ...
-            plotApproachFigure4Conditioning( ...
-                paperResults.simulation);
-        savedFiles = [savedFiles; exportApproachPaperFigure( ...
-            figureHandle, ...
-            fullfile(figureFolder, "figure_4_conditioning"), ...
-            settings.export)];
-        if settings.export.saveFigureSourceData
-            saveSourceData(sourceData, sourceFolder, "figure_4");
-        end
-        close(figureHandle);
-    end
-
-    if ~isempty(fieldnames(paperResults.empirical))
-        [figureHandle, sourceData] = ...
-            plotApproachFigure5NcComparison( ...
-                paperResults.empirical, analysisSettings);
-        savedFiles = [savedFiles; exportApproachPaperFigure( ...
-            figureHandle, ...
-            fullfile(figureFolder, "figure_5_nc_comparison"), ...
-            settings.export)];
-        if settings.export.saveFigureSourceData
-            saveSourceData(sourceData, sourceFolder, "figure_5");
-        end
-        close(figureHandle);
-
-        frequencyResults = paperResults.empirical. ...
-            statisticalResults.frequencyModelComparisons;
-        hasPhaseResults = ~isempty(frequencyResults) && ...
-            any(frequencyResults.Metric == "Phase");
-        if hasPhaseResults
-            [figureHandle, sourceData] = ...
-                plotApproachFrequencyPhaseComparison( ...
-                    frequencyResults);
-            savedFiles = [savedFiles; exportApproachPaperFigure( ...
-                figureHandle, ...
-                fullfile(figureFolder, ...
-                "figure_s1_frequency_phase"), ...
-                settings.export)];
-            if settings.export.saveFigureSourceData
-                saveSourceData( ...
-                    sourceData, sourceFolder, "figure_s1");
-            end
-            close(figureHandle);
-        end
-    end
-
-    if ~isempty(fieldnames(paperResults.robustness))
-        [figureHandle, sourceData] = ...
-            plotApproachFigure6Robustness( ...
-                paperResults.robustness);
-        savedFiles = [savedFiles; exportApproachPaperFigure( ...
-            figureHandle, ...
-            fullfile(figureFolder, "figure_6_robustness"), ...
-            settings.export)];
-        if settings.export.saveFigureSourceData
-            saveSourceData(sourceData, sourceFolder, "figure_6");
-        end
-        close(figureHandle);
-    end
-
-end
-
-function saveSourceData(sourceData, sourceFolder, figureName)
-% saveSourceData Save tables used to draw one figure.
-
-    if istable(sourceData)
-        writetable(sourceData, ...
-            fullfile(sourceFolder, figureName + "_source.csv"));
-        return
-    end
-
-    if ~isstruct(sourceData)
-        return
-    end
-
-    fieldNames = fieldnames(sourceData);
-    for fieldIndex = 1:numel(fieldNames)
-        fieldName = fieldNames{fieldIndex};
-        currentData = sourceData.(fieldName);
-        if istable(currentData)
-            filename = figureName + "_" + ...
-                lower(string(fieldName)) + ".csv";
-            writetable(currentData, fullfile(sourceFolder, filename));
         end
     end
 
