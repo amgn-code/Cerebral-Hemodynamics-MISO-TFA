@@ -1,7 +1,19 @@
-function plotSettings = defaultPlotSettings()
-% defaultPlotSettings
+function plotSettings = defaultPlotSettings(visibilityPreset)
+% defaultPlotSettings Return subject and batch plotting controls.
 %
-% User-facing plotting controls for subject and batch figures.
+% visibilityPreset is "none" (the backwards-compatible default) or "all".
+
+if nargin < 1
+    visibilityPreset = "none";
+end
+visibilityPreset = lower(string(visibilityPreset));
+if ~isscalar(visibilityPreset) || ...
+        ~any(visibilityPreset == ["none", "all"])
+    error( ...
+        "TFA:UnknownPlotVisibilityPreset", ...
+        'visibilityPreset must be "none" or "all".');
+end
+showFigures = visibilityPreset == "all";
 
 plotSettings.transferFunctionStyle = "stem";      % "stem" or "line"
 % This is a backwards-compatible plotting default. The pipeline replaces it
@@ -11,20 +23,20 @@ plotSettings.frequencyLimitsHz = [0 0.35];
 plotSettings.showFrequencyBandLines = true;
 plotSettings.showSisoCoherenceReference = true;
 
-plotSettings.show.overview = false;
-plotSettings.show.miso.map = false;
-plotSettings.show.miso.co2 = false;
-plotSettings.show.siso.map = false;
-plotSettings.show.siso.co2 = false;
-plotSettings.show.misoPartitioned.map = false;
-plotSettings.show.misoPartitioned.co2 = false;
-plotSettings.show.sisoPartitioned.map = false;
-plotSettings.show.sisoPartitioned.co2 = false;
-plotSettings.show.statistics.modelComparison = false;
-plotSettings.show.statistics.groupComparison = false;
-plotSettings.show.statistics.pathwayBalance = false;
-plotSettings.show.statistics.inputAssociation = false;
-plotSettings.show.statistics.frequencyWiseComparison = false;
+plotSettings.show.overview = showFigures;
+plotSettings.show.miso.map = showFigures;
+plotSettings.show.miso.co2 = showFigures;
+plotSettings.show.siso.map = showFigures;
+plotSettings.show.siso.co2 = showFigures;
+plotSettings.show.misoPartitioned.map = showFigures;
+plotSettings.show.misoPartitioned.co2 = showFigures;
+plotSettings.show.sisoPartitioned.map = showFigures;
+plotSettings.show.sisoPartitioned.co2 = showFigures;
+plotSettings.show.statistics.modelComparison = showFigures;
+plotSettings.show.statistics.groupComparison = showFigures;
+plotSettings.show.statistics.pathwayBalance = showFigures;
+plotSettings.show.statistics.inputAssociation = showFigures;
+plotSettings.show.statistics.frequencyWiseComparison = showFigures;
 
 plotSettings.colors.transferFunction = [0 0.4470 0.7410];
 plotSettings.colors.map = [0 0.4470 0.7410];

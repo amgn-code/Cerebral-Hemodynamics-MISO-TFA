@@ -9,6 +9,8 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
         settings = defaultKnownTruthSimulationSettings("quick");
     end
 
+    simulationTimer = tic;
+
     familyDesign = createKnownTruthFamilyDesign(settings);
     observationPlan = createKnownTruthObservationPlan(settings);
     numFamilies = height(familyDesign);
@@ -62,7 +64,7 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
             observationRows(observationIndex) = ...
                 createKnownTruthObservationResultRow( ...
                     observationIndex, familyRow, planRow, ...
-                    analysis, settings);
+                    analysis);
 
             if settings.storage.retainFrequencyResults
                 if isempty(fieldnames(frequencyResults))
@@ -128,35 +130,12 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
 
     observationTable = struct2table(observationRows);
     observationTable = attachFamilyCharacteristics(observationTable);
-    completedRidgeTables = ridgeTables(~cellfun(@isempty, ridgeTables));
-    if isempty(completedRidgeTables)
-        ridgeTable = table();
-    else
-        ridgeTable = vertcat(completedRidgeTables{:});
-    end
-    completedRidgeFrequencyTables = ridgeFrequencyTables( ...
-        ~cellfun(@isempty, ridgeFrequencyTables));
-    if isempty(completedRidgeFrequencyTables)
-        ridgeFrequencyTable = table();
-    else
-        ridgeFrequencyTable = vertcat(completedRidgeFrequencyTables{:});
-    end
-    completedEstimatorTables = estimatorSettingTables( ...
-        ~cellfun(@isempty, estimatorSettingTables));
-    if isempty(completedEstimatorTables)
-        estimatorSettingTable = table();
-    else
-        estimatorSettingTable = vertcat( ...
-            completedEstimatorTables{:});
-    end
-    completedEstimatorFrequencyTables = estimatorFrequencyTables( ...
-        ~cellfun(@isempty, estimatorFrequencyTables));
-    if isempty(completedEstimatorFrequencyTables)
-        estimatorFrequencyTable = table();
-    else
-        estimatorFrequencyTable = vertcat( ...
-            completedEstimatorFrequencyTables{:});
-    end
+    ridgeTable = concatenateTableParts(ridgeTables);
+    ridgeFrequencyTable = concatenateTableParts(ridgeFrequencyTables);
+    estimatorSettingTable = concatenateTableParts( ...
+        estimatorSettingTables);
+    estimatorFrequencyTable = concatenateTableParts( ...
+        estimatorFrequencyTables);
 
     simulationResults.settings = settings;
     simulationResults.familyDesign = familyDesign;
@@ -173,6 +152,11 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
     simulationResults.numObservations = numObservations;
     simulationResults.numEstimatorSettingAnalyses = ...
         height(estimatorSettingTable);
+    simulationResults.elapsedSeconds = toc(simulationTimer);
+
+    fprintf( ...
+        "Known-truth numerical simulation completed in %.1f minutes.\n", ...
+        simulationResults.elapsedSeconds/60);
 
 end
 
@@ -239,11 +223,20 @@ function row = createEmptyObservationRow()
     dummyAnalysis.prediction.miso = NaN;
     dummyAnalysis.prediction.advantage = NaN;
 
-    dummySettings.observations.durationSeconds = 0;
-    dummySettings.observations.referenceDurationSeconds = 1;
-    dummySettings.observations.referenceOutputSnrDb = Inf;
     row = createKnownTruthObservationResultRow( ...
-        0, dummyFamily, dummyPlan, dummyAnalysis, dummySettings);
+        0, dummyFamily, dummyPlan, dummyAnalysis);
+
+end
+
+function combinedTable = concatenateTableParts(tableParts)
+% concatenateTableParts Join the nonempty results from completed families.
+
+    tableParts = tableParts(~cellfun(@isempty, tableParts));
+    if isempty(tableParts)
+        combinedTable = table();
+    else
+        combinedTable = vertcat(tableParts{:});
+    end
 
 end
 

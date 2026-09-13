@@ -1,0 +1,55 @@
+# Long-form presentation source ledger
+
+This ledger preserves sources used or seriously considered while developing the long-form MISO-TFA presentation. It is a working claim map for the manuscript and supplement, not a final bibliography. “Direct” means the source supports the stated claim closely; “context” means it motivates or bounds the choice but does not validate the exact proof-of-concept implementation.
+
+## Standards and spectral estimation
+
+| Key | Source | Persistent identifier | Claim or decision supported | Intended use | Evidence status / limitation |
+|---|---|---|---|---|---|
+| Welch1967 | Welch PD. *The use of fast Fourier transform for the estimation of power spectra.* IEEE Transactions on Audio and Electroacoustics. 1967;15:70–73. | doi:10.1109/TAU.1967.1161901 | Segmenting, windowing, and averaging modified periodograms to reduce spectral-estimate variance. | Main Methods; supplement implementation detail. | Direct methodological source; not cerebral-specific. |
+| Zhang1998 | Zhang R, Zuckerman JH, Giller CA, Levine BD. *Transfer function analysis of dynamic cerebral autoregulation in humans.* American Journal of Physiology. 1998;274:H233–H241. | doi:10.1152/ajpheart.1998.274.1.H233 | Frequency-domain MAP–CBFV analysis and high-pass-like pressure-flow interpretation. | Introduction; MAP-pathway rationale. | Direct cerebral-TFA precedent; does not specify this simulation kernel. |
+| Claassen2016 | Claassen JAHR et al. *Transfer function analysis of dynamic cerebral autoregulation: a white paper from the International Cerebral Autoregulation Research Network.* Journal of Cerebral Blood Flow & Metabolism. 2016;36:665–680. | doi:10.1177/0271678X15626425 | Standard terminology, Welch-based TFA practice, frequency bands, gain/phase/coherence interpretation. | Main Methods and reporting language. | Direct consensus guidance for SISO cerebral TFA; predates this exact MISO design. |
+| Panerai2023 | Panerai RB et al. *Transfer function analysis of dynamic cerebral autoregulation: a CARNet white paper 2022 update.* Journal of Cerebral Blood Flow & Metabolism. 2023;43:3–25. | doi:10.1177/0271678X221119760 | Current TFA settings, CO2 monitoring, synthetic-data validation, noise sensitivity, and reporting. | Main Methods; limitations; supplement. | Direct current consensus context; does not endorse one unique multivariable estimator. |
+| Kostoglou2024 | Kostoglou K et al. *Time-domain methods for quantifying dynamic cerebral blood flow autoregulation: review and recommendations.* Journal of Cerebral Blood Flow & Metabolism. 2024;44:1480–1514. | doi:10.1177/0271678X241249276 | Multiple-input/single-output framing, correlation/conditioning concerns, validation and out-of-sample thinking. | Motivation and supplement discussion. | Direct for time-domain models; contextual rather than direct validation of frequency-domain MISO. |
+
+## Multivariable cerebral hemodynamics
+
+| Key | Source | Persistent identifier | Claim or decision supported | Intended use | Evidence status / limitation |
+|---|---|---|---|---|---|
+| Panerai2000 | Panerai RB, Simpson DM, Deverson ST, Mahony P, Hayes P, Evans DH. *Multivariate dynamic analysis of cerebral blood flow regulation in humans.* IEEE Transactions on Biomedical Engineering. 2000;47:419–423. | doi:10.1109/10.827312 | Joint MABP and end-tidal CO2 inputs to CBFV; Monte Carlo inputs with matched spectra; multivariable identifiability and bandwidth concerns. | Core motivation; simulation precedent; discussion. | Direct cornerstone source; uses multivariate FIR/time-domain identification rather than this exact spectral solve. |
+| Peng2008 | Peng T, Rowley AB, Ainslie PN, Poulin MJ, Payne SJ. *Multivariate system identification for cerebral autoregulation.* Annals of Biomedical Engineering. 2008;36:308–320. | doi:10.1007/s10439-007-9412-9 | ABP and respiratory-gas inputs modify apparent univariate responses; multivariate identification and physiological simulation. | Core motivation; simulation precedent. | Direct close precedent; includes more inputs and a different estimator/model. |
+| Mitsis2004 | Mitsis GD, Poulin MJ, Robbins PA, Marmarelis VZ. *Nonlinear modeling of the dynamic effects of arterial pressure and CO2 variations on cerebral blood flow in healthy humans.* IEEE Transactions on Biomedical Engineering. 2004;51:1932–1943. | doi:10.1109/TBME.2004.834272 | Pressure and CO2 act as simultaneous dynamic inputs; nonlinearities may matter. | Introduction; limitations and future sensitivity. | Direct physiological/system-identification context; nonlinear model is broader than the proof LTI generator. |
+| Henley2015 | Henley BC et al. *Compartmental and data-based modeling of cerebral hemodynamics: linear analysis.* IEEE Access. 2015;3:2317–2332. | doi:10.1109/ACCESS.2015.2492945; PMCID: PMC4756910 | Two-input LTI MABP and ETCO2 pathway model and connection to mechanistic cerebral-hemodynamic structure. | Motivation; model-scope discussion. | Direct two-input model context; does not validate the exact filters or parameter grid. |
+| Marmarelis2016 | Marmarelis VZ, Mitsis GD, Shin DC, Zhang R. *Multiple-input nonlinear modelling of cerebral haemodynamics using spontaneous arterial blood pressure, end-tidal CO2 and heart rate measurements.* Philosophical Transactions of the Royal Society A. 2016;374:20150180. | doi:10.1098/rsta.2015.0180; PMCID: PMC4822442 | Multiple spontaneous inputs can improve prediction; nonlinear and additional-input pathways may remain. | Discussion; limitation of two-input LTI scope. | Direct multivariable context; prediction improvement does not prove pathway-identification accuracy. |
+| Panerai2006 | Panerai RB, Eames PJ, Potter JF. *Multiple coherence of cerebral blood flow velocity in humans.* American Journal of Physiology–Heart and Circulatory Physiology. 2006;291:H251–H259. | doi:10.1152/ajpheart.01348.2005 | Multiple coherence and the contribution of more than one measured physiological input to CBFV. | Background and discussion. | Direct multiple-input explanatory context; coherence is not a truth-recovery metric. |
+
+## Pathway physiology and response form
+
+| Key | Source | Persistent identifier | Claim or decision supported | Intended use | Evidence status / limitation |
+|---|---|---|---|---|---|
+| Panerai1999CO2 | Panerai RB, Deverson ST, Mahony P, Hayes P, Evans DH. *Effects of CO2 on dynamic cerebral autoregulation measurement.* Physiological Measurement. 1999;20:265–275. | doi:10.1088/0967-3334/20/3/304 | CO2 variation can change apparent dynamic-autoregulation measurements. | Introduction and SISO-mixing motivation. | Direct physiological motivation; does not provide the present algebraic omitted-input derivation. |
+| Poulin1996 | Poulin MJ, Liang PJ, Robbins PA. *Dynamics of the cerebral blood flow response to step changes in end-tidal PCO2 and PO2 in humans.* Journal of Applied Physiology. 1996;81:1084–1095. | doi:10.1152/jappl.1996.81.3.1084 | Delayed, dynamic cerebral-flow response to controlled end-tidal gas changes. | CO2-pathway rationale. | Direct response-dynamics evidence; controlled step response differs from spontaneous resting data. |
+| Poulin1998 | Poulin MJ, Liang PJ, Robbins PA. *Fast and slow components of cerebral blood flow response to step decreases in end-tidal PCO2 in humans.* Journal of Applied Physiology. 1998;85:388–397. | doi:10.1152/jappl.1998.85.2.388 | Multiple CO2 response time scales and delayed dynamics. | CO2-pathway rationale and limitations. | Direct physiology; shows richer dynamics than the proof’s single exponential. |
+| Simpson2000 | Simpson DM, Panerai RB, Evans DH, Garnham J, Naylor AR, Bell PR. *Estimating normal and pathological dynamic responses in cerebral blood flow velocity to step changes in end-tidal pCO2.* Medical & Biological Engineering & Computing. 2000;38:535–539. | doi:10.1007/BF02345749 | Parametric estimation of dynamic CO2-to-CBFV step responses. | CO2-pathway rationale; supplement. | Direct response-model precedent; step protocol and clinical comparison differ from spontaneous simulation. |
+| Panerai1999Nonlinear | Panerai RB, Dawson SL, Potter JF. *Linear and nonlinear analysis of human dynamic cerebral autoregulation.* American Journal of Physiology–Heart and Circulatory Physiology. 1999;277:H1089–H1099. | doi:10.1152/ajpheart.1999.277.3.H1089 | Cerebral pressure-flow dynamics may contain nonlinear components. | Limitations and future nonlinear sensitivity. | Contextual warning; not used to construct the current linear truth. |
+
+## Stochastic signal construction
+
+| Key | Source | Persistent identifier | Claim or decision supported | Intended use | Evidence status / limitation |
+|---|---|---|---|---|---|
+| Shinozuka1991 | Shinozuka M, Deodatis G. *Simulation of stochastic processes by spectral representation.* Applied Mechanics Reviews. 1991;44:191–204. | doi:10.1115/1.3119501 | Generate stationary Gaussian processes from prescribed spectral content using random Fourier coefficients and inverse transformation. | Main simulation Methods; appendix derivation. | Direct general-method source; not physiological. |
+| Shinozuka1996 | Shinozuka M, Deodatis G. *Simulation of multi-dimensional Gaussian stochastic fields by spectral representation.* Applied Mechanics Reviews. 1996;49:29–53. | doi:10.1115/1.3101883 | Extend spectral representation to correlated multivariate Gaussian processes. | Main simulation Methods; appendix derivation. | Direct multivariate-method source; exact closed-form factor here is study-specific. |
+| Wilson1972 | Wilson GT. *The factorization of matricial spectral densities.* SIAM Journal on Applied Mathematics. 1972;23:420–426. | doi:10.1137/0123044 | Positive spectral-density matrices can be factorized for multivariate process construction. | Mathematical appendix and supplement. | Direct mathematical foundation; the proof uses a simple analytic 2×2 factor rather than the full iterative method. |
+
+## Local source provenance
+
+The following user-provided PDFs were inspected while building the deck:
+
+- `/Users/amoghn/Downloads/CARNETupdate[52].pdf` — Panerai et al. 2023 CARNet TFA update.
+- `/Users/amoghn/Downloads/CARNET[96].pdf` — Claassen et al. 2016 CARNet white paper.
+- `/Users/amoghn/Downloads/MISO[29].pdf` — Kostoglou et al. 2024 CARNet time-domain review and recommendations.
+- `/Users/amoghn/Downloads/10_827312 -- 615ea53d200679378d571b50c2001175 -- Anna’s Archive1.pdf` — Panerai et al. 2000 multivariate dynamic analysis.
+
+## Manuscript-use rule
+
+The main paper should cite the source closest to each scientific or methodological claim. General spectral sources establish that correlated stochastic processes can be generated by spectral representation; cerebral-hemodynamic studies establish that MAP and CO2 can act as joint inputs; neither source class makes the exact Gaussian PSDs, flat zero-phase coherence, pathway kernels, or parameter grid universally physiological. Those are declared study choices whose robustness must be demonstrated rather than assumed.

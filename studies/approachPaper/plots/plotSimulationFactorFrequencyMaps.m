@@ -1,12 +1,9 @@
 function [figureHandle, sourceData] = ...
     plotSimulationFactorFrequencyMaps( ...
         simulationResults, dataRows, factorName, factorLabel, ...
-        groupingMode, colorLimit, titleContext)
+        groupingMode, colorLimit, ~)
 % plotSimulationFactorFrequencyMaps Show frequency-specific model advantage.
 
-    if nargin < 7
-        titleContext = "";
-    end
     observations = simulationResults.observations(dataRows, :);
     observationColumns = observations.ObservationID;
     frequency = simulationResults.frequency;
@@ -36,16 +33,11 @@ function [figureHandle, sourceData] = ...
         "TileSpacing", "compact", "Padding", "compact");
     factorTitle = getSimulationFactorTitle( ...
         factorName, factorLabel);
-    figureTitle = "Mean frequency-resolved model advantage by " + ...
+    factorAxisLabel = getSimulationFactorAxisLabel( ...
+        factorName, factorLabel);
+    figureTitle = "Frequency-resolved model advantage by " + ...
         factorTitle;
-    figureSubtitle = ...
-        "Blue: lower MISO error | Orange: lower SISO error | " + ...
-        "Black dot: BH-adjusted P < " + ...
-        string(statisticsSettings.alpha);
-    if strlength(titleContext) > 0
-        figureSubtitle = figureSubtitle + " | " + titleContext;
-    end
-    title(layout, figureTitle + newline + figureSubtitle);
+    title(layout, figureTitle);
     sourceData = struct();
 
     for metricIndex = 1:numel(metricNames)
@@ -69,9 +61,13 @@ function [figureHandle, sourceData] = ...
         colormap(axesHandle, misoAdvantageColormap());
         clim(axesHandle, [-colorLimit colorLimit]);
         xlabel(axesHandle, "Frequency (Hz)");
-        ylabel(axesHandle, factorLabel);
         axesHandle.YTick = tickValues;
-        axesHandle.YTickLabel = tickLabels;
+        if ismember(metricIndex, [1 4])
+            ylabel(axesHandle, factorAxisLabel);
+            axesHandle.YTickLabel = tickLabels;
+        else
+            axesHandle.YTickLabel = strings(size(tickLabels));
+        end
         title( ...
             axesHandle, panelTitles(metricIndex), ...
             "FontSize", 9);

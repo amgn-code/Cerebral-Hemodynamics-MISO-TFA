@@ -1,10 +1,7 @@
 function [figureHandle, sourceData] = ...
-    plotSimulationConditioning(data, titleContext)
+    plotSimulationConditioning(data, ~)
 % plotSimulationConditioning Connect diagnostics to MISO performance.
 
-    if nargin < 2
-        titleContext = "";
-    end
     sourceData = data(:, { ...
         'FamilyID', 'FamilyInputCoherence', ...
         'FamilyPSDShapeOverlap', ...
@@ -18,11 +15,7 @@ function [figureHandle, sourceData] = ...
         "Color", "white", "Visible", "off");
     layout = tiledlayout(figureHandle, 2, 2, ...
         "TileSpacing", "compact", "Padding", "compact");
-    figureTitle = "MISO conditioning and known-truth accuracy";
-    if strlength(titleContext) > 0
-        figureTitle = figureTitle + newline + titleContext;
-    end
-    title(layout, figureTitle);
+    title(layout, "MISO conditioning and known-truth accuracy");
 
     axesHandle = nexttile(layout);
     scatter(axesHandle, data.MedianNormalizedConditionNumber, ...

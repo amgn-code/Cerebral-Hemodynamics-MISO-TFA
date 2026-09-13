@@ -58,6 +58,7 @@ classdef validateTfaSettingsTest < matlab.unittest.TestCase
                 tempname(), true, true);
             settings.statistics.enabled = true;
             settings.statistics.groupsToCompare = "NC";
+            settings.statistics.primaryGroups = "NC";
             settings.statistics.betweenGroupComparison.enabled = false;
 
             settings = validateTfaSettings(settings);

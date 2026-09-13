@@ -46,6 +46,28 @@ classdef approachPaperStudyTest < matlab.unittest.TestCase
                 settings.simulation.statistics.minimumValidN, 3);
         end
 
+        function sharedMethodSettingsReachPaperSimulation(testCase)
+            analysis = defaultTfaAnalysisSettings(["NC"; "MCI"]);
+            analysis.fsTarget = 8;
+            analysis.pwelch.windowLengthSeconds = 64;
+            analysis.phase.unwrapMethod = "custom";
+
+            settings = approachPaperSettings( ...
+                "/example/data", "/example/output", ...
+                "quick", analysis);
+
+            testCase.verifyEqual( ...
+                settings.analysis.pwelch.windowLengthSeconds, 64);
+            testCase.verifyEqual( ...
+                settings.simulation.samplingFrequencyHz, 8);
+            testCase.verifyEqual( ...
+                settings.simulation.welch.windowLengthSeconds, 64);
+            testCase.verifyEqual( ...
+                settings.simulation.phase.unwrapMethod, "custom");
+            testCase.verifyEqual( ...
+                settings.analysis.statistics.groupsToCompare, "NC");
+        end
+
         function figureExporterCreatesRequestedFile(testCase)
             outputFolder = tempname();
             mkdir(outputFolder);

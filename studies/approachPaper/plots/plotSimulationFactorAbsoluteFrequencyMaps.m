@@ -1,12 +1,8 @@
 function [figureHandle, sourceData] = ...
     plotSimulationFactorAbsoluteFrequencyMaps( ...
         simulationResults, dataRows, factorName, factorLabel, ...
-        groupingMode, modelName, titleContext)
+        groupingMode, modelName, ~)
 % plotSimulationFactorAbsoluteFrequencyMaps Show mean model error.
-
-    if nargin < 7
-        titleContext = "";
-    end
 
     observations = simulationResults.observations(dataRows, :);
     observationColumns = observations.ObservationID;
@@ -38,12 +34,11 @@ function [figureHandle, sourceData] = ...
         "TileSpacing", "compact", "Padding", "compact");
     factorTitle = getSimulationFactorTitle( ...
         factorName, factorLabel);
+    factorAxisLabel = getSimulationFactorAxisLabel( ...
+        factorName, factorLabel);
     figureTitle = ...
-        "Mean frequency-resolved " + upper(modelName) + ...
-        " error by " + factorTitle;
-    if strlength(titleContext) > 0
-        figureTitle = figureTitle + newline + titleContext;
-    end
+        upper(modelName) + " frequency-resolved error by " + ...
+        factorTitle;
     title(layout, figureTitle);
 
     sourceData = struct();
@@ -97,9 +92,13 @@ function [figureHandle, sourceData] = ...
         colorbarHandle.Label.String = ...
             getColorbarLabel(errorType);
         xlabel(axesHandle, "Frequency (Hz)");
-        ylabel(axesHandle, factorLabel);
         axesHandle.YTick = tickValues;
-        axesHandle.YTickLabel = tickLabels;
+        if ismember(metricIndex, [1 4])
+            ylabel(axesHandle, factorAxisLabel);
+            axesHandle.YTickLabel = tickLabels;
+        else
+            axesHandle.YTickLabel = strings(size(tickLabels));
+        end
         title( ...
             axesHandle, panelTitles(metricIndex), ...
             "FontSize", 9);

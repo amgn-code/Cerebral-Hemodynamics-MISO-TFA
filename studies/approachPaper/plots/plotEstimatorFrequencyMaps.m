@@ -1,15 +1,12 @@
 function [figureHandle, sourceData] = plotEstimatorFrequencyMaps( ...
     data, factorName, factorLabel, displayMode, ...
-    minimumValidN, colorLimit, titleContext, frequencyRangeHz, ...
+    minimumValidN, colorLimit, ~, frequencyRangeHz, ...
     statisticsSettings)
 % plotEstimatorFrequencyMaps Plot native Welch frequency grids.
 %
 % Each square is an estimated frequency bin. Window-length results are not
 % interpolated onto an artificial common frequency grid.
 
-    if nargin < 7
-        titleContext = "";
-    end
     if nargin < 8
         frequencyRangeHz = [ ...
             min(data.FrequencyHz, [], "omitnan"), ...
@@ -44,19 +41,8 @@ function [figureHandle, sourceData] = plotEstimatorFrequencyMaps( ...
     figureHandle = figure("Color", "white", "Visible", "off");
     layout = tiledlayout(figureHandle, 2, 3, ...
         "TileSpacing", "compact", "Padding", "compact");
-    subtitleText = ...
-        "Squares are native Welch bins; color is the across-family mean";
-    if displayMode == "advantage"
-        subtitleText = subtitleText + ...
-            " | Blue: MISO lower error | Orange: SISO lower error" + ...
-            " | Black dot: BH-adjusted P < " + ...
-            string(statisticsSettings.alpha);
-    end
-    if strlength(titleContext) > 0
-        subtitleText = subtitleText + " | " + titleContext;
-    end
-    title(layout, figureTitle + " by " + factorLabel + ...
-        newline + subtitleText);
+    title(layout, figureTitle + " by " + factorLabel, ...
+        "FontSize", 12);
     sourceData = struct();
     lastAxes = gobjects(1);
 
@@ -93,7 +79,12 @@ function [figureHandle, sourceData] = plotEstimatorFrequencyMaps( ...
         end
         axesHandle.YTick = tickValues;
         axesHandle.YTickLabel = tickLabels;
-        ylabel(axesHandle, factorLabel);
+        applyFactorAxisPadding(axesHandle, plotFactorValues);
+        if ismember(metricIndex, [1 4])
+            ylabel(axesHandle, factorLabel);
+        else
+            axesHandle.YTickLabel = strings(size(tickLabels));
+        end
         xlabel(axesHandle, "Frequency (Hz)");
         xlim(axesHandle, frequencyRangeHz);
         title(axesHandle, panelTitles(metricIndex), "FontSize", 9);
@@ -151,12 +142,12 @@ function [metricNames, panelTitles, figureTitle] = ...
                 "CO2" + modelName + "GainError"
                 "CO2" + modelName + "PhaseErrorRadians"];
             panelTitles = [ ...
-                "A  MAP normalized squared complex error"
-                "B  MAP absolute gain error"
-                "C  MAP absolute phase error (degrees)"
-                "D  PETCO2 normalized squared complex error"
-                "E  PETCO2 absolute gain error"
-                "F  PETCO2 absolute phase error (degrees)"];
+                "A  MAP normalized squared" + newline + "complex error"
+                "B  MAP absolute" + newline + "gain error"
+                "C  MAP absolute phase" + newline + "error (degrees)"
+                "D  PETCO2 normalized squared" + newline + "complex error"
+                "E  PETCO2 absolute" + newline + "gain error"
+                "F  PETCO2 absolute phase" + newline + "error (degrees)"];
             figureTitle = ...
                 modelName + " frequency-resolved pathway error";
         case "advantage"
@@ -168,18 +159,37 @@ function [metricNames, panelTitles, figureTitle] = ...
                 "CO2GainAdvantage"
                 "CO2PhaseAdvantage"];
             panelTitles = [ ...
-                "A  MAP complex model advantage"
-                "B  MAP gain model advantage"
-                "C  MAP phase model advantage"
-                "D  PETCO2 complex model advantage"
-                "E  PETCO2 gain model advantage"
-                "F  PETCO2 phase model advantage"];
+                "A  MAP complex" + newline + "model advantage"
+                "B  MAP gain" + newline + "model advantage"
+                "C  MAP phase" + newline + "model advantage"
+                "D  PETCO2 complex" + newline + "model advantage"
+                "E  PETCO2 gain" + newline + "model advantage"
+                "F  PETCO2 phase" + newline + "model advantage"];
             figureTitle = "Frequency-resolved model advantage";
         otherwise
             error( ...
                 "TFA:UnknownEstimatorMapMode", ...
                 "displayMode must be ""miso"", ""siso"", or ""advantage"".");
     end
+
+end
+
+function applyFactorAxisPadding(axesHandle, factorValues)
+% applyFactorAxisPadding Keep markers clear of panel titles and x labels.
+
+    factorValues = factorValues(isfinite(factorValues));
+    if isempty(factorValues)
+        return
+    end
+    lowerValue = min(factorValues);
+    upperValue = max(factorValues);
+    valueRange = upperValue - lowerValue;
+    if valueRange == 0
+        padding = max(abs(lowerValue)*0.10, 0.5);
+    else
+        padding = 0.08*valueRange;
+    end
+    ylim(axesHandle, [lowerValue - padding, upperValue + padding]);
 
 end
 

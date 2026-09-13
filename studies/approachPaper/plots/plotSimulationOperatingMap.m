@@ -1,6 +1,6 @@
 function [figureHandle, sourceData] = plotSimulationOperatingMap( ...
     data, xName, xLabel, xMode, yName, yLabel, yMode, colorLimit, ...
-    groupingSettings, statisticsSettings, titleContext)
+    groupingSettings, statisticsSettings, ~)
 % plotSimulationOperatingMap Show two-factor MISO operating regions.
 
     if nargin < 9
@@ -9,9 +9,6 @@ function [figureHandle, sourceData] = plotSimulationOperatingMap( ...
     if nargin < 10 || isempty(statisticsSettings)
         statisticsSettings.alpha = 0.05;
         statisticsSettings.minimumValidN = 3;
-    end
-    if nargin < 11
-        titleContext = "";
     end
     if isfield(groupingSettings, "minimumValidN")
         minimumValidN = groupingSettings.minimumValidN;
@@ -28,14 +25,7 @@ function [figureHandle, sourceData] = plotSimulationOperatingMap( ...
         "TileSpacing", "compact", "Padding", "compact");
     figureTitle = "Joint effects of " + lower(string(xLabel)) + ...
         " and " + lower(string(yLabel));
-    figureSubtitle = ...
-        "Mean across families | Black dot: BH-adjusted P < " + ...
-        string(statisticsSettings.alpha) + ...
-        " | Gray: insufficient N";
-    if strlength(titleContext) > 0
-        figureSubtitle = figureSubtitle + " | " + titleContext;
-    end
-    title(layout, figureTitle + newline + figureSubtitle);
+    title(layout, figureTitle);
 
     sourceData = struct();
     for outcomeIndex = 1:numel(outcomes)

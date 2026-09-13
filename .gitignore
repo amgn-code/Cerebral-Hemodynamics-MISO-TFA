@@ -7,3 +7,24 @@
 *.autosave
 slprj/
 codegen/
+
+# Local analysis output
+results/
+
+# LaTeX build output. Each document keeps generated files in its own build/.
+manuscript/*/build/
+slides/*/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb

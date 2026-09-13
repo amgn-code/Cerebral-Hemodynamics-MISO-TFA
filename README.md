@@ -11,6 +11,36 @@ The project can analyze one subject, a batch of subjects, or one generated
 demonstration signal. A separate family-based simulation supports the
 Paper 1 known-truth study.
 
+## Document Projects
+
+LaTeX documents are organized as independent projects so compiling one file
+does not scatter generated files through the repository:
+
+```text
+manuscript/
+└── paper_draft_v2/
+    ├── main.tex
+    ├── build/      # generated and Git-ignored
+    └── output/     # reviewed PDF
+
+slides/
+├── long_form/
+│   ├── main.tex
+│   ├── figures/
+│   ├── build/
+│   └── output/
+├── ten_minute/
+│   ├── main.tex
+│   ├── figures/
+│   ├── build/
+│   └── output/
+└── archive/
+```
+
+The workspace LaTeX Workshop recipe writes to the `build/` directory beside
+the active `main.tex`. Each document also has a local `.latexmkrc`, so running
+`latexmk main.tex` from that document folder uses the same organization.
+
 ## Analysis Models
 
 At each frequency, the MISO model is:
@@ -276,7 +306,15 @@ input-output coherence belongs to the SISO model.
 
 ## Running the Project
 
-Configure the project in `main.m`, then select:
+`main.m` is the user-facing control panel. A new user normally needs to
+change only these items:
+
+1. `runType`
+2. `dataFolder`
+3. the single subject or batch groups
+4. any scientific settings that should differ from the documented defaults
+
+Then run `main.m`. Select one workflow with:
 
 ```matlab
 runType = "single";
@@ -287,9 +325,48 @@ runType = "simulation";
 
 The demonstration mode creates one signal for checking the ordinary TFA
 pipeline. Simulation mode runs the family-based Paper 1 known-truth
-workflow. Its profile, family count, factor values, observation sweeps, and
-output folder are configured directly in the `Paper 1 Simulation` section
-of `main.m`.
+workflow. Every workflow writes beneath the local `results` folder unless
+`resultsRoot` is changed.
+
+The settings are intentionally split into two layers:
+
+- `main.m` shows the choices a user is likely to change.
+- `defaultTfaAnalysisSettings`, `defaultTfaBatchSettings`,
+  `defaultTfaOutputSettings`, and `defaultPlotSettings` define complete
+  structures so users do not have to reconstruct dozens of required fields.
+
+The output and plot helpers accept simple presets:
+
+```matlab
+analysisSettings.plot = defaultPlotSettings("all");
+outputSettings = defaultTfaOutputSettings(outputFolder, "all");
+```
+
+Use `"none"` to begin with every plot or Excel metric disabled, then enable
+only individual fields. The numerical analysis defaults are shared by the
+ordinary workflow and the Paper 1 settings, so a Welch or phase change made
+in `main.m` reaches the simulation without a second copy of the setting.
+
+### Using a New Dataset
+
+For batch analysis, arrange files by group:
+
+```text
+dataFolder/
+├── NC/
+│   ├── 1001_baseline.xlsx
+│   └── 1002_baseline.xlsx
+├── MCI/
+│   └── 2001_baseline.xlsx
+└── LC/
+    └── 3001_baseline.xlsx
+```
+
+Each spreadsheet must provide the time, MAP, CO2, and CBV columns recognized
+by `loadSubjectData`. Set `batchSettings.previewOnly = true` for the first
+run on a new dataset. Preview mode checks discovery, column loading,
+preprocessing, and the number of available Welch windows without fitting
+the TFA models.
 
 ## Running the NC-Only Approach Paper
 
@@ -301,8 +378,12 @@ The normal entry point is:
 runType = "simulation";
 ```
 
-The editable simulation fields are shown directly in `main.m`. The workflow
-can also be called from another script when needed:
+The editable physiological factors and reference observation are shown in
+`main.m`. The selected `"quick"`, `"designSmoke"`, `"proof250"`, or
+`"paper1000"` profile supplies the family count, duration list, noise lists,
+alignment list, and family design. `main.m` contains an optional override
+block for changing only the observation values needed for a particular run.
+The workflow can also be called from another script:
 
 ```matlab
 settings = approachPaperSettings( ...
@@ -313,10 +394,12 @@ settings = approachPaperSettings( ...
 paperResults = runApproachPaper(settings);
 ```
 
-Start with the `"quick"` profile. It uses smaller simulation and surrogate
-counts for checking the workflow and figure layout. Change the profile to
-`"paper"` for the final analysis. The paper profile is intentionally large
-and can take substantial time.
+Start with the `"quick"` profile for unit checks or `"designSmoke"` for one
+complete 25-family pairwise-balanced block. Use `"proof250"` for the
+presentation proof of concept. The provisional `"paper1000"` profile is
+intentionally large and should be finalized only after reviewing the
+proof-of-concept occupancy and stability results. Historical `"paper"`
+remains an alias for `"paper1000"`.
 
 To run only the simulation while developing it:
 
@@ -325,6 +408,41 @@ settings.steps.runEmpiricalAnalysis = false;
 settings.steps.runRobustnessAnalysis = false;
 paperResults = runApproachPaper(settings);
 ```
+
+### Rebuilding Tables and Figures Without Rerunning the Simulation
+
+`runApproachPaper` saves numerical results before it starts any table or
+figure work:
+
+```text
+approach_paper_analysis_results.mat   reusable numerical results
+approach_paper_results.mat            numerical results plus requested outputs
+```
+
+This means an interrupted figure export cannot erase the completed
+simulation, and layouts can be revised without repeating a long run. To
+rebuild outputs in a new folder:
+
+```matlab
+overrides = struct();
+overrides.outputFolder = "/path/to/revised_outputs";
+overrides.createTables = true;
+overrides.createFigures = true;
+overrides.export = struct( ...
+    "savePdf", true, ...
+    "savePng", true, ...
+    "pngResolution", 600);
+
+paperResults = regenerateApproachPaperOutputs( ...
+    "/path/to/approach_paper_analysis_results.mat", overrides);
+```
+
+Regeneration accepts only `outputFolder`, `createTables`, `createFigures`,
+and existing figure-export fields. It rejects analysis, simulation, and
+physiological-setting overrides so that a render-only action cannot silently
+change the numerical experiment. The original settings remain stored in
+`paperResults.settings`; the choices used for regenerated outputs are stored
+separately in `paperResults.outputSettings`.
 
 ### Family-Based Known-Truth Simulation
 
@@ -355,7 +473,7 @@ settings.simulation.observations.outputSnrDb = ...
 `Inf` means no added noise. Zero dB means equal signal and noise power.
 The reference duration is editable directly in `main.m`. Every
 non-duration factor analysis uses that duration and states it in its
-figure title. The 300-second default resembles the available NC recordings
+exported figure caption. The 300-second default resembles the available NC recordings
 and provides three 128-second Welch windows with 50% overlap. The
 320-second condition is retained because it is the first listed duration
 that provides four windows.
@@ -478,13 +596,39 @@ values.
 
 ### Organized Plot Export
 
+Completed simulation runs also create a dedicated numerical audit before
+their figures are interpreted:
+
+```text
+Simulation_Audit/
+└── simulation_audit.md
+
+Tables/
+├── simulationauditoverview.csv
+├── simulationmarginalbalance.csv
+├── simulationpairwisebalance.csv
+├── simulationrealizedbinoccupancy.csv
+├── simulationrealizedpairoccupancy.csv
+├── simulationvalidityaudit.csv
+└── simulationcheckpointstability.csv
+```
+
+The audit verifies the named profile and actual family count, complete
+25-family design blocks, assigned marginal and pairwise balance, analysis
+counts, minimum valid-family support, and elapsed time. It separately reports
+realized-bin occupancy and the 125-, 200-, and 250-family balanced
+checkpoints. Sparse realized cells remain visible and are not treated as
+assigned-design failures. The complete report is regenerated from the saved
+numerical result whenever tables and figures are rebuilt.
+
 Paper 1 plots are exported by analysis group:
 
 ```text
 Figures/
 ├── 01_Simulated_System/
 │   ├── Plots/
-│   └── Source_Data/
+│   ├── Source_Data/
+│   └── Captions/
 ├── 02_Generator_Validation/
 ├── 03_Recording_Duration/
 ├── 04_CBFV_Output_Noise/
@@ -508,8 +652,25 @@ Figures/
 ├── 22_NC_Operating_Map_Placement/
 ├── 23_NC_Model_Comparison/
 ├── 24_NC_Robustness/
-└── figure_manifest.csv
+├── figure_manifest.csv
+└── figure_captions.md
 ```
+
+Figure titles are intentionally short so that they do not compete with the
+data panels. Every exported plot has a plain-text caption in its group's
+`Captions` folder. The same full caption is included in
+`figure_manifest.csv`, and `figure_captions.md` collects the complete set for
+copying into the Beamer presentation or eventual manuscript.
+
+Simulation captions are generated from the saved numerical settings and
+source-data fields. They identify proof-of-concept versus final-paper
+evidence, state the reference observation and Welch settings, distinguish
+exact configured values from fixed continuous bins, and identify native
+frequency bins. Statistical captions also describe the across-family mean,
+where SD and valid N are reported, the insufficient-N display rule, the
+Benjamini-Hochberg correction family, and the direction of model advantage.
+These captions are regenerated with the figures and therefore remain tied to
+the numerical result file rather than being maintained as separate prose.
 
 Every controlled simulation factor exports the same five-figure set:
 
@@ -758,8 +919,9 @@ Subjects that cannot be analyzed remain visible as columns. The first cell
 below their header contains a short error message, their remaining cells
 are blank, and they are excluded from Mean and SD calculations.
 
-The exported metrics are controlled by the
-`outputSettings.excelMetrics` Boolean structure in `main.m`.
+The initial metric set is selected in `main.m` with the `"all"` or `"none"`
+preset passed to `defaultTfaOutputSettings`. Individual exports are then
+controlled by the `outputSettings.excelMetrics` Boolean structure.
 
 When `outputSettings.excelStatistics` is true, batch output appends these
 sheets to the same workbook:
@@ -794,7 +956,10 @@ before group and band statistics are calculated.
 │   ├── plotting
 │   ├── preprocessing
 │   ├── statistics
+│   ├── validation
 │   └── workflow
+├── studies
+│   └── approachPaper
 └── tests
     └── helpers
 ```

@@ -15,6 +15,32 @@ classdef workflowSettingsTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function sharedDefaultsProduceCompleteWorkflowSettings(testCase)
+            analysis = defaultTfaAnalysisSettings(["NC"; "MCI"]);
+            analysis = validateTfaSettings(analysis);
+            batch = defaultTfaBatchSettings( ...
+                "/example/data", ["NC"; "MCI"]);
+            allOutput = defaultTfaOutputSettings( ...
+                "/example/output", "all");
+            noOutput = defaultTfaOutputSettings( ...
+                "/example/output", "none");
+
+            allMetrics = getExcelMetricDefinitions( ...
+                allOutput.excelMetrics, true, true);
+            noMetrics = getExcelMetricDefinitions( ...
+                noOutput.excelMetrics, true, true);
+            allPlots = defaultPlotSettings("all");
+            noPlots = defaultPlotSettings();
+
+            testCase.verifyEqual( ...
+                analysis.statistics.groupsToCompare, ["NC"; "MCI"]);
+            testCase.verifyEqual(batch.dataFolder, "/example/data");
+            testCase.verifyTrue(all([allMetrics.enabled]));
+            testCase.verifyFalse(any([noMetrics.enabled]));
+            testCase.verifyTrue(allPlots.show.overview);
+            testCase.verifyFalse(noPlots.show.overview);
+        end
+
         function syntheticModeRunsOneSubject(testCase)
             outputFolder = tempname();
             testCase.addTeardown(@() rmdir(outputFolder, "s"));

@@ -1,103 +1,49 @@
 function paperResults = runApproachPaper(settings)
-% runApproachPaper Run the complete NC-only MISO approach paper workflow.
+% runApproachPaper Run analyses once, then build all requested outputs.
+%
+% The numerical result file is saved before any tables or figures are
+% created. Use regenerateApproachPaperOutputs to rebuild those outputs
+% later without repeating the empirical or simulation analyses.
 
-    studyFolder = fileparts(mfilename("fullpath"));
-    projectRoot = fileparts(fileparts(studyFolder));
-    addpath(genpath(fullfile(projectRoot, "src")));
-    addpath(genpath(studyFolder));
-
+    addApproachPaperPaths();
     validateApproachPaperPaths(settings);
-    if ~exist(settings.outputFolder, "dir")
-        mkdir(settings.outputFolder);
-    end
-
-    paperResults = struct();
-    paperResults.settings = settings;
-    paperResults.empirical = struct();
-    paperResults.simulation = struct();
-    paperResults.robustness = struct();
+    ensureOutputFolder(settings.outputFolder);
 
     fprintf("\nApproach paper profile: %s\n", settings.profileName);
+    paperResults = runApproachPaperAnalyses(settings);
 
-    if settings.steps.runEmpiricalAnalysis
-        fprintf("Running NC empirical SISO and MISO analysis.\n");
-        analysisSettings = validateTfaSettings(settings.analysis);
-        paperResults.empirical = runTFA( ...
-            "batch", struct(), settings.batch, ...
-            analysisSettings, settings.output);
-        saveApproachCheckpoint( ...
-            paperResults, settings.outputFolder, "Empirical analysis");
-    else
-        analysisSettings = validateTfaSettings(settings.analysis);
-    end
+    analysisResultFile = fullfile( ...
+        settings.outputFolder, "approach_paper_analysis_results.mat");
+    paperResults.analysisResultFile = string(analysisResultFile);
+    paperResults.completedStage = "Numerical analyses";
+    save(analysisResultFile, "paperResults", "-v7.3");
+    fprintf("Saved reusable numerical results to:\n%s\n", ...
+        analysisResultFile);
 
-    if settings.steps.runKnownTruthSimulation
-        fprintf("Running known-truth validation simulation.\n");
-        paperResults.simulation = runKnownTruthSimulationGrid( ...
-            settings.simulation);
-        saveApproachCheckpoint( ...
-            paperResults, settings.outputFolder, ...
-            "Known-truth simulation");
-    end
-
-    if settings.steps.runRobustnessAnalysis
-        if isempty(fieldnames(paperResults.empirical))
-            error( ...
-                "TFA:RobustnessNeedsEmpiricalResults", ...
-                ['The robustness analysis requires empirical results. ' ...
-                 'Enable steps.runEmpiricalAnalysis.']);
-        end
-        fprintf("Running NC empirical robustness checks.\n");
-        paperResults.robustness = runApproachPaperRobustness( ...
-            paperResults.empirical.subjectResults, ...
-            paperResults.empirical.statisticalResults, ...
-            analysisSettings, settings.robustness);
-        saveApproachCheckpoint( ...
-            paperResults, settings.outputFolder, ...
-            "Empirical robustness");
-    end
-
-    manifest = createApproachPaperManifest(settings);
-    manifestFile = fullfile( ...
-        settings.outputFolder, "reproducibility_manifest.csv");
-    writetable(manifest, manifestFile);
-    paperResults.manifest = manifest;
-    paperResults.manifestFile = string(manifestFile);
-
-    if settings.steps.createTables
-        fprintf("Creating paper tables.\n");
-        paperResults.tables = buildApproachPaperTables( ...
-            paperResults, settings.outputFolder);
-    end
-
-    if settings.steps.createFigures
-        fprintf("Creating organized plot groups.\n");
-        paperResults.plotResults = exportApproachPaperPlotGroups( ...
-            paperResults, analysisSettings, settings);
-        paperResults.figureFiles = ...
-            paperResults.plotResults.savedFiles;
-    else
-        paperResults.plotResults = struct();
-        paperResults.figureFiles = strings(0, 1);
-    end
+    paperResults.outputSettings = settings;
+    paperResults = summarizeApproachPaperResults( ...
+        paperResults, settings);
+    paperResults = renderApproachPaperOutputs( ...
+        paperResults, settings);
 
     resultFile = fullfile( ...
         settings.outputFolder, "approach_paper_results.mat");
-    save(resultFile, "paperResults", "-v7.3");
     paperResults.resultFile = string(resultFile);
+    paperResults.completedStage = "Requested outputs";
+    save(resultFile, "paperResults", "-v7.3");
 
     fprintf("Approach paper outputs saved to:\n%s\n", ...
         settings.outputFolder);
 
 end
 
-function saveApproachCheckpoint(paperResults, outputFolder, completedStage)
-% saveApproachCheckpoint Preserve completed long-running stages.
+function addApproachPaperPaths()
+% addApproachPaperPaths Make study and reusable source functions visible.
 
-    paperResults.completedStage = string(completedStage);
-    checkpointFile = fullfile( ...
-        outputFolder, "approach_paper_checkpoint.mat");
-    save(checkpointFile, "paperResults", "-v7.3");
+    studyFolder = fileparts(mfilename("fullpath"));
+    projectRoot = fileparts(fileparts(studyFolder));
+    addpath(genpath(fullfile(projectRoot, "src")));
+    addpath(genpath(studyFolder));
 
 end
 
@@ -117,6 +63,15 @@ function validateApproachPaperPaths(settings)
                 ['Choose an existing settings.dataFolder before running ' ...
                  'the NC empirical analysis.']);
         end
+    end
+
+end
+
+function ensureOutputFolder(outputFolder)
+% ensureOutputFolder Create the selected output folder when necessary.
+
+    if ~exist(outputFolder, "dir")
+        mkdir(outputFolder);
     end
 
 end

@@ -1,11 +1,8 @@
 function [figureHandle, sourceData] = ...
     plotSimulationRidgeResults( ...
-        ridgeTable, titleContext, statisticsSettings)
+        ridgeTable, ~, statisticsSettings)
 % plotSimulationRidgeResults Summarize the paired regularization path.
 
-    if nargin < 2
-        titleContext = "";
-    end
     if nargin < 3 || isempty(statisticsSettings)
         statisticsSettings.alpha = 0.05;
         statisticsSettings.minimumValidN = 3;
@@ -27,12 +24,7 @@ function [figureHandle, sourceData] = ...
     layout = tiledlayout(figureHandle, 2, 3, ...
         "TileSpacing", "compact", "Padding", "compact");
     figureTitle = "Ridge sensitivity of pathway error and model comparison";
-    if strlength(titleContext) > 0
-        figureTitle = figureTitle + newline + titleContext;
-    end
-    title(layout, figureTitle + newline + ...
-        "Black ring: BH-adjusted P < " + ...
-        string(statisticsSettings.alpha));
+    title(layout, figureTitle);
     color = [0 0.4470 0.7410];
 
     plotMetric(nexttile(layout), x, sourceData, ...

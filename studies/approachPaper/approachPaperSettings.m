@@ -1,5 +1,5 @@
 function settings = approachPaperSettings( ...
-    dataFolder, outputFolder, profileName)
+    dataFolder, outputFolder, profileName, baseAnalysisSettings)
 % approachPaperSettings Create all user-facing settings for Paper 1.
 %
 % Example:
@@ -7,8 +7,10 @@ function settings = approachPaperSettings( ...
 %       "/path/to/ieem_data", "/path/to/paper_results", "quick");
 %   paperResults = runApproachPaper(settings);
 %
-% Use "quick" while checking code and figures. Use "paper" only for the
-% final, larger simulation and surrogate analyses.
+% Use "quick" for unit checks, "designSmoke" for one balanced block,
+% "proof250" for the presentation proof of concept, and "paper1000" for
+% the likely final-paper analysis. Historical "paper" remains an alias for
+% "paper1000".
 
     if nargin < 1
         dataFolder = "";
@@ -19,7 +21,12 @@ function settings = approachPaperSettings( ...
     if nargin < 3
         profileName = "quick";
     end
-    profileName = lower(string(profileName));
+    if nargin < 4
+        baseAnalysisSettings = defaultTfaAnalysisSettings("NC");
+    end
+    simulationDefaults = ...
+        defaultKnownTruthSimulationSettings(profileName);
+    profileName = simulationDefaults.profileName;
 
     settings.profileName = profileName;
     settings.dataFolder = string(dataFolder);
@@ -35,46 +42,17 @@ function settings = approachPaperSettings( ...
 
     %% NC Batch Analysis
 
-    settings.batch.dataFolder = settings.dataFolder;
-    settings.batch.groupsToRun = "NC";
-    settings.batch.targetSuccessfulSubjectsPerGroup = Inf;
-    settings.batch.previewOnly = false;
+    settings.batch = defaultTfaBatchSettings(settings.dataFolder, "NC");
     settings.batch.numSubjectFiguresPerGroup = "none";
 
+    settings.analysis = baseAnalysisSettings;
     settings.analysis.runMISO = true;
     settings.analysis.runSISO = true;
-    settings.analysis.frequencyRangeHz = [0 0.35];
-    settings.analysis.frequencyBandEdgesHz = ...
-        [0.005; 0.024; 0.070; 0.200; 0.350];
-    settings.analysis.frequencyBandNames = ...
-        ["VVLF"; "VLF"; "LF"; "HF"];
-    settings.analysis.fsTarget = 4;
-
-    settings.analysis.preprocessing.normalizeCbv = true;
-    settings.analysis.preprocessing.detrendEnabled = false;
-    settings.analysis.preprocessing.detrendOrder = 1;
-    settings.analysis.preprocessing.meanRemovalEnabled = true;
-
-    settings.analysis.pwelch.windowLengthSeconds = 128;
-    settings.analysis.pwelch.windowOverlap = 0.5;
-    settings.analysis.pwelch.minimumWindows = 3;
-    settings.analysis.pwelch.smoothingEnabled = true;
-    settings.analysis.pwelch.smoothingKernel = [0.25 0.50 0.25];
-
-    settings.analysis.phase.unwrapMethod = "standard";
-    settings.analysis.phase.custom.windowSize = 11;
-    settings.analysis.phase.custom.numPasses = 3;
-    settings.analysis.phase.custom.useCoherenceWeights = true;
-    settings.analysis.phase.custom.weightMode = "power";
-    settings.analysis.phase.custom.weightPower = 4;
-    settings.analysis.phase.custom.expAlpha = 4;
-    settings.analysis.phase.custom.minWeight = 0.01;
-
-    settings.analysis.misoSolver = defaultMisoSolverSettings();
     settings.analysis.retainAnalysisInput = true;
 
     %% NC-Only Statistical Plan
 
+    settings.analysis.statistics = struct();
     settings.analysis.statistics.enabled = true;
     settings.analysis.statistics.alpha = 0.05;
     settings.analysis.statistics.numPhasePermutations = 10000;
@@ -99,11 +77,12 @@ function settings = approachPaperSettings( ...
     % The output also reports the principal equivalent delay difference.
     settings.analysis.statistics.frequencyWise.modelComparison.phase = true;
 
-    settings.analysis.plot = defaultPlotSettings();
+    settings.analysis.plot = defaultPlotSettings("none");
 
     %% Standard Pipeline Output
 
-    settings.output.baseOutputFolder = settings.outputFolder;
+    settings.output = defaultTfaOutputSettings( ...
+        settings.outputFolder, "none");
     settings.output.saveSubjectFigures = false;
     settings.output.saveBatchFigures = false;
     settings.output.saveExcel = false;
@@ -112,16 +91,9 @@ function settings = approachPaperSettings( ...
 
     %% Known-Truth Simulation
 
-    settings.simulation = ...
-        defaultKnownTruthSimulationSettings(profileName);
-    settings.simulation.frequencyRangeHz = ...
-        settings.analysis.frequencyRangeHz;
-    settings.simulation.frequencyBandEdgesHz = ...
-        settings.analysis.frequencyBandEdgesHz;
-    settings.simulation.frequencyBandNames = ...
-        settings.analysis.frequencyBandNames;
-    settings.simulation.welch = settings.analysis.pwelch;
-    settings.simulation.phase = settings.analysis.phase;
+    settings.simulation = applyTfaAnalysisSettingsToSimulation( ...
+        simulationDefaults, ...
+        settings.analysis);
 
     %% Empirical Robustness Checks
 
@@ -131,14 +103,13 @@ function settings = approachPaperSettings( ...
     settings.robustness.sensitivityVariants = ...
         defaultSensitivityVariants();
 
-    if profileName == "quick"
-        settings.robustness.numSurrogates = 20;
-    elseif profileName == "paper"
-        settings.robustness.numSurrogates = 1000;
-    else
-        error( ...
-            "TFA:UnknownApproachPaperProfile", ...
-            "profileName must be ""quick"" or ""paper"".");
+    switch profileName
+        case {"quick", "designsmoke"}
+            settings.robustness.numSurrogates = 20;
+        case "proof250"
+            settings.robustness.numSurrogates = 250;
+        case "paper1000"
+            settings.robustness.numSurrogates = 1000;
     end
     settings.robustness.minimumShiftSeconds = 30;
 
@@ -150,6 +121,8 @@ function settings = approachPaperSettings( ...
     settings.export.savePdf = true;
     settings.export.savePng = true;
     settings.export.saveFigureSourceData = true;
+    settings.export.saveCaptionFiles = true;
+    settings.export.saveCaptionCatalog = true;
     % A value of 2 displays error ratios from 0.01 to 100 on the common
     % blue-white-orange model-advantage color scale.
     settings.export.advantageColorLimit = 2;

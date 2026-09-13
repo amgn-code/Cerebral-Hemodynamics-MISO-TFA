@@ -1,10 +1,7 @@
 function [figureHandle, sourceData] = ...
-    plotSimulationRidgeConditioning(ridgeTable, titleContext)
+    plotSimulationRidgeConditioning(ridgeTable, ~)
 % plotSimulationRidgeConditioning Show conditioning after ridge is added.
 
-    if nargin < 2
-        titleContext = "";
-    end
     sourceData = summarizeSimulationCurve( ...
         ridgeTable, "Lambda", ...
         "MedianRegularizedConditionNumber", "exact", struct());
@@ -20,11 +17,8 @@ function [figureHandle, sourceData] = ...
     xlabel(axesHandle, "Standardized ridge lambda");
     ylabel(axesHandle, ...
         "Effective condition number of normalized matrix plus lambda I");
-    titleText = "Ridge directly improves the solved system's conditioning";
-    if strlength(titleContext) > 0
-        titleText = titleText + newline + titleContext;
-    end
-    title(axesHandle, titleText);
+    title(axesHandle, ...
+        "Effective conditioning after ridge regularization");
     grid(axesHandle, "on");
 
 end

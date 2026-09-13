@@ -1,4 +1,4 @@
-%% Clean Start
+%% Cerebral Hemodynamics TFA Control Panel
 
 clearvars; clc; close all;
 
@@ -6,159 +6,68 @@ projectRoot = fileparts(mfilename("fullpath"));
 addpath(genpath(fullfile(projectRoot, "src")));
 addpath(genpath(fullfile(projectRoot, "studies", "approachPaper")));
 
-%% 1. Run Mode
+%% 1. Choose a Workflow and Project Paths
 
-runType = "simulation";    % "single", "batch", "demo", or "simulation"
-runType = lower(convertCharsToStrings(runType));
+% "single": one spreadsheet | "batch": group folders | "demo": generated
+% signal | "simulation": Paper 1 known-truth and empirical study package
+runType = lower("simulation");
 
-%% 2. Input Data
+% Edit this one path to point the single, batch, and paper workflows at a
+% different dataset. Expected group folders include NC, MCI, or LC.
+dataFolder = "/Users/amoghn/Downloads/ieem_data";
 
-% Single-subject input
-subjectInfo.subjectID = "105";
-subjectInfo.group = "MCI";
-subjectInfo.sourceFile = ...
-    "/Users/amoghn/Downloads/ieem_data/MCI/105_baseline.xlsx";
+% Generated outputs stay out of the source folders and are ignored by Git.
+resultsRoot = fullfile(projectRoot, "results");
 
-% Batch input
-batchSettings.dataFolder = "/Users/amoghn/Downloads/ieem_data";
-batchSettings.groupsToRun = ["NC"; "MCI"];   % Example: ["MCI"; "NC"; "LC"]
+%% 2. Select the Subject or Batch
+
+batchSettings = defaultTfaBatchSettings( ...
+    dataFolder, ["NC"; "MCI"]);
 batchSettings.targetSuccessfulSubjectsPerGroup = Inf;
 batchSettings.previewOnly = false;
+batchSettings.numSubjectFiguresPerGroup = 1;  % Number, "none", or "all"
 
-%% 3. Paper 1 Simulation
+subjectInfo.subjectID = "105";
+subjectInfo.group = "MCI";
+subjectInfo.sourceFile = fullfile( ...
+    dataFolder, subjectInfo.group, ...
+    subjectInfo.subjectID + "_baseline.xlsx");
 
-% "quick" checks execution and figure layout; "paper" runs the final study.
-simulationProfile = "quick";    % "quick" or "paper"
-simulationProfile = lower(convertCharsToStrings(simulationProfile));
+%% 3. Configure the Shared TFA Method
 
-% Save all simulation results and exports under this folder.
-simulationOutputFolder = ...
-    "/Users/amoghn/Desktop/IEEM Dr. Zhang/Approach Paper/Paper 1 Results Quick v6";
+% This complete default structure is used by ordinary data analysis and as
+% the methodological starting point for the Paper 1 workflow.
+analysisSettings = defaultTfaAnalysisSettings( ...
+    batchSettings.groupsToRun);
 
-% Load the Paper 1 defaults; the data folder is unused if empirical analysis is off.
-paperSettings = approachPaperSettings( ...
-    batchSettings.dataFolder, simulationOutputFolder, ...
-    simulationProfile);
-
-% Select the Paper 1 stages and outputs.
-paperSettings.steps.runEmpiricalAnalysis = false;      % Analyze real NC recordings
-paperSettings.steps.runKnownTruthSimulation = true;    % Run the family-based simulation
-paperSettings.steps.runRobustnessAnalysis = false;     % Run NC robustness checks; requires empirical analysis
-paperSettings.steps.createTables = true;               % Export summary CSV and Excel tables
-paperSettings.steps.createFigures = true;              % Export the organized plot library
-
-% Select figure export formats.
-paperSettings.export.savePdf = true;                   % Save PDF figures
-paperSettings.export.savePng = false;                  % Save PNG figures
-paperSettings.export.saveFigureSourceData = true;      % Save CSV values used to draw each plot
-
-simulationSettings = paperSettings.simulation;
-
-% Every family receives all listed durations, noise levels, and alignments.
-if simulationProfile == "quick"
-    simulationSettings.families.numFamilies = 8;
-    simulationSettings.observations.durationSeconds = [256 300 320 896];
-    simulationSettings.observations.outputSnrDb = [Inf 15 0];   % CBFV SNR; Inf adds no noise
-    simulationSettings.observations.inputNoiseSnrDb = [Inf 15 0]; % Separate MAP and PETCO2 noise sweeps
-    simulationSettings.observations.alignmentErrorSeconds = [-3 0 3]; % Negative shifts PETCO2 later
-else   % "paper"
-    simulationSettings.families.numFamilies = 1000;
-    simulationSettings.observations.durationSeconds = ...
-        [256 300 320 384 512 640 896];
-    simulationSettings.observations.outputSnrDb = ...
-        [Inf 30 20 15 10 5 0];                       % CBFV SNR; Inf adds no noise
-    simulationSettings.observations.inputNoiseSnrDb = ...
-        [Inf 30 20 15 10 5 0];                       % Separate MAP and PETCO2 noise sweeps
-    simulationSettings.observations.alignmentErrorSeconds = ...
-        [-6 -3 0 3 6];                               % Negative shifts PETCO2 later
-end
-
-% These balanced values describe physiology and stay fixed within a family.
-simulationSettings.families.targetCoherenceValues = 0.05:0.10:0.95;
-simulationSettings.families.spectralSimilarityValues = 0:0.20:1;
-simulationSettings.families.petco2ToMapFluctuationSdRatioValues = ...
-    [0.05 0.10 0.25 0.50 1 2];
-simulationSettings.families.petco2ToMapBandGainRatioValues = ...
-    [0.10 0.25 0.50 1 2 4];
-simulationSettings.families.co2DelaySecondsValues = [0 2 4 6 8 10];
-
-% Non-duration experiments use this standard duration and state it in their titles.
-simulationSettings.observations.referenceDurationSeconds = 300;
-simulationSettings.observations.referenceOutputSnrDb = 15;
-simulationSettings.observations.runInputNoiseExperiment = true;  % Run separate MAP and PETCO2 noise sweeps
-simulationSettings.observations.runAlignmentExperiment = true;   % Run PETCO2 timing-error sweep
-
-simulationSettings.estimators.ridgeLambdas = [0.001 0.01 0.1];   % Sensitivity only; direct MISO stays primary
-
-% Focused estimator checks at the reference observation.
-simulationSettings.estimatorSensitivity.windowLengthSeconds = ...
-    [64 75 100 128 150];                                        % Welch window sensitivity
-simulationSettings.estimatorSensitivity.windowOverlap = ...
-    [0.25 0.50 0.75];                                           % Welch overlap sensitivity
-
-% Statistical markers compare paired MISO and SISO errors across families.
-simulationSettings.statistics.alpha = 0.05;
-simulationSettings.statistics.minimumValidN = 3;
-
-%% 4. Models
-
+% Models
 analysisSettings.runMISO = true;
 analysisSettings.runSISO = true;
-
-% The direct MISO solution remains the default. Standardized ridge is an
-% explicit optional analysis and is never turned on automatically.
 analysisSettings.misoSolver = defaultMisoSolverSettings();
-
-% Set true only when later surrogate or sensitivity analyses need the
-% preprocessed subject signals and shared spectra.
 analysisSettings.retainAnalysisInput = false;
 
-%% 5. Frequency Configuration
-
-% Results and figures are limited to this frequency range.
+% Sampling and analyzed frequencies
+analysisSettings.fsTarget = 4;
 analysisSettings.frequencyRangeHz = [0 0.35];
-
-% Frequency bands are the intervals between consecutive edges.
-% The final band includes its upper edge.
 analysisSettings.frequencyBandEdgesHz = ...
     [0.005; 0.024; 0.070; 0.200; 0.350];
 analysisSettings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
 
-% Use this same frequency configuration throughout the Paper 1 workflow.
-paperSettings.analysis.frequencyRangeHz = ...
-    analysisSettings.frequencyRangeHz;
-paperSettings.analysis.frequencyBandEdgesHz = ...
-    analysisSettings.frequencyBandEdgesHz;
-paperSettings.analysis.frequencyBandNames = ...
-    analysisSettings.frequencyBandNames;
-simulationSettings.frequencyRangeHz = ...
-    analysisSettings.frequencyRangeHz;
-simulationSettings.frequencyBandEdgesHz = ...
-    analysisSettings.frequencyBandEdgesHz;
-simulationSettings.frequencyBandNames = ...
-    analysisSettings.frequencyBandNames;
-paperSettings.simulation = simulationSettings;
-
-%% 6. Preprocessing
-
-analysisSettings.fsTarget = 4;
+% Preprocessing
 analysisSettings.preprocessing.normalizeCbv = true;
 analysisSettings.preprocessing.detrendEnabled = false;
 analysisSettings.preprocessing.detrendOrder = 1;
 analysisSettings.preprocessing.meanRemovalEnabled = true;
 
-%% 7. Welch Spectral Analysis
-
+% Welch spectral estimation
 analysisSettings.pwelch.windowLengthSeconds = 128;
 analysisSettings.pwelch.windowOverlap = 0.5;
 analysisSettings.pwelch.minimumWindows = 3;
-% Apply the same frequency-domain smoothing to every auto- and cross-spectrum.
 analysisSettings.pwelch.smoothingEnabled = true;
 analysisSettings.pwelch.smoothingKernel = [0.25 0.50 0.25];
 
-%% 8. Phase
-
-analysisSettings.phase.unwrapMethod = "standard";    % "standard" or "custom"
+% Phase. The custom fields are used only when unwrapMethod is "custom".
+analysisSettings.phase.unwrapMethod = "standard";
 analysisSettings.phase.custom.windowSize = 11;
 analysisSettings.phase.custom.numPasses = 3;
 analysisSettings.phase.custom.useCoherenceWeights = true;
@@ -167,25 +76,26 @@ analysisSettings.phase.custom.weightPower = 4;
 analysisSettings.phase.custom.expAlpha = 4;
 analysisSettings.phase.custom.minWeight = 0.01;
 
-%% 9. Statistical Analysis
+%% 4. Configure Batch Statistics
 
 analysisSettings.statistics.enabled = true;
 analysisSettings.statistics.alpha = 0.05;
 analysisSettings.statistics.numPhasePermutations = 10000;
 analysisSettings.statistics.randomSeed = 2026;
-% Statistical group order follows the batch group order selected above.
-analysisSettings.statistics.groupsToCompare = batchSettings.groupsToRun;
-analysisSettings.statistics.primaryBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
-analysisSettings.statistics.primaryGroups = batchSettings.groupsToRun;
+analysisSettings.statistics.groupsToCompare = ...
+    batchSettings.groupsToRun;
+analysisSettings.statistics.primaryBandNames = ...
+    analysisSettings.frequencyBandNames;
+analysisSettings.statistics.primaryGroups = ...
+    batchSettings.groupsToRun;
 analysisSettings.statistics.primaryPathways = ["MAP"; "CO2"];
 analysisSettings.statistics.secondaryPathways = strings(0, 1);
-analysisSettings.statistics.withinGroupModelComparison.enabled = true;
-analysisSettings.statistics.betweenGroupComparison.enabled = true;
-% Optional standardized file with one row per subject and SubjectID/Group.
 analysisSettings.statistics.participantDataFile = "";
+analysisSettings.statistics.withinGroupModelComparison.enabled = true;
+analysisSettings.statistics.betweenGroupComparison.enabled = ...
+    numel(batchSettings.groupsToRun) == 2;
 
-% Frequency-wise tests are exploratory. Each enabled metric gets an
-% adjusted P-value curve across the configured frequency range.
+% Frequency-wise tests are exploratory and use adjusted P-value curves.
 analysisSettings.statistics.frequencyWise.enabled = true;
 analysisSettings.statistics.frequencyWise.groupComparison.gain = true;
 analysisSettings.statistics.frequencyWise.groupComparison.coherence = true;
@@ -193,87 +103,68 @@ analysisSettings.statistics.frequencyWise.groupComparison.phase = true;
 analysisSettings.statistics.frequencyWise.modelComparison.gain = true;
 analysisSettings.statistics.frequencyWise.modelComparison.phase = true;
 
-%% 10. Figures
+%% 5. Configure Ordinary Figures and Files
 
-analysisSettings.plot = defaultPlotSettings();
-analysisSettings.plot.transferFunctionStyle = "stem";    % "stem" or "line"
-analysisSettings.plot.colors.co2Coherence = [0.9290 0.4940 0.1250];
-analysisSettings.plot.showSisoCoherenceReference = true;
+% "all" enables every ordinary subject, group, and statistical figure;
+% use "none" and turn on individual analysisSettings.plot.show fields when
+% only a few figures are needed.
+analysisSettings.plot = defaultPlotSettings("all");
+analysisSettings.plot.transferFunctionStyle = "stem";  % "stem" or "line"
 
-% Each Boolean controls one complete figure.
-analysisSettings.plot.show.overview = true;
-analysisSettings.plot.show.miso.map = true;
-analysisSettings.plot.show.miso.co2 = true;
-analysisSettings.plot.show.siso.map = true;
-analysisSettings.plot.show.siso.co2 = true;
-analysisSettings.plot.show.misoPartitioned.map = true;
-analysisSettings.plot.show.misoPartitioned.co2 = true;
-analysisSettings.plot.show.sisoPartitioned.map = true;
-analysisSettings.plot.show.sisoPartitioned.co2 = true;
-
-% Statistical figures use the same subject band values as the tests.
-analysisSettings.plot.show.statistics.modelComparison = true;
-analysisSettings.plot.show.statistics.groupComparison = true;
-analysisSettings.plot.show.statistics.pathwayBalance = true;
-analysisSettings.plot.show.statistics.inputAssociation = true;
-analysisSettings.plot.show.statistics.frequencyWiseComparison = true;
-
+% "all" or "none" controls the initial state of all 30 Excel metrics.
+% Individual fields remain editable, for example:
+% outputSettings.excelMetrics.miso.mapGain = false;
+outputSettings = defaultTfaOutputSettings( ...
+    fullfile(resultsRoot, "ordinary_tfa"), "all");
 outputSettings.saveSubjectFigures = true;
-batchSettings.numSubjectFiguresPerGroup = 1;    % Number, "none", or "all"
 outputSettings.saveBatchFigures = true;
-
-%% 11. Excel Export
-
-outputSettings.baseOutputFolder = ...
-    "/Users/amoghn/Desktop/TFA Results New Latest Boss 1";
 outputSettings.saveExcel = true;
-outputSettings.excelFileName = "tfa_results.xlsx";
 outputSettings.excelStatistics = true;
 
-% Signal and input metrics shared by MISO and SISO
-outputSettings.excelMetrics.signals.mapPower = true;
-outputSettings.excelMetrics.signals.co2Power = true;
-outputSettings.excelMetrics.signals.cbvPower = true;
-outputSettings.excelMetrics.inputs.coherence = true;
-outputSettings.excelMetrics.inputs.phaseWrapped = true;
-outputSettings.excelMetrics.inputs.phaseUnwrapped = true;
+%% 6. Configure the Known-Truth Study
 
-% MISO metrics
-outputSettings.excelMetrics.miso.mapGain = true;
-outputSettings.excelMetrics.miso.mapPhaseWrapped = true;
-outputSettings.excelMetrics.miso.mapPhaseUnwrapped = true;
-outputSettings.excelMetrics.miso.co2Gain = true;
-outputSettings.excelMetrics.miso.co2PhaseWrapped = true;
-outputSettings.excelMetrics.miso.co2PhaseUnwrapped = true;
-outputSettings.excelMetrics.miso.multipleCoherence = true;
-outputSettings.excelMetrics.miso.mapPartialCoherence = true;
-outputSettings.excelMetrics.miso.co2PartialCoherence = true;
-outputSettings.excelMetrics.miso.unexplainedFraction = true;
-outputSettings.excelMetrics.miso.residualPower = true;
-outputSettings.excelMetrics.miso.conditionNumber = true;
+% "quick": reduced unit check | "designSmoke": one balanced 25-family block
+% "proof250": presentation proof of concept | "paper1000": likely final run
+simulationProfile = lower("proof250");
+simulationRunName = "presentation_proof_250_families";
+simulationOutputFolder = fullfile( ...
+    resultsRoot, "approach_paper_" + simulationRunName);
 
-% SISO metrics
-outputSettings.excelMetrics.siso.mapGain = true;
-outputSettings.excelMetrics.siso.mapPhaseWrapped = true;
-outputSettings.excelMetrics.siso.mapPhaseUnwrapped = true;
-outputSettings.excelMetrics.siso.mapCoherence = true;
-outputSettings.excelMetrics.siso.mapUnexplainedFraction = true;
-outputSettings.excelMetrics.siso.mapResidualPower = true;
-outputSettings.excelMetrics.siso.co2Gain = true;
-outputSettings.excelMetrics.siso.co2PhaseWrapped = true;
-outputSettings.excelMetrics.siso.co2PhaseUnwrapped = true;
-outputSettings.excelMetrics.siso.co2Coherence = true;
-outputSettings.excelMetrics.siso.co2UnexplainedFraction = true;
-outputSettings.excelMetrics.siso.co2ResidualPower = true;
+paperSettings = approachPaperSettings( ...
+    dataFolder, simulationOutputFolder, ...
+    simulationProfile, analysisSettings);
 
-%% Run Selected Workflow
+paperSettings.steps.runEmpiricalAnalysis = false;
+paperSettings.steps.runKnownTruthSimulation = true;
+paperSettings.steps.runRobustnessAnalysis = false;
+paperSettings.steps.createTables = true;
+paperSettings.steps.createFigures = true;
+
+paperSettings.export.savePdf = true;
+paperSettings.export.savePng = true;
+paperSettings.export.saveFigureSourceData = true;
+paperSettings.export.saveCaptionFiles = true;
+paperSettings.export.saveCaptionCatalog = true;
+
+simulationSettings = paperSettings.simulation;
+
+% The selected profile defines the family count, assigned factor levels,
+% observation sweep, five-bin proof grouping, and estimator sensitivities.
+% See docs/proof_of_concept_simulation_design.md for the complete design.
+
+% Optional sweep overrides. Uncomment only what should differ from the
+% selected named profile. Avoid changing the five assigned family factors
+% without also revising and validating the balanced design.
+% simulationSettings.observations.durationSeconds = [256 300 512 896];
+% simulationSettings.observations.outputSnrDb = [Inf 20 10 0];
+% simulationSettings.observations.inputNoiseSnrDb = [Inf 20 10 0];
+% simulationSettings.observations.alignmentErrorSeconds = [-6 -3 0 3 6];
+
+paperSettings.simulation = simulationSettings;
+
+%% 7. Run the Selected Workflow
 
 if runType == "simulation"
-    paperSettings.analysis.pwelch = analysisSettings.pwelch;
-    paperSettings.analysis.phase = analysisSettings.phase;
-    simulationSettings.welch = analysisSettings.pwelch;
-    simulationSettings.phase = analysisSettings.phase;
-    paperSettings.simulation = simulationSettings;
     fprintf( ...
         "\nRun type: simulation | Profile: %s | Families: %d\n\n", ...
         simulationProfile, simulationSettings.families.numFamilies);

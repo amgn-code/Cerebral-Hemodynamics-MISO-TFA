@@ -53,6 +53,22 @@ function tableResults = buildApproachPaperTables( ...
             tableResults.simulationEstimatorSettings = ...
                 paperResults.simulation.estimatorSettings;
         end
+        if isfield(paperResults, "simulationAudit") && ...
+                ~isempty(fieldnames(paperResults.simulationAudit))
+            audit = paperResults.simulationAudit;
+            tableResults.simulationAuditOverview = audit.overview;
+            tableResults.simulationMarginalBalance = ...
+                audit.marginalBalance;
+            tableResults.simulationPairwiseBalance = ...
+                audit.pairwiseBalance;
+            tableResults.simulationRealizedBinOccupancy = ...
+                audit.realizedBinOccupancy;
+            tableResults.simulationRealizedPairOccupancy = ...
+                audit.realizedPairOccupancy;
+            tableResults.simulationValidityAudit = audit.validity;
+            tableResults.simulationCheckpointStability = ...
+                audit.stability;
+        end
     end
 
     if isfield(paperResults, "robustness") && ...
@@ -155,29 +171,44 @@ function factorTable = createSimulationFactorTable(settings)
         "Frequency/cell multiple-testing method"];
     values = [ ...
         string(settings.families.numFamilies)
-        join(string(settings.families.targetCoherenceValues), ", ")
-        join(string(settings.families.spectralSimilarityValues), ", ")
-        join(string(settings.families. ...
-            petco2ToMapFluctuationSdRatioValues), ", ")
-        join(string(settings.families. ...
-            petco2ToMapBandGainRatioValues), ", ")
-        join(string(settings.families.co2DelaySecondsValues), ", ")
-        join(string(settings.observations.outputSnrDb), ", ")
+        formatSettingValues( ...
+            settings.families.targetCoherenceValues)
+        formatSettingValues( ...
+            settings.families.spectralSimilarityValues)
+        formatSettingValues(settings.families. ...
+            petco2ToMapFluctuationSdRatioValues)
+        formatSettingValues(settings.families. ...
+            petco2ToMapBandGainRatioValues)
+        formatSettingValues( ...
+            settings.families.co2DelaySecondsValues)
+        formatSettingValues(settings.observations.outputSnrDb)
         string(settings.observations.referenceDurationSeconds)
-        join(string(settings.observations.durationSeconds), ", ")
-        join(string(settings.observations.inputNoiseSnrDb), ", ")
-        join(string(settings.observations.alignmentErrorSeconds), ", ")
-        join(string(settings.estimators.ridgeLambdas), ", ")
+        formatSettingValues(settings.observations.durationSeconds)
+        formatSettingValues(settings.observations.inputNoiseSnrDb)
+        formatSettingValues( ...
+            settings.observations.alignmentErrorSeconds)
+        formatSettingValues(settings.estimators.ridgeLambdas)
         string(settings.welch.windowLengthSeconds)
-        join(string(settings.estimatorSensitivity. ...
-            windowLengthSeconds), ", ")
-        join(string(settings.estimatorSensitivity. ...
-            windowOverlap), ", ")
+        formatSettingValues(settings.estimatorSensitivity. ...
+            windowLengthSeconds)
+        formatSettingValues(settings.estimatorSensitivity. ...
+            windowOverlap)
         string(settings.statistics.alpha)
         string(settings.statistics.minimumValidN)
         string(settings.statistics.multipleTestingMethod)];
     factorTable = table(factor, values, ...
         'VariableNames', {'Factor', 'Values'});
+
+end
+
+function valueText = formatSettingValues(values)
+% formatSettingValues Convert scalar, vector, or empty settings to one row.
+
+    if isempty(values)
+        valueText = "None";
+    else
+        valueText = join(string(values(:)), ", ");
+    end
 
 end
 

@@ -3,12 +3,6 @@ function [figureHandle, sourceData] = ...
 % plotSimulationReferenceStatistics Show the six reference comparisons.
 
     sourceData = createSimulationReferenceStatistics(simulationResults);
-    reference = simulationResults.observations( ...
-        simulationResults.observations.IsReferenceObservation, :);
-    durationSeconds = unique(reference.DurationSeconds);
-    outputSnrDb = unique(reference.OutputSNRdB);
-    alpha = simulationResults.settings.statistics.alpha;
-
     figureHandle = figure("Color", "white", "Visible", "off");
     axesHandle = axes(figureHandle);
     hold(axesHandle, "on");
@@ -46,10 +40,7 @@ function [figureHandle, sourceData] = ...
         "Mean model advantage: log10(SISO error / MISO error)");
     ylabel(axesHandle, "Transfer-function error outcome");
     title(axesHandle, ...
-        "Reference-condition MISO versus SISO statistical summary" + ...
-        newline + compose( ...
-            "%.3g s, CBFV SNR = %.3g dB | Lines: 95%% CI | Black ring: reported P < %.3g", ...
-            durationSeconds(1), outputSnrDb(1), alpha));
+        "Reference-condition MISO versus SISO comparison");
     grid(axesHandle, "on");
 
 end

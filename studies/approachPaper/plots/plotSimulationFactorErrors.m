@@ -1,13 +1,10 @@
 function [figureHandle, sourceData] = plotSimulationFactorErrors( ...
     data, factorName, factorLabel, groupingMode, ...
-    groupingSettings, titleContext, statisticsSettings)
+    groupingSettings, ~, statisticsSettings)
 % plotSimulationFactorErrors Show overall complex error and comparison.
 
     if nargin < 5
         groupingSettings = struct();
-    end
-    if nargin < 6
-        titleContext = "";
     end
     if nargin < 7 || isempty(statisticsSettings)
         statisticsSettings.alpha = 0.05;
@@ -39,15 +36,11 @@ function [figureHandle, sourceData] = plotSimulationFactorErrors( ...
         "TileSpacing", "compact", "Padding", "compact");
     factorTitle = getSimulationFactorTitle( ...
         factorName, factorLabel);
+    factorAxisLabel = getSimulationFactorAxisLabel( ...
+        factorName, factorLabel);
     figureTitle = "Overall complex error and model advantage by " + ...
         factorTitle;
-    figureSubtitle = ...
-        "Mean and SD | Black ring: BH-adjusted P < " + ...
-        string(statisticsSettings.alpha);
-    if strlength(titleContext) > 0
-        figureSubtitle = figureSubtitle + " | " + titleContext;
-    end
-    title(layout, figureTitle + newline + figureSubtitle);
+    title(layout, figureTitle);
 
     axesHandle = nexttile(layout);
     plotErrorPair( ...
@@ -81,7 +74,7 @@ function [figureHandle, sourceData] = plotSimulationFactorErrors( ...
 
     allAxes = findall(figureHandle, "Type", "axes");
     for axesIndex = 1:numel(allAxes)
-        xlabel(allAxes(axesIndex), factorLabel);
+        xlabel(allAxes(axesIndex), factorAxisLabel);
         allAxes(axesIndex).XTick = tickValues;
         allAxes(axesIndex).XTickLabel = tickLabels;
         grid(allAxes(axesIndex), "on");

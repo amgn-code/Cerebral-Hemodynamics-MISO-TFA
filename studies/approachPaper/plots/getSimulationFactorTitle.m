@@ -7,29 +7,28 @@ function factorTitle = getSimulationFactorTitle( ...
         case "DurationSeconds"
             factorTitle = "recording duration";
         case "OutputSNRdB"
-            factorTitle = "CBFV output SNR";
+            factorTitle = "CBFV SNR";
         case {"FamilyInputCoherence", "RealizedInputCoherence"}
-            factorTitle = "family mean MAP-PETCO2 coherence";
+            factorTitle = "input coherence";
         case {"FamilyPSDShapeOverlap", "RealizedPSDShapeOverlap"}
-            factorTitle = ...
-                "PSD-shape overlap (Bhattacharyya coefficient)";
+            factorTitle = "PSD-shape overlap";
         case { ...
                 "AssignedPETCO2ToMAPFluctuationSDRatio", ...
                 "FamilyPETCO2ToMAPFluctuationSDRatio", ...
                 "RealizedPETCO2ToMAPFluctuationSDRatio"}
-            factorTitle = "PETCO2-to-MAP fluctuation SD ratio";
+            factorTitle = "PETCO2/MAP fluctuation ratio";
         case { ...
                 "AssignedPETCO2ToMAPBandGainRatio", ...
                 "AchievedPETCO2ToMAPBandGainRatio"}
-            factorTitle = "PETCO2-to-MAP pathway band-gain ratio";
+            factorTitle = "PETCO2/MAP pathway gain";
         case { ...
                 "FamilyPETCO2ContributionPowerShare", ...
                 "RealizedPETCO2ContributionPowerShare"}
-            factorTitle = "realized PETCO2 contribution-power share";
+            factorTitle = "PETCO2 contribution share";
         case "CO2DelaySeconds"
-            factorTitle = "true PETCO2 response delay";
+            factorTitle = "true PETCO2 delay";
         case "AlignmentErrorSeconds"
-            factorTitle = "applied PETCO2 timing misalignment";
+            factorTitle = "PETCO2 timing misalignment";
         case "MAPInputSNRdB"
             factorTitle = "MAP measurement SNR";
         case "CO2InputSNRdB"

@@ -1,5 +1,5 @@
 function row = createKnownTruthObservationResultRow( ...
-    observationId, familyRow, planRow, analysis, ~)
+    observationId, familyRow, planRow, analysis)
 % createKnownTruthObservationResultRow Flatten one result for plotting.
 
     row = emptyRow();
