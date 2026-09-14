@@ -277,6 +277,67 @@ class SiblingWorkflowDiagram(Flowable):
         c.drawCentredString(255, 18, "Shared modules: preprocessing  |  Welch spectra  |  SISO  |  MISO  |  diagnostics")
 
 
+class RealDataConsolidationDiagram(Flowable):
+    """Show how the public real-data path was separated from legacy output."""
+
+    def __init__(self, width=510, height=190):
+        Flowable.__init__(self)
+        self.width = width
+        self.height = height
+
+    def wrap(self, available_width, available_height):
+        return min(self.width, available_width), self.height
+
+    def draw(self):
+        c = self.canv
+        c.setFillColor(NAVY)
+        c.setFont("Helvetica-Bold", 9)
+        c.drawString(0, 170, "BEFORE")
+        c.drawString(270, 170, "AFTER CHUNK 13")
+
+        before = [
+            (0, 122, 210, 32, "MISO / SISO page"),
+            (0, 76, 210, 32, "analyzeSubjectTFA"),
+            (0, 30, 210, 32, "batch folders + optional legacy figures"),
+        ]
+        after = [
+            (270, 122, 240, 32, "MISO / SISO page"),
+            (270, 76, 240, 32, "analyzeTfaSignals"),
+            (270, 30, 240, 32, "preprocess + Welch + requested model"),
+        ]
+        for x, y, width, height, label in before:
+            c.setFillColor(PALE_ORANGE)
+            c.setStrokeColor(ORANGE)
+            c.roundRect(x, y, width, height, 5, fill=1, stroke=1)
+            c.setFillColor(INK)
+            c.setFont("Helvetica", 8)
+            c.drawCentredString(x + width / 2, y + 12, label)
+        for x, y, width, height, label in after:
+            c.setFillColor(PALE_BLUE)
+            c.setStrokeColor(BLUE)
+            c.roundRect(x, y, width, height, 5, fill=1, stroke=1)
+            c.setFillColor(INK)
+            c.setFont("Helvetica-Bold" if y == 76 else "Helvetica", 8)
+            c.drawCentredString(x + width / 2, y + 12, label)
+
+        c.setStrokeColor(MID_GRAY)
+        for x in [105, 390]:
+            c.line(x, 122, x, 108)
+            c.line(x, 76, x, 62)
+            c.line(x - 3, 113, x, 108)
+            c.line(x + 3, 113, x, 108)
+            c.line(x - 3, 67, x, 62)
+            c.line(x + 3, 67, x, 62)
+
+        c.setFillColor(MID_GRAY)
+        c.setFont("Helvetica", 7.5)
+        c.drawCentredString(
+            255,
+            8,
+            "The legacy batch wrapper now calls the same numerical core only for backward compatibility",
+        )
+
+
 class NCDataInspectionDiagram(Flowable):
     """Show the observed NC file handoff and the temporal CV constraint."""
 
@@ -392,8 +453,8 @@ def build_story():
         [
             P("MISO-SISO simulation study", "ReportTitle"),
             P(
-                "Visual implementation report through the clean platform scaffold. "
-                "This document consolidates the previous implementation work and shows the current actual outputs from a one-repetition simple simulation.",
+                "Visual implementation report through cleanup chunk 13. "
+                "This document consolidates the previous implementation work, the current simulation and NC outputs, and the first active-code consolidation step.",
                 "ReportSubtitle",
             ),
             P("Where the project is now", "SectionTitle"),
@@ -417,6 +478,7 @@ def build_story():
             ["Real-data and simulation interfaces", "Implemented in this chunk", "Separate data, model, and simulation settings boundaries"],
             ["Real-data report export", "Implemented in this chunk", "Frequency table, diagnostic figure, CSV, and MAT output"],
             ["Clean platform scaffold", "Implemented in this chunk", "Six-page boundary with tested backend adapters"],
+            ["Real-data numerical core", "Consolidated in chunk 13", "Public model pages no longer use legacy figure or output execution"],
             ["NC bootstrap protocol", "Implemented", "3 x 90-s blocked validation with subject-level bootstrap"],
             ["NC bootstrap / cross-validation", "Implemented in this chunk", "Held-out frequency errors, advantage curve, and audit tables"],
             ["NC production export", "Implemented in this chunk", "Figure, frequency CSV, status CSV, subject audit CSV, and MAT archive"],
@@ -503,6 +565,39 @@ def build_story():
             Spacer(1, 8),
             P(
                 "The bootstrap page now fixes the block unit, holdout design, and accuracy definition in its settings object. The returned means, uncertainty limits, and status table therefore have an explicit interpretation.",
+                "SmallReport",
+            ),
+            PageBreak(),
+        ]
+    )
+
+    story.extend(
+        [
+            P("Cleanup chunk 13: real-data numerical core", "SectionTitle"),
+            P(
+                "The public MISO and SISO pages previously called the general subject workflow. "
+                "That workflow also knew about output folders, batch status, optional subject figures, and legacy exporters. "
+                "The new analyzeTfaSignals function contains only preprocessing, recording-length checks, shared Welch spectra, and the requested numerical model.",
+            ),
+            RealDataConsolidationDiagram(),
+            Spacer(1, 5),
+        ]
+    )
+    consolidation_rows = [
+        ["Check", "Result", "Meaning"],
+        ["Public MISO dependency set", "34 to 26 project files", "Eight legacy plotting/output dependencies removed from the active call path"],
+        ["Public SISO dependency set", "34 to 26 project files", "Both model pages now use the same small numerical route"],
+        ["Focused regression tests", "21 passed; 0 failed", "Interfaces and the temporary legacy wrapper retain their result contracts"],
+        ["Complete MATLAB suite", "152 passed; 0 failed; 0 incomplete", "Simulation, NC bootstrap, legacy compatibility, and numerical modules remain stable"],
+        ["MATLAB Code Analyzer", "0 issues in 3 changed files", "No new analyzer warnings introduced"],
+    ]
+    story.append(styled_table(consolidation_rows, [142, 125, 261]))
+    story.extend(
+        [
+            Spacer(1, 8),
+            P(
+                "The one remaining plotting dependency is defaultPlotSettings, which currently supplies shared defaults. "
+                "It can be moved when the compact user-facing MISO and SISO figures are integrated. No legacy files were deleted in this chunk.",
                 "SmallReport",
             ),
             PageBreak(),
@@ -687,6 +782,7 @@ def build_story():
         ["10", "NC file inspection and validation protocol", "Grounds the subject bootstrap and blocked-CV design in the actual 23-recording folder"],
         ["11", "NC bootstrap implementation", "Runs all 23 recordings, compares held-out MISO/SISO errors, bootstraps subjects, and returns an audit-ready frequency table"],
         ["12", "NC production run and export", "Freezes the 2,000-resample result and writes the figure plus frequency, status, subject-audit, and MAT files"],
+        ["13", "Real-data core consolidation", "Separates numerical MISO/SISO analysis from the old batch plotting and output workflow while preserving compatibility"],
     ]
     story.append(styled_table(history_rows, [45, 215, 268]))
     story.extend(
@@ -694,11 +790,11 @@ def build_story():
             Spacer(1, 10),
             P("Validation completed", "SubTitle"),
             P(
-                "The full MATLAB test suite passed after this chunk. The focused diagnostic and exporter tests also pass. Existing expected test warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
+                "The full MATLAB test suite passed after chunk 13: 152 passed, 0 failed, and 0 incomplete. The 21 focused real-data and platform regression tests also passed. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
             ),
             P("Next implementation boundary", "SubTitle"),
             P(
-                "The NC page, production result, and export path are now implemented and tested. The next boundary is scientific review of the returned frequency curve and uncertainty before any changes to the blocked design. Learned signal generation remains separate from this defensible benchmark.",
+                "The next cleanup boundary is to integrate compact MISO/SISO user figures and the simplified simulation heatmap exporter, then remove the superseded batch, group, statistics, robustness, and approach-paper orchestration. Scientific changes to the simulation protocol remain reserved for the Astra review.",
             ),
         ]
     )

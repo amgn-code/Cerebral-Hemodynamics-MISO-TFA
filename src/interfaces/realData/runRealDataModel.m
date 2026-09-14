@@ -32,22 +32,16 @@ function results = runRealDataModel( ...
         analysisSettings.statistics = struct();
     end
     analysisSettings.statistics.enabled = false;
-    analysisSettings.plot = defaultPlotSettings("none");
-    analysisSettings = validateTfaSettings(analysisSettings);
 
-    outputSettings = defaultTfaOutputSettings("", "none");
-    outputSettings.saveSubjectFigures = false;
-    outputSettings.saveBatchFigures = false;
-    outputSettings.saveExcel = false;
+    results = analyzeTfaSignals( ...
+        connectedData.signalData, analysisSettings);
 
-    results = analyzeSubjectTFA( ...
-        connectedData.signalData, connectedData.subjectInfo, ...
-        analysisSettings, outputSettings);
-
+    results.subjectInfo = connectedData.subjectInfo;
     results.interfaceModel = modelName;
-    results.analysisSettings = analysisSettings;
     results.userInputFile = connectedData.filePath;
     results.rawSignalData = connectedData.signalData;
     results.outputFolder = "";
+    results.subjectFigureNames = strings(0, 1);
+    results.subjectFigureFiles = strings(0, 1);
 
 end
