@@ -27,8 +27,9 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
     settings.pathways.calibrationBandHz = ...
         projectConfiguration.analysis.pathwayCalibrationBandHz;
     settings.frequencyBandEdgesHz = ...
-        [0.005; 0.024; 0.070; 0.200; 0.350];
-    settings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
+        projectConfiguration.analysis.frequencyBandEdgesHz;
+    settings.frequencyBandNames = ...
+        projectConfiguration.analysis.frequencyBandNames;
 
     %% Family Design
 

@@ -7,16 +7,20 @@ function settings = defaultTfaNumericalSettings()
 
     %% Models and Frequency Range
 
+    projectConfiguration = projectSettings();
+
     settings.runMISO = true;
     settings.runSISO = true;
     settings.misoSolver = defaultMisoSolverSettings();
     settings.retainAnalysisInput = false;
 
-    settings.fsTarget = 4;
-    settings.frequencyRangeHz = [0.005 0.35];
+    settings.fsTarget = projectConfiguration.samplingFrequencyHz;
+    settings.frequencyRangeHz = ...
+        projectConfiguration.analysis.reportingBandHz;
     settings.frequencyBandEdgesHz = ...
-        [0.005; 0.024; 0.070; 0.200; 0.350];
-    settings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
+        projectConfiguration.analysis.frequencyBandEdgesHz;
+    settings.frequencyBandNames = ...
+        projectConfiguration.analysis.frequencyBandNames;
 
     %% Preprocessing and Welch Spectra
 

@@ -65,3 +65,7 @@ Saved simulation archives can be replayed without rebuilding settings by
 calling `replaySimulation("/path/to/simulation_results.mat")`. The replay
 function uses the saved interface settings and manifest rather than today's
 defaults.
+
+For a compact start-to-finish example, open
+`examples/quick_start.m`. The workflow diagram and page responsibilities are
+described in `docs/WORKFLOW.md`.
