@@ -7,9 +7,25 @@ velocity/CBV. It supports both:
 - MISO analysis: MAP and CO2 are solved together as inputs to CBV.
 - SISO analysis: MAP-to-CBV and CO2-to-CBV are solved independently.
 
-The project can analyze one subject, a batch of subjects, or one generated
-demonstration signal. A separate family-based simulation supports the
-Paper 1 known-truth study.
+The project has two sibling workflows. The user-facing workflow analyzes a
+recording supplied by file path. The separate family-based simulation
+supports the Paper 1 known-truth study. They share the same preprocessing,
+Welch spectra, SISO, MISO, and diagnostic modules, so the model definitions
+remain consistent without forcing either workflow through one main script.
+
+For a single user recording, the public interface can connect the file and
+run either model family independently:
+
+```matlab
+filePath = "/path/to/recording.xlsx";
+connectedData = connectTfaData(filePath);
+misoResults = runMisoRealData(connectedData);
+sisoResults = runSisoRealData(connectedData);
+```
+
+For one call that returns both model families, use
+`runMisoSisoRealData`. These interfaces return model results and diagnostics
+without writing figures or workbooks implicitly.
 
 ## Document Projects
 
@@ -79,7 +95,28 @@ H_mapcbv = S_mapcbv ./ S_mapmap;
 H_co2cbv = S_co2cbv ./ S_co2co2;
 ```
 
-## Project Flow
+## Project Workflows
+
+The two top-level flows are intentionally independent:
+
+```text
+Real-data interface                      Simulation interface
+connectTfaData                           defaultSimulationInterfaceSettings
+    |                                     runSimulationInterface
+    +--> runMisoRealData                       |
+    +--> runSisoRealData                       +--> known-truth simulation runner
+    +--> runMisoSisoRealData                   +--> paired observations
+                                                +--> truth error and advantage maps
+
+Both interfaces call the shared preprocessing, Welch spectra, SISO, MISO,
+coherence, plotting, and exporting modules.
+```
+
+The original `main.m`/`runTFA` workflow remains available for batch output
+and group statistics. The small file entry point is the simpler interface for
+one user-supplied recording.
+
+## Existing Batch Project Flow
 
 ```text
 main.m
@@ -551,6 +588,33 @@ length and Welch overlap at the reference observation. Spectral smoothing
 remains fixed at the primary `[0.25 0.50 0.25]` kernel and is not a Paper 1
 sensitivity factor. A separate duration-by-window grid distinguishes the
 effect of recording length from the effect of the Welch window.
+
+### Running the small primary simulation first
+
+The simplified study is available without running the full empirical and
+Paper 1 export workflow. It varies three assigned factors: MAP-CO2 input
+coherence, assigned CO2-to-MAP pathway ratio, and CBFV output SNR. The first
+two maps use the reference duration and reference output SNR; the SNR map uses
+the reference duration. This keeps each heatmap focused on one changing
+factor.
+
+```matlab
+simulationInterface = defaultSimulationInterfaceSettings("simple");
+simulationResults = runSimulationInterface(simulationInterface);
+exportResults = exportSimpleSimulationFrequencyMapSet( ...
+    simulationResults, "/path/to/simple_simulation_outputs");
+```
+
+The argument to `runSimpleKnownTruthSimulation` is the number of repeated
+realizations per 9-condition coherence-by-pathway-strength grid. Start with
+`1` to inspect the workflow, then choose a predeclared repetition count for
+the study. Each exported heatmap has frequency on the horizontal axis, the
+selected factor on the vertical axis, and the paired frequency-resolved MISO
+advantage as color. The `Source_Data` folder contains the plotted values,
+valid counts, and bootstrap intervals. The default export also includes two
+frequency-wise explanatory maps: MISO minus MAP pairwise coherence and MISO
+minus MAP partial coherence given CO2. These diagnostics are binned display
+axes, not additional assigned generator factors.
 
 Repeated-condition summaries use the same families at every controlled
 level. Intrinsic-factor summaries use different family subsets in fixed

@@ -90,7 +90,11 @@ function results = limitResultsToFrequencyRange( ...
             "minimumNormalizedEigenvalue"
             "reciprocalConditionEstimate"
             "isFiniteSystem"
-            "isPoorlyConditioned"];
+            "isPoorlyConditioned"
+            "mapPairwiseCoherence"
+            "co2PairwiseCoherence"
+            "multipleMinusMapCoherence"
+            "multipleMinusPartialMapCoherence"];
         for fieldIndex = 1:numel(diagnosticFields)
             fieldName = diagnosticFields(fieldIndex);
             if isfield(results.diagnostics, fieldName)

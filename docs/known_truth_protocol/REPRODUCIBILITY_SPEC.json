@@ -1,0 +1,142 @@
+{
+  "status": "Proposed specification; not an implemented or validated MATLAB configuration",
+  "protocol_version": "proposal-v2-frequency-first-2026-09-13",
+  "randomness": {
+    "matlab_generator": "mrg32k3a",
+    "seed": 2026,
+    "substream_formula": "1 + 1000000*stage + 10000*record_role + 10*repetition_index + source",
+    "stage": {
+      "pilot": 0,
+      "production": 1
+    },
+    "record_role": {
+      "estimation": 0,
+      "validation": 1
+    },
+    "source": {
+      "map_source_u": 0,
+      "co2_private_source_v": 1,
+      "output_noise_innovations": 2
+    },
+    "repetition_index": "Zero based; 0..99 for pilot, 0..499 for production",
+    "scenario_pairing": "Scenario excluded from substream ID: reuse base draws across conditions and robustness variants; never share estimation and validation substreams",
+    "reserved_domain": "Only the declared stage, role, repetition and source values; extending their ranges requires a versioned mapping to avoid collisions",
+    "normal_transform": "Inversion",
+    "full_precision": true,
+    "antithetic": false,
+    "official_api_reference": "https://www.mathworks.com/help/matlab/ref/randstream.html"
+  },
+  "generation": {
+    "sampling_hz": 4,
+    "retained_master_seconds": 600,
+    "warmup_seconds": 120,
+    "guard_seconds_each_end": 6,
+    "generated_samples": 2928,
+    "retained_master_first_index_matlab": 505,
+    "retained_master_last_index_matlab": 2904,
+    "primary_samples": 1200,
+    "duration_variant_samples": 2400,
+    "input_scale_policy": "Designed ensemble variance; no short-record variance renormalization",
+    "noise_scale_policy": "Expected full-band output variance; phase variants preserve reference absolute noise variance"
+  },
+  "main_design": {
+    "input_magnitude_squared_coherence": [
+      0,
+      0.5,
+      0.95
+    ],
+    "co2_map_component_rms_ratio": [
+      0,
+      0.25,
+      1
+    ],
+    "output_snr_db": [
+      "Inf",
+      10,
+      0
+    ],
+    "condition_count": 27,
+    "pilot_repetitions_per_condition": 100,
+    "production_repetitions_per_condition": 500,
+    "scenario_id_rule": "Canonical named values, for example c=0.50|q=0.25|snr=10|template=reference-v1; never row number"
+  },
+  "evaluation": {
+    "primary_pathway": "MAP",
+    "primary_band_hz": [
+      0.02,
+      0.5
+    ],
+    "primary_error": "Per frequency: abs(Hestimate-Htruth)^2 / mean_band(abs(Htruth)^2); denominator uses truth only",
+    "fft_samples": 400,
+    "window_samples": 400,
+    "window": "MATLAB hann(400), symmetric convention",
+    "overlap_samples": 200,
+    "spectral_smoothing": [
+      0.25,
+      0.5,
+      0.25
+    ],
+    "phase_truth_gain_fraction": 0.05,
+    "phase_mask": "abs(Htruth) >= max(0.05*RMS_band(abs(Htruth)),sqrt(eps)); identical mask for estimators; no phase at zero truth",
+    "truth": "Exact saved digital filter response; no truth re-estimation",
+    "zero_co2_pathway": "Absolute complex error; normalized error and phase undefined",
+    "primary_advantage": "log10(mean_repetitions(SISO_frequency_error)/mean_repetitions(MISO_frequency_error)); paired finite cases, with separate failure accounting",
+    "score_schema": "v2-ratio-of-mean-errors; incompatible with legacy mean-log-ratio advantage",
+    "band_summary": "Secondary only: sum(abs(Hestimate-Htruth)^2)/sum(abs(Htruth)^2)",
+    "zero_error_ratio": "Both zero: exact tie; one zero: signed infinity with display saturation flag; no added error floor",
+    "uncertainty": "1000 bootstrap draws of whole paired repetition IDs; share resampled IDs across frequencies and scenarios; pointwise 95% intervals"
+  },
+  "analysis_randomness": {
+    "generator": "mrg32k3a",
+    "seed": 2027,
+    "substream": 1,
+    "purpose": "bootstrap repetition-index matrix only; save resolved matrix",
+    "normal_transform": "Inversion",
+    "separate_from_signal_generation": true
+  },
+  "figures": {
+    "primary_axes": {
+      "x": "frequency_hz",
+      "y": "assigned factor level; explicitly condition/facet remaining factors",
+      "color": "log10(mean_repetitions(SISO_frequency_error)/mean_repetitions(MISO_frequency_error)); paired finite cases, with separate failure accounting"
+    },
+    "primary_frequency_hz": {
+      "first": 0.02,
+      "last": 0.5,
+      "step": 0.01,
+      "count": 49
+    },
+    "diagnostic_y": [
+      "multiple_minus_partial_map_cbv_given_co2",
+      "multiple_minus_ordinary_map_cbv"
+    ],
+    "coherence_bin_edges": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "diagnostic_minimum_distinct_repetitions": 30,
+    "diagnostic_weighting": "Equal-weight 27-scenario reference ensemble; facet by SNR; report contributing scenarios and finite-case counts",
+    "phase_bin_width_degrees": 30,
+    "band_averages": "Secondary synopses only",
+    "no_interpolation_of_assigned_levels": true
+  },
+  "real_data_extension": {
+    "status": "Later implementation chunk; not needed for simulation",
+    "noise_surrogate_count_each": 500,
+    "null_types": [
+      "independent white noise",
+      "independent phase-randomized CO2"
+    ],
+    "rng_contract": "Separate versioned namespace keyed by participant, recording, null type and surrogate ID; freeze before real-data implementation",
+    "scope": "Unrelated-input references, not a conditional null preserving MAP-CO2 coupling"
+  }
+}

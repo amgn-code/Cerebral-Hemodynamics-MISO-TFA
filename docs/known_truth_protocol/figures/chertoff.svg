@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="508" height="184" preserveAspectRatio="xMinYMin meet" viewBox="0 0 508 184" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="508" height="184"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-184)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="75" width="86" height="43" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="12.985" y="99.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,199) scale(1,-1)">Gaussian input</text>
+			<text x="36.502" y="87.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,175) scale(1,-1)">x(t)</text>
+			<rect x="145" y="139" width="176" height="40" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="195.9875" y="162.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,324) scale(1,-1)">High-pass, order 2</text>
+			<text x="204.236" y="150.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,300) scale(1,-1)">Cutoff 0.05 Hz</text>
+			<rect x="125" y="10" width="110" height="43" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="148.24349999999998" y="34.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,69) scale(1,-1)">Cubic transform</text>
+			<text x="161.3835" y="22.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,45) scale(1,-1)">0.1 x(t)^3</text>
+			<rect x="267" y="10" width="149" height="43" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="305.4865" y="34.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,69) scale(1,-1)">Low-pass, order 2</text>
+			<text x="315.238" y="22.5" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,45) scale(1,-1)">Cutoff 0.1 Hz</text>
+			<path d="M 86,97 L 106,97 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 106,97 L 106,159 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 106,159 L 145,159 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="145 159, 139 161.5, 139 156.5" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 106,97 L 106,32 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 106,32 L 125,32 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="125 32, 119 34.5, 119 29.5" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 235,32 L 267,32 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="267 32, 261 34.5, 261 29.5" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<circle cx="462" cy="98" r="14" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="457.62" y="94" style="font-family: Helvetica; font-size: 15px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,188) scale(1,-1)">+</text>
+			<path d="M 321,159 L 435,159 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 435,159 L 456,112 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="456 112, 455.8349 118.4979, 451.2698 116.4582" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 416,32 L 435,32 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 435,32 L 456,84 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="456 84, 451.4351 79.37271, 456.0713 77.50039" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 476,98 L 504,98 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="504 98, 498 100.5, 498 95.5" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<text x="482.78" y="118" style="font-family: Helvetica; font-size: 10px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,236) scale(1,-1)">y(t)</text>
+		</g>
+	</g>
+</svg>

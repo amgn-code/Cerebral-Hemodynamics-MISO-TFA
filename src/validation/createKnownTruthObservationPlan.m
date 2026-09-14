@@ -107,8 +107,12 @@ function observationPlan = createKnownTruthObservationPlan(settings)
 
     % Ridge and estimator sensitivity are evaluated once per family at
     % the same standard observation used for non-duration comparisons.
+    runRidge = true;
+    if isfield(settings.estimators, "runRidge")
+        runRidge = settings.estimators.runRidge;
+    end
     observationPlan.RunRidge( ...
-        observationPlan.IsReferenceObservation) = true;
+        observationPlan.IsReferenceObservation) = runRidge;
 
     observationPlan = movevars( ...
         observationPlan, "PlanID", "Before", 1);

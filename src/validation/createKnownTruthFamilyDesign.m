@@ -107,6 +107,13 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
     designBlockId = NaN(numFamilies, 1);
     designBaseRow = NaN(numFamilies, 1);
 
+    if lower(designMode) == "fullfactorial"
+        [factorValues, levelIndices, designBlockId, designBaseRow] = ...
+            createFullFactorialAssignments(valueSets, numFamilies, ...
+            settingsRepetitions(families));
+        return
+    end
+
     if lower(designMode) == "pairwisefivelevel"
         numLevels = cellfun(@numel, valueSets);
         if any(numLevels ~= 5)
@@ -128,8 +135,8 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
     if lower(designMode) ~= "marginalbalanced"
         error( ...
             "TFA:UnknownFamilyDesignMode", ...
-            ['families.designMode must be "marginalBalanced" or ' ...
-             '"pairwiseFiveLevel".']);
+            ['families.designMode must be "marginalBalanced", ' ...
+             '"fullFactorial", or "pairwiseFiveLevel".']);
     end
     for factorIndex = 1:numFactors
         currentValues = valueSets{factorIndex};
@@ -162,7 +169,7 @@ function validateFamilyFactorValues(families)
         {'nonempty', 'finite', 'positive'});
     validateattributes( ...
         families.petco2ToMapBandGainRatioValues, {'numeric'}, ...
-        {'nonempty', 'finite', 'positive'});
+        {'nonempty', 'finite', 'nonnegative'});
     validateattributes( ...
         families.co2DelaySecondsValues, {'numeric'}, ...
         {'nonempty', 'finite', 'nonnegative'});
@@ -180,6 +187,52 @@ function validateFamilyFactorValues(families)
                 "Assigned family factor levels must be unique.");
         end
     end
+
+end
+
+function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
+    createFullFactorialAssignments(valueSets, numFamilies, repetitions)
+% createFullFactorialAssignments Create repeated rows for every combination.
+
+    numLevels = cellfun(@numel, valueSets);
+    numCombinations = prod(numLevels);
+    expectedFamilies = numCombinations*repetitions;
+    if numFamilies ~= expectedFamilies
+        error( ...
+            "TFA:FullFactorialRequiresCompleteDesign", ...
+            ['Full-factorial design requires %d families for %d ' ...
+             'repetition(s), but numFamilies is %d.'], ...
+            expectedFamilies, repetitions, numFamilies);
+    end
+
+    gridValues = cell(1, numel(valueSets));
+    [gridValues{:}] = ndgrid(valueSets{:});
+    baseValues = zeros(numCombinations, numel(valueSets));
+    baseLevels = zeros(numCombinations, numel(valueSets));
+    for factorIndex = 1:numel(valueSets)
+        baseValues(:, factorIndex) = gridValues{factorIndex}(:);
+        [~, baseLevels(:, factorIndex)] = ismember( ...
+            baseValues(:, factorIndex), valueSets{factorIndex});
+    end
+
+    factorValues = repmat(baseValues, repetitions, 1);
+    levelIndices = repmat(baseLevels, repetitions, 1);
+    designBlockId = repelem((1:repetitions)', numCombinations);
+    designBlockId = designBlockId(:);
+    designBaseRow = repmat((1:numCombinations)', repetitions, 1);
+
+end
+
+function repetitions = settingsRepetitions(families)
+% settingsRepetitions Return the explicit full-factorial repetition count.
+
+    repetitions = 1;
+    if isfield(families, "repetitionsPerCondition")
+        repetitions = families.repetitionsPerCondition;
+    end
+    validateattributes( ...
+        repetitions, {'numeric'}, ...
+        {'scalar', 'integer', 'positive', 'finite'});
 
 end
 

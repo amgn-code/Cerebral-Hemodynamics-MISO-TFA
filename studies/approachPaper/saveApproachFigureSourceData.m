@@ -24,6 +24,10 @@ function savedFiles = saveApproachFigureSourceData( ...
             writecell( ...
                 createFormattedFrequencyGrid(sourceData), ...
                 workbookFile, "Sheet", "Readable_grid");
+        elseif isFrequencyAdvantageTable(sourceData)
+            writecell( ...
+                createFormattedFrequencyAdvantageGrid(sourceData), ...
+                workbookFile, "Sheet", "Readable_grid");
         elseif isSurfaceSummaryTable(sourceData)
             writecell( ...
                 createFormattedSurfaceGrid(sourceData), ...
@@ -68,6 +72,10 @@ function savedFiles = saveApproachFigureSourceData( ...
             grid = createFormattedFrequencyGrid(currentData);
             gridSheet = makeSheetName(fieldName + "_grid");
             writecell(grid, workbookFile, "Sheet", gridSheet);
+        elseif isFrequencyAdvantageTable(currentData)
+            grid = createFormattedFrequencyAdvantageGrid(currentData);
+            gridSheet = makeSheetName(fieldName + "_grid");
+            writecell(grid, workbookFile, "Sheet", gridSheet);
         elseif isSurfaceSummaryTable(currentData)
             grid = createFormattedSurfaceGrid(currentData);
             gridSheet = makeSheetName(fieldName + "_grid");
@@ -98,6 +106,17 @@ function tf = isFrequencySummaryTable(data)
     required = [ ...
         "FactorGroup", "FrequencyHz", "Mean", "SD", ...
         "ValidN", "GroupN"];
+    tf = all(ismember( ...
+        required, string(data.Properties.VariableNames)));
+
+end
+
+function tf = isFrequencyAdvantageTable(data)
+% isFrequencyAdvantageTable Identify the primary simple-study heatmap.
+
+    required = [ ...
+        "FactorGroup", "FrequencyHz", "Advantage", ...
+        "BootstrapSD", "PairedValidN", "GroupN"];
     tf = all(ismember( ...
         required, string(data.Properties.VariableNames)));
 
@@ -178,6 +197,60 @@ function grid = createFormattedFrequencyGrid(data)
             if current.ValidN ~= current.GroupN
                 cellText = cellText + " (n=" + ...
                     string(current.ValidN) + ")";
+            end
+            grid{groupIndex + 1,frequencyIndex + 1} = ...
+                char(cellText);
+        end
+    end
+
+end
+
+function grid = createFormattedFrequencyAdvantageGrid(data)
+% createFormattedFrequencyAdvantageGrid Build advantage cells with N.
+
+    [groupLabels, firstGroupRows] = unique( ...
+        string(data.FactorGroup), "stable");
+    frequencies = unique(data.FrequencyHz, "sorted");
+    numGroups = numel(groupLabels);
+    numFrequencies = numel(frequencies);
+
+    grid = cell(numGroups + 1, numFrequencies + 2);
+    grid(1,1) = {"Factor group"};
+    for frequencyIndex = 1:numFrequencies
+        grid{1,frequencyIndex + 1} = sprintf( ...
+            "%.4g Hz", frequencies(frequencyIndex));
+    end
+    grid(1,end) = {"N"};
+
+    for groupIndex = 1:numGroups
+        groupRows = string(data.FactorGroup) == ...
+            groupLabels(groupIndex);
+        grid{groupIndex + 1,1} = char(groupLabels(groupIndex));
+        groupN = data.GroupN(firstGroupRows(groupIndex));
+        grid{groupIndex + 1,end} = groupN;
+
+        for frequencyIndex = 1:numFrequencies
+            row = groupRows & ...
+                data.FrequencyHz == frequencies(frequencyIndex);
+            if ~any(row)
+                grid{groupIndex + 1,frequencyIndex + 1} = "NA";
+                continue
+            end
+
+            current = data(find(row, 1), :);
+            if isfinite(current.Advantage) && ...
+                    isfinite(current.BootstrapSD)
+                cellText = sprintf( ...
+                    "%.4g ± %.4g", ...
+                    current.Advantage, current.BootstrapSD);
+            elseif isfinite(current.Advantage)
+                cellText = sprintf("%.4g", current.Advantage);
+            else
+                cellText = "NA";
+            end
+            if current.PairedValidN ~= current.GroupN
+                cellText = cellText + " (n=" + ...
+                    string(current.PairedValidN) + ")";
             end
             grid{groupIndex + 1,frequencyIndex + 1} = ...
                 char(cellText);

@@ -6,7 +6,13 @@ function [scaledKernel, achievedRatio] = ...
 
     validateattributes( ...
         targetRatio, {'numeric'}, ...
-        {'scalar', 'positive', 'finite'});
+        {'scalar', 'nonnegative', 'finite'});
+
+    if targetRatio == 0
+        scaledKernel = zeros(size(pathwayKernel));
+        achievedRatio = 0;
+        return
+    end
 
     referenceGain = calculateBandAveragedGain( ...
         referenceKernel, samplingFrequencyHz, frequencyRangeHz);

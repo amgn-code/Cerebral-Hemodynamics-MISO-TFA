@@ -81,30 +81,11 @@ function misoResults = runMISOTFA( ...
     unexplainedFraction = 1 - multipleCoherence;
     residualPower = real(cbvPower) .* unexplainedFraction;
 
-    %% Partial Coherence
-
-    cbvCo2 = conj(co2Cbv);
-
-    mapCbvGivenCo2 = mapCbv - (mapCo2 .* co2Cbv) ./ co2Power;
-    mapPowerGivenCo2 = mapPower - (mapCo2 .* co2Map) ./ co2Power;
-    cbvPowerGivenCo2 = cbvPower - (cbvCo2 .* co2Cbv) ./ co2Power;
-
-    partialCohMapCbvGivenCo2 = abs(mapCbvGivenCo2).^2 ./ ...
-        real(mapPowerGivenCo2 .* cbvPowerGivenCo2);
-
-    cbvMap = conj(mapCbv);
-
-    co2CbvGivenMap = co2Cbv - (co2Map .* mapCbv) ./ mapPower;
-    co2PowerGivenMap = co2Power - (co2Map .* mapCo2) ./ mapPower;
-    cbvPowerGivenMap = cbvPower - (cbvMap .* mapCbv) ./ mapPower;
-
-    partialCohCo2CbvGivenMap = abs(co2CbvGivenMap).^2 ./ ...
-        real(co2PowerGivenMap .* cbvPowerGivenMap);
-
-    %% Input-Input Coherence
-
-    inputInputCoherence = abs(mapCo2).^2 ./ ...
-        real(mapPower .* co2Power);
+    coherence = calculateMisoCoherenceDiagnostics( ...
+        spectra, multipleCoherence);
+    partialCohMapCbvGivenCo2 = coherence.partialMapCoherence;
+    partialCohCo2CbvGivenMap = coherence.partialCo2Coherence;
+    inputInputCoherence = coherence.inputCoherence;
 
     %% Phase
 
@@ -166,6 +147,14 @@ function misoResults = runMISOTFA( ...
     misoResults.diagnostics.isFiniteSystem = isFiniteSystem;
     misoResults.diagnostics.isPoorlyConditioned = ...
         isPoorlyConditioned;
+    misoResults.diagnostics.mapPairwiseCoherence = ...
+        coherence.mapPairwiseCoherence;
+    misoResults.diagnostics.co2PairwiseCoherence = ...
+        coherence.co2PairwiseCoherence;
+    misoResults.diagnostics.multipleMinusMapCoherence = ...
+        coherence.multipleMinusMapCoherence;
+    misoResults.diagnostics.multipleMinusPartialMapCoherence = ...
+        coherence.multipleMinusPartialMapCoherence;
 
     misoResults.regularization.enabled = ...
         solverSettings.regularization.enabled;

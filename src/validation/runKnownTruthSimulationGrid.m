@@ -192,6 +192,11 @@ function row = createEmptyObservationRow()
 
     dummyAnalysis.diagnostics.analyzedDurationSeconds = 0;
     dummyAnalysis.diagnostics.inputCoherence = NaN;
+    dummyAnalysis.diagnostics.multipleCoherence = NaN;
+    dummyAnalysis.diagnostics.mapPairwiseCoherence = NaN;
+    dummyAnalysis.diagnostics.co2PairwiseCoherence = NaN;
+    dummyAnalysis.diagnostics.multipleMinusMapCoherence = NaN;
+    dummyAnalysis.diagnostics.multipleMinusPartialMapCoherence = NaN;
     dummyAnalysis.diagnostics.realizedPSDShapeOverlap = NaN;
     dummyAnalysis.diagnostics. ...
         realizedPETCO2ToMAPFluctuationSDRatio = NaN;

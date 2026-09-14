@@ -15,23 +15,19 @@ function values = getSimulationFrequencyError( ...
 
     truth = pathwayResults.truth;
     estimate = pathwayResults.(modelName + "Estimate");
-    complete = isfinite(truth) & isfinite(estimate);
 
-    values = NaN(size(truth));
+    % Reconstruct old result files with the same definitions used by the
+    % current truth-error calculation. In particular, the complex-error
+    % denominator must depend on truth, not on which estimate is finite.
+    errors = calculateFrequencyTruthErrors( ...
+        estimate, truth, errorFloor);
     switch errorType
         case "complex"
-            numerator = abs(estimate - truth).^2;
-            denominator = max(abs(truth).^2, errorFloor);
-            values(complete) = ...
-                numerator(complete)./denominator(complete);
+            values = errors.complex;
         case "gain"
-            gainError = abs(abs(estimate) - abs(truth));
-            values(complete) = gainError(complete);
+            values = errors.gain;
         case "phase"
-            phaseDefined = complete & ...
-                abs(truth) > sqrt(errorFloor);
-            phaseError = abs(angle(estimate.*conj(truth)));
-            values(phaseDefined) = phaseError(phaseDefined);
+            values = errors.phase;
         otherwise
             error( ...
                 "TFA:UnknownFrequencyErrorType", ...

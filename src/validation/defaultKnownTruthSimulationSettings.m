@@ -8,7 +8,7 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
 %   3. An observation changes duration, noise, or alignment without
 %      changing the underlying family or physiological truth.
 %
-% Use "quick" for fast unit checks, "designSmoke" for one complete
+% Use "simple" for the small interpretable study, "quick" for fast unit checks, "designSmoke" for one complete
 % pairwise-balanced block, "proof250" for the presentation proof of
 % concept, and "paper1000" for the likely final-paper simulation.
 
@@ -124,6 +124,8 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
     %% Profile Sizes
 
     switch profileName
+        case "simple"
+            settings = applySimpleStudy(settings);
         case "quick"
             settings.families.numFamilies = 8;
             settings.families.progressEvery = 1;
@@ -166,11 +168,11 @@ function profileName = canonicalProfileName(profileName)
     if profileName == "paper"
         profileName = "paper1000";
     end
-    validProfiles = ["quick" "designsmoke" "proof250" "paper1000"];
+    validProfiles = ["simple" "quick" "designsmoke" "proof250" "paper1000"];
     if ~ismember(profileName, validProfiles)
         error( ...
             "TFA:UnknownSimulationProfile", ...
-            ['Simulation profileName must be "quick", "designSmoke", ' ...
+            ['Simulation profileName must be "simple", "quick", "designSmoke", ' ...
              '"proof250", or "paper1000".']);
     end
 
@@ -186,5 +188,56 @@ function settings = applyFullSweep(settings)
     settings.observations.inputNoiseSnrDb = ...
         [Inf 30 20 15 10 5 0];
     settings.observations.alignmentErrorSeconds = [-6 -3 0 3 6];
+
+end
+
+function settings = applySimpleStudy(settings)
+% applySimpleStudy Configure the small, interpretable simulation study.
+%
+% Only coherence, CO2 pathway strength, output noise, duration, alignment,
+% and Welch window length vary. The other generator settings are held fixed
+% so that the results have a direct interpretation.
+
+    settings.profileName = "simple";
+    settings.frequencyRangeHz = [0.02 0.50];
+    settings.frequencyBandEdgesHz = [0.02; 0.05; 0.10; 0.20; 0.50];
+    settings.frequencyBandNames = ["0.02-0.05"; "0.05-0.10"; ...
+        "0.10-0.20"; "0.20-0.50"];
+
+    settings.families.targetCoherenceValues = [0 0.50 0.95];
+    settings.families.spectralSimilarityValues = 1;
+    settings.families.petco2ToMapFluctuationSdRatioValues = 1;
+    settings.families.petco2ToMapBandGainRatioValues = [0 0.25 1];
+    settings.families.co2DelaySecondsValues = 3;
+    settings.families.mapPathwayTimeConstantRange = [3 3];
+    settings.families.co2PathwayTimeConstantRange = [5 5];
+    settings.families.designMode = "fullFactorial";
+    settings.families.repetitionsPerCondition = 1;
+    settings.families.numFamilies = 9;
+    settings.families.progressEvery = 1;
+
+    settings.inputs.maximumCenterSeparationHz = 0;
+    settings.inputs.mapStandardDeviation = 1;
+
+    settings.observations.referenceDurationSeconds = 300;
+    settings.observations.referenceOutputSnrDb = 10;
+    settings.observations.durationSeconds = [300 600];
+    settings.observations.outputSnrDb = [Inf 10 0];
+    settings.observations.inputNoiseSnrDb = Inf;
+    settings.observations.alignmentErrorSeconds = [-3 0 3];
+    settings.observations.runInputNoiseExperiment = false;
+    settings.observations.runAlignmentExperiment = true;
+
+    settings.welch.windowLengthSeconds = 100;
+    settings.welch.windowOverlap = 0.5;
+    settings.welch.minimumWindows = 3;
+    settings.estimatorSensitivity.enabled = true;
+    settings.estimatorSensitivity.windowLengthSeconds = [100 128];
+    settings.estimatorSensitivity.windowOverlap = 0.5;
+    settings.estimators.runRidge = false;
+
+    settings.grouping.inputCoherenceEdges = 0:0.25:1;
+    settings.grouping.petco2ContributionPowerShareEdges = 0:0.25:1;
+    settings.grouping.minimumValidN = 1;
 
 end

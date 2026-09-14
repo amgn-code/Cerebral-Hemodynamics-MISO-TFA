@@ -1,0 +1,88 @@
+classdef platformInterfaceTest < matlab.unittest.TestCase
+    % platformInterfaceTest Verify the clean platform boundary.
+
+    methods (TestClassSetup)
+        function addProjectFolders(testCase)
+            projectRoot = fileparts(fileparts(mfilename("fullpath")));
+            testCase.applyFixture( ...
+                matlab.unittest.fixtures.PathFixture( ...
+                    projectRoot, IncludingSubfolders=true));
+            setupPlatform();
+        end
+    end
+
+    methods (Test)
+        function dataPageReturnsCanonicalData(testCase)
+            [temporaryFolder, inputFile] = createInputWorkbook();
+            testCase.addTeardown(@() rmdir(temporaryFolder, "s"));
+
+            connectedData = connectData(inputFile);
+
+            testCase.verifyEqual(connectedData.interfaceName, ...
+                "dataConnection");
+            testCase.verifyEqual(connectedData.subjectInfo.group, "UserData");
+            testCase.verifyTrue(isfield(connectedData.signalData, "map"));
+            testCase.verifyTrue(isfield(connectedData.signalData, "co2"));
+            testCase.verifyTrue(isfield(connectedData.signalData, "cbv"));
+        end
+
+        function modelPagesUseConnectedData(testCase)
+            [temporaryFolder, inputFile] = createInputWorkbook();
+            testCase.addTeardown(@() rmdir(temporaryFolder, "s"));
+            connectedData = connectData(inputFile);
+
+            misoSettings = defaultMisoRealDataSettings();
+            misoSettings.pwelch.windowLengthSeconds = 32;
+            sisoSettings = defaultSisoRealDataSettings();
+            sisoSettings.pwelch.windowLengthSeconds = 32;
+
+            miso = misoTesting(connectedData, misoSettings);
+            siso = sisoTesting(connectedData, sisoSettings);
+
+            testCase.verifyTrue(miso.runStatus.analysisSucceeded);
+            testCase.verifyTrue(siso.runStatus.analysisSucceeded);
+            testCase.verifyEqual(miso.interfaceName, "misoTesting");
+            testCase.verifyEqual(siso.interfaceName, "sisoTesting");
+        end
+
+        function simulationPagesExposeSettingsAndRunner(testCase)
+            settings = simulationSettings("quick");
+
+            testCase.verifyEqual(settings.interfaceName, "simulationSettings");
+            testCase.verifyEqual(settings.profileName, "quick");
+            testCase.verifyTrue(isfield(settings, "simulation"));
+
+            settings.simulation.families.numFamilies = 1;
+            settings.simulation.families.progressEvery = 1;
+            settings.simulation.observations.durationSeconds = 300;
+            settings.simulation.observations.outputSnrDb = 15;
+            settings.simulation.observations.referenceDurationSeconds = 300;
+            settings.simulation.observations.referenceOutputSnrDb = 15;
+            settings.simulation.observations.runInputNoiseExperiment = false;
+            settings.simulation.observations.runAlignmentExperiment = false;
+            settings.simulation.estimatorSensitivity.enabled = false;
+            settings.simulation.estimators.runRidge = false;
+
+            results = runSimulation(settings);
+
+            testCase.verifyEqual(results.interfaceName, "simulationRunner");
+            testCase.verifyEqual(results.numFamilies, 1);
+            testCase.verifyGreaterThanOrEqual(results.numObservations, 1);
+        end
+    end
+end
+
+function [temporaryFolder, inputFile] = createInputWorkbook()
+% createInputWorkbook Create one deterministic Excel fixture.
+
+    temporaryFolder = tempname();
+    mkdir(temporaryFolder);
+    signalData = createSyntheticSignal(4);
+    inputTable = table( ...
+        signalData.t(:), signalData.map(:), ...
+        signalData.co2(:), signalData.cbv(:), ...
+        'VariableNames', {'Time', 'MAP', 'CO2', 'CBV'});
+    inputFile = fullfile(temporaryFolder, "platform_recording.xlsx");
+    writetable(inputTable, inputFile, "Sheet", "Sheet1");
+
+end

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="508" height="208" preserveAspectRatio="xMinYMin meet" viewBox="0 0 508 208" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="508" height="208"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-208)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="163" y="165" width="182" height="38" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="216.4835" y="187.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,374) scale(1,-1)">One fixed scenario</text>
+			<text x="208.9775" y="175.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,350) scale(1,-1)">Saved true hM and hC</text>
+			<rect x="0" y="100" width="210" height="40" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="63.235499999999995" y="123.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,246) scale(1,-1)">Record A: estimation</text>
+			<text x="68.739" y="111.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">Random stream A</text>
+			<rect x="298" y="100" width="210" height="40" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="362.734" y="123.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,246) scale(1,-1)">Record B: validation</text>
+			<text x="342.2185" y="111.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">Independent random stream B</text>
+			<path d="M 190,165 L 105,140 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="105 140, 111.4616 139.2946, 110.0508 144.0914" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 318,165 L 403,140 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="403 140, 397.9492 144.0914, 396.5384 139.2946" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<rect x="0" y="36" width="210" height="40" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="53.979" y="59.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,118) scale(1,-1)">Estimate SISO and MISO</text>
+			<text x="58.983" y="47.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,94) scale(1,-1)">Freeze their responses</text>
+			<rect x="298" y="36" width="210" height="40" style="stroke: rgb(14%,30%,45%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(92%,94%,96%); fill-rule: evenodd;"/>
+			<text x="349.7245" y="59.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,118) scale(1,-1)">Evaluate frozen responses</text>
+			<text x="335.97249999999997" y="47.0" style="font-family: Helvetica; font-size: 9px;fill: rgb(12%,15%,20%); stroke:none;" transform="translate(0,94) scale(1,-1)">Independent-record spectral error</text>
+			<path d="M 105,100 L 105,76 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="105 76, 107.5 82, 102.5 82" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 403,100 L 403,76 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="403 76, 405.5 82, 400.5 82" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<path d="M 210,56 L 298,56 Z" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="298 56, 292 58.5, 292 53.5" style="stroke: rgb(40%,44%,49%); stroke-linecap: butt; stroke-width: 1; fill: rgb(40%,44%,49%); fill-rule: evenodd;"/>
+			<text x="90.69049999999999" y="14" style="font-family: Helvetica; font-size: 9px;fill: rgb(14%,30%,45%); stroke:none;" transform="translate(0,28) scale(1,-1)">Primary accuracy: compare estimated responses with the saved generating filters.</text>
+		</g>
+	</g>
+</svg>

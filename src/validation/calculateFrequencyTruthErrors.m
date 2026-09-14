@@ -7,6 +7,9 @@ function errors = calculateFrequencyTruthErrors( ...
 % explode. Phase is omitted where the true gain is too small to define it
 % reliably.
 
+    if nargin < 3
+        errorFloor = eps;
+    end
     if nargin < 4
         phaseMinimumGainFraction = 0.05;
     end
@@ -23,11 +26,27 @@ function errors = calculateFrequencyTruthErrors( ...
     estimatedGain = abs(estimate);
     errors.gain(complete) = abs( ...
         estimatedGain(complete) - truthGain(complete));
-    truthBandRmsGain = sqrt(mean(truthGain(complete).^2, "omitnan"));
-    normalizationPower = max(truthBandRmsGain^2, errorFloor);
-    errors.complex(complete) = ...
-        abs(estimate(complete) - truth(complete)).^2/ ...
-        normalizationPower;
+
+    % Calculate the normalization from truth only. The set of finite
+    % estimates can differ between SISO and MISO, so using the complete
+    % mask here would give the two methods different denominators.
+    finiteTruth = isfinite(truth);
+    truthBandRmsGain = sqrt(mean(truthGain(finiteTruth).^2, "omitnan"));
+
+    if truthBandRmsGain^2 > errorFloor
+        normalizationPower = truthBandRmsGain^2;
+        errors.complex(complete) = ...
+            abs(estimate(complete) - truth(complete)).^2/ ...
+            normalizationPower;
+        errors.complexNormalization = "truth-band-rms";
+    else
+        % A zero pathway has no meaningful normalized denominator. Keep
+        % its squared complex error on an absolute scale instead.
+        normalizationPower = 1;
+        errors.complex(complete) = ...
+            abs(estimate(complete) - truth(complete)).^2;
+        errors.complexNormalization = "absolute";
+    end
 
     phaseThreshold = max( ...
         phaseMinimumGainFraction*truthBandRmsGain, sqrt(errorFloor));
@@ -37,5 +56,6 @@ function errors = calculateFrequencyTruthErrors( ...
     errors.phaseValid = phaseDefined;
     errors.truthBandRmsGain = truthBandRmsGain;
     errors.phaseGainThreshold = phaseThreshold;
+    errors.complexNormalizationPower = normalizationPower;
 
 end

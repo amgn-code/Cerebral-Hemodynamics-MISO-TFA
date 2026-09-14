@@ -9,6 +9,11 @@ function results = initializeKnownTruthFrequencyResults( ...
     results.frequencyHz = frequencyHz(:);
     results.observationId = NaN(1, numObservations);
     results.inputCoherence = realArray;
+    results.mapPairwiseCoherence = realArray;
+    results.co2PairwiseCoherence = realArray;
+    results.multipleCoherence = realArray;
+    results.multipleMinusMapCoherence = realArray;
+    results.multipleMinusPartialMapCoherence = realArray;
     results.normalizedConditionNumber = realArray;
     results.normalizedDeterminant = realArray;
 
