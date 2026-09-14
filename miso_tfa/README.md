@@ -55,7 +55,7 @@ Run the independent test set with:
 
 ```matlab
 project = setup;
-results = runtests(project.tests);
+results = runIndependentTests;
 table(results)
 ```
 
