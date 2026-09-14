@@ -28,7 +28,11 @@ classdef simpleKnownTruthSimulationTest < matlab.unittest.TestCase
             testCase.verifyEqual( ...
                 settings.families.co2DelaySecondsValues, 3);
             testCase.verifyEqual( ...
-                settings.frequencyRangeHz, [0.02 0.5]);
+                settings.families.inputPhaseLagSecondsValues, 0);
+            testCase.verifyEqual( ...
+                settings.observations.inputNoiseSnrDb, [Inf 10 0]);
+            testCase.verifyEqual( ...
+                settings.frequencyRangeHz, [0.005 0.35]);
         end
 
         function fullFactorialDesignContainsAllNinePairs(testCase)
@@ -60,11 +64,37 @@ classdef simpleKnownTruthSimulationTest < matlab.unittest.TestCase
                 family.training.truth.achievedPETCO2ToMAPBandGainRatio, 0);
         end
 
+        function phaseLagIsAnExplicitFamilyFactor(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            settings.families.inputPhaseLagSecondsValues = [-2 0 2];
+            settings.families.numFamilies = 27;
+            design = createKnownTruthFamilyDesign(settings);
+
+            testCase.verifyEqual( ...
+                unique(design.InputPhaseLagSeconds)', [-2 0 2]);
+            testCase.verifyTrue( ...
+                all(ismember("InputPhaseLagSeconds", design.Properties.VariableNames)));
+        end
+
+        function inputNoiseExperimentsKeepInputsSeparate(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            plan = createKnownTruthObservationPlan(settings);
+
+            mapRows = plan.Experiment == "MAP input noise";
+            co2Rows = plan.Experiment == "CO2 input noise";
+            testCase.verifyEqual( ...
+                plan.MAPInputSNRdB(mapRows), [Inf; 10; 0]);
+            testCase.verifyEqual( ...
+                plan.CO2InputSNRdB(co2Rows), [Inf; 10; 0]);
+            testCase.verifyTrue(all(isinf(plan.CO2InputSNRdB(mapRows))));
+            testCase.verifyTrue(all(isinf(plan.MAPInputSNRdB(co2Rows))));
+        end
+
         function simpleRunStoresThreeNoiseLevels(testCase)
             results = runSimpleKnownTruthSimulation(1);
 
             testCase.verifyEqual(results.numFamilies, 9);
-            testCase.verifyEqual(results.numObservations, 81);
+            testCase.verifyEqual(results.numObservations, 135);
             testCase.verifyTrue(all(ismember( ...
                 [Inf; 10; 0], results.observationPlan.OutputSNRdB)));
             testCase.verifyEqual( ...

@@ -29,6 +29,19 @@ Simulation, real-data analysis, and NC validation share the numerical modules
 under `modules/`, but their settings and results remain separate. Generated
 files belong under `output/` and are not source code.
 
+The primary simulation factor schema contains MAP-CO2 input coherence,
+MAP-CO2 input phase lag, relative CO2 pathway strength, recording duration,
+CBFV output SNR, MAP measurement SNR, and CO2 measurement SNR. CO2 timing
+misalignment is a secondary robustness condition. Each level carries a
+provenance label in `config/simulationFactors.m`; provisional levels must be
+confirmed against NC data or cited physiology before the final paper run.
+
+The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. The primary reporting
+band ends at 0.35 Hz. The simulation stores a separate pathway-calibration
+band so changing the displayed band cannot change the generated pathway truth.
+The primary workflow uses the unregularized MISO solution; ridge sensitivity is
+not part of the simplified study.
+
 Run the independent test set with:
 
 ```matlab
@@ -41,3 +54,8 @@ The factor table, estimands, calibration-band decision, provenance labels, and
 final protocol will be added to `config/` and `docs/` before the final study
 run. The current parent-level files are migration sources and are not required
 by this project.
+
+Saved simulation archives can be replayed without rebuilding settings by
+calling `replaySimulation("/path/to/simulation_results.mat")`. The replay
+function uses the saved interface settings and manifest rather than today's
+defaults.

@@ -16,11 +16,16 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
         profileName = "quick";
     end
     profileName = canonicalProfileName(profileName);
+    projectConfiguration = projectSettings();
 
     settings.profileName = profileName;
     settings.randomSeed = 2026;
-    settings.samplingFrequencyHz = 4;
-    settings.frequencyRangeHz = [0.005 0.35];
+    settings.samplingFrequencyHz = ...
+        projectConfiguration.samplingFrequencyHz;
+    settings.frequencyRangeHz = ...
+        projectConfiguration.analysis.reportingBandHz;
+    settings.pathways.calibrationBandHz = ...
+        projectConfiguration.analysis.pathwayCalibrationBandHz;
     settings.frequencyBandEdgesHz = ...
         [0.005; 0.024; 0.070; 0.200; 0.350];
     settings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
@@ -37,6 +42,7 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
     settings.families.petco2ToMapBandGainRatioValues = ...
         [0.10 0.50 1 2 4];
     settings.families.co2DelaySecondsValues = [0 2.5 5 7.5 10];
+    settings.families.inputPhaseLagSecondsValues = 0;
     settings.families.mapPathwayTimeConstantRange = [1 4];
     settings.families.co2PathwayTimeConstantRange = [2 8];
     settings.families.designMode = "marginalBalanced";
@@ -100,7 +106,10 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
 
     %% Estimators and Saved Metrics
 
-    settings.estimators.ridgeLambdas = [0.001 0.01 0.1];
+    % Ridge is not part of the simplified primary study. The numerical
+    % solver retains an optional branch for historical diagnostics, but the
+    % independent project does not schedule or export ridge analyses.
+    settings.estimators.ridgeLambdas = [];
 
     % These one-factor-at-a-time checks use the same reference observation.
     settings.estimatorSensitivity.enabled = true;
@@ -194,21 +203,25 @@ end
 function settings = applySimpleStudy(settings)
 % applySimpleStudy Configure the small, interpretable simulation study.
 %
-% Only coherence, CO2 pathway strength, output noise, duration, alignment,
-% and Welch window length vary. The other generator settings are held fixed
-% so that the results have a direct interpretation.
+% The simple profile varies coherence, CO2 pathway strength, recording
+% duration, CBFV output noise, MAP input noise, and CO2 input noise. Input
+% phase is fixed at zero until its factor levels are confirmed. Alignment is
+% retained as a secondary robustness condition. Welch settings and nuisance
+% physiology remain fixed.
 
     settings.profileName = "simple";
-    settings.frequencyRangeHz = [0.02 0.50];
-    settings.frequencyBandEdgesHz = [0.02; 0.05; 0.10; 0.20; 0.50];
-    settings.frequencyBandNames = ["0.02-0.05"; "0.05-0.10"; ...
-        "0.10-0.20"; "0.20-0.50"];
+    settings.frequencyRangeHz = [0.005 0.35];
+    settings.pathways.calibrationBandHz = [0.005 0.35];
+    settings.frequencyBandEdgesHz = [0.005; 0.025; 0.070; 0.200; 0.350];
+    settings.frequencyBandNames = ["0.005-0.025"; "0.025-0.070"; ...
+        "0.070-0.200"; "0.200-0.350"];
 
     settings.families.targetCoherenceValues = [0 0.50 0.95];
     settings.families.spectralSimilarityValues = 1;
     settings.families.petco2ToMapFluctuationSdRatioValues = 1;
     settings.families.petco2ToMapBandGainRatioValues = [0 0.25 1];
     settings.families.co2DelaySecondsValues = 3;
+    settings.families.inputPhaseLagSecondsValues = 0;
     settings.families.mapPathwayTimeConstantRange = [3 3];
     settings.families.co2PathwayTimeConstantRange = [5 5];
     settings.families.designMode = "fullFactorial";
@@ -223,9 +236,9 @@ function settings = applySimpleStudy(settings)
     settings.observations.referenceOutputSnrDb = 10;
     settings.observations.durationSeconds = [300 600];
     settings.observations.outputSnrDb = [Inf 10 0];
-    settings.observations.inputNoiseSnrDb = Inf;
+    settings.observations.inputNoiseSnrDb = [Inf 10 0];
     settings.observations.alignmentErrorSeconds = [-3 0 3];
-    settings.observations.runInputNoiseExperiment = false;
+    settings.observations.runInputNoiseExperiment = true;
     settings.observations.runAlignmentExperiment = true;
 
     settings.welch.windowLengthSeconds = 100;

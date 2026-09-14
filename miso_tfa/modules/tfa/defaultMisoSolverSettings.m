@@ -2,7 +2,8 @@ function solverSettings = defaultMisoSolverSettings()
 % defaultMisoSolverSettings Return readable defaults for the MISO solve.
 %
 % The ordinary, unregularized MISO solution remains the default. Ridge
-% regularization is available as an explicit sensitivity analysis.
+% regularization remains available only for an explicit legacy sensitivity
+% analysis; it is not part of the independent project's primary workflow.
 
     solverSettings.regularization.enabled = false;
     solverSettings.regularization.lambda = 0;
