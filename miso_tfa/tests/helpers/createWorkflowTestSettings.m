@@ -13,7 +13,11 @@ function [analysisSettings, outputSettings] = createWorkflowTestSettings( ...
     analysisSettings.statistics.primaryBandNames = ["VLF"; "LF"];
     analysisSettings.plot = defaultPlotSettings("none");
 
-    outputSettings = defaultTfaOutputSettings(outputFolder, "none");
+    % The independent project has no legacy batch/export workflow. Keep the
+    % second return value for older test call sites, but do not reach back
+    % into the parent project's output settings.
+    outputSettings = struct();
+    outputSettings.baseOutputFolder = string(outputFolder);
     outputSettings.saveSubjectFigures = false;
     outputSettings.saveBatchFigures = false;
     outputSettings.saveExcel = false;

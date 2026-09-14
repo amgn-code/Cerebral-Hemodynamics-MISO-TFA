@@ -5,5 +5,8 @@ settings.normalizeCbv = true;
 settings.detrendEnabled = false;
 settings.detrendOrder = 1;
 settings.meanRemovalEnabled = false;
+settings.maximumGapSeconds = 2;
+settings.maximumCo2StartupSeconds = 45;
+settings.co2StartupStableFraction = 0.80;
 
 end

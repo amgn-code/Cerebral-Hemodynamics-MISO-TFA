@@ -7,7 +7,7 @@ function settings = defaultNcBootstrapSettings()
 % at least two training Welch segments for the two-input MISO solve.
 
     analysis = defaultTfaAnalysisSettings("NC");
-    analysis.frequencyRangeHz = [0.02 0.50];
+    analysis.frequencyRangeHz = [0.02 0.35];
     analysis.pwelch.windowLengthSeconds = 90;
     analysis.pwelch.windowOverlap = 0;
     analysis.pwelch.minimumWindows = 2;

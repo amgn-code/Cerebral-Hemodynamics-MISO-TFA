@@ -128,6 +128,11 @@ function misoResults = runMISOTFA( ...
     misoResults.cbv.power = cbvPower;
 
     misoResults.system.multipleCoherence = multipleCoherence;
+    effectiveAverages = spectra.welchInfo.effectiveAverages;
+    misoResults.system.nullMultipleCoherence = min( ...
+        1, 2/effectiveAverages);
+    misoResults.system.multipleCoherenceAboveNull = ...
+        multipleCoherence - misoResults.system.nullMultipleCoherence;
     misoResults.system.unexplainedFraction = unexplainedFraction;
     misoResults.system.residualPower = residualPower;
 

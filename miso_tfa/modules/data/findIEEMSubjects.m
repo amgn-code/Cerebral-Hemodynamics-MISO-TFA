@@ -1,5 +1,5 @@
 function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
-% findIEEMSubjects Find subject Excel files in the selected group folders.
+% findIEEMSubjects Find subject Excel or CSV files in group folders.
 %
 % Expected file organization:
 %   dataFolder/MCI/528_baseline.xlsx
@@ -13,7 +13,7 @@ function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
         error("groupsToRun must contain at least one group folder name.");
     end
 
-    %% Find Excel Files in Each Group Folder
+    %% Find Data Files in Each Group Folder
 
     groupFileLists = cell(numel(groupsToRun), 1);
     maximumPossibleSubjects = 0;
@@ -27,8 +27,7 @@ function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
             continue
         end
 
-        groupFileLists{groupIndex} = ...
-            dir(fullfile(groupFolder, "*.xlsx"));
+        groupFileLists{groupIndex} = listDataFiles(groupFolder);
         maximumPossibleSubjects = maximumPossibleSubjects + ...
             numel(groupFileLists{groupIndex});
     end
@@ -53,8 +52,9 @@ function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
                 continue
             end
 
-            tokens = regexp( ...
-                fileName, '^(\d+)_(.+)\.xlsx$', 'tokens', 'once');
+            tokens = regexpi( ...
+                fileName, '^(\d+)_(.+)\.(xlsx|xls|csv)$', ...
+                'tokens', 'once');
 
             if isempty(tokens)
                 warning( ...
@@ -73,7 +73,7 @@ function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
     end
 
     if numSubjects == 0
-        error("No subject Excel files were found.");
+        error("No subject Excel or CSV files were found.");
     end
 
     %% Create the Subject List
@@ -99,5 +99,20 @@ function subjectList = findIEEMSubjects(dataFolder, groupsToRun)
         subjectList, {'GroupOrder', 'NumericSubjectID', 'SourceFile'});
     subjectList.GroupOrder = [];
     subjectList.NumericSubjectID = [];
+
+end
+
+function files = listDataFiles(groupFolder)
+% listDataFiles Return supported recording files in a stable name order.
+
+files = [ ...
+    dir(fullfile(groupFolder, "*.xlsx")); ...
+    dir(fullfile(groupFolder, "*.xls")); ...
+    dir(fullfile(groupFolder, "*.csv"))];
+if isempty(files)
+    return
+end
+files = sortrows(struct2table(files), "name");
+files = table2struct(files);
 
 end

@@ -1,77 +1,125 @@
-function signalData = loadSubjectData(filePath)
-% loadSubjectData Read time, MAP, CO2, and CBV from one Excel file.
+function signalData = loadSubjectData(filePath, importSettings)
+% loadSubjectData Read canonical time, MAP, CO2, and CBV columns.
+%
+% Excel and CSV files are supported. Header matching is case-insensitive and
+% ignores spaces and punctuation. Optional columnMap overrides are useful for
+% device-specific exports without editing this function.
 
-    % Define Possible Sheet Names
-    sheetNames = ["sheet_1", "cleaned", "Cleaned", "Sheet1", "sheet1"];
+if nargin < 2 || isempty(importSettings)
+    importSettings = struct();
+end
 
-    % Define Possible Header Names
-    headerNames = {
-        't', ["Time", "time", "Seconds", "seconds", "Sec", "sec"];
-        'map', ["MAP", "map", "MAP", "map", "Portapres", "portapres", "Mean (CH 2, Finapress)"];
-        'co2', ["ETCO2", "CO2", "Peak_ETCO2", "PETCO2", "Mean (CH 5, Peak maximum)", "Mean (CH 5, Peak EtCO2)"];
-        'cbv', ["CBV", "cbv", "CBVV", "cbvv", "TCD", "tcd", "Vmean", "Mean (CH 3, TCD)"]
-        };
+filePath = string(filePath);
+[~, ~, extension] = fileparts(lower(filePath));
+if ~ismember(extension, [".xlsx" ".xls" ".csv"])
+    error("TFA:UnsupportedDataFile", ...
+        "Use an Excel (.xlsx/.xls) or CSV (.csv) recording file.");
+end
 
-    % Find Sheet w/ a Defined Sheet Name Above
-    fileSheets = sheetnames(filePath);
-    matchedSheets = intersect(fileSheets, sheetNames, 'stable');
+sheetNames = ["sheet_1", "cleaned", "Cleaned", "Sheet1", "sheet1"];
+headerNames = { ...
+    't', ["Time", "Seconds", "Sec"]; ...
+    'map', ["MAP", "Portapres", "Mean (CH 2, Finapress)"]; ...
+    'co2', ["ETCO2", "CO2", "Peak_ETCO2", "PETCO2", ...
+        "Mean (CH 5, Peak maximum)", ...
+        "Mean (CH 5, Peak EtCO2)"]; ...
+    'cbv', ["CBV", "CBVV", "TCD", "Vmean", ...
+        "Mean (CH 3, TCD)"]};
 
-    % Error Message If No Sheet Name Is Found
-    if isempty(matchedSheets)
+if extension == ".csv"
+    importedTable = readtable(filePath, ...
+        'VariableNamingRule', 'preserve');
+else
+    fileSheets = string(sheetnames(filePath));
+    selectedSheet = selectSheet(fileSheets, sheetNames);
+    if strlength(selectedSheet) == 0
         error( ...
             'TFA:MissingDataSheet', ...
             'No matching data sheet found. Expected one of: %s. Found: %s.', ...
-            strjoin(sheetNames, ', '), strjoin(string(fileSheets), ', '));
+            strjoin(sheetNames, ', '), strjoin(fileSheets, ', '));
+    end
+    importedTable = readtable(filePath, 'Sheet', selectedSheet, ...
+        'VariableNamingRule', 'preserve');
+end
+
+headers = string(importedTable.Properties.VariableNames);
+normalizedHeaders = normalizeHeader(headers);
+signalData = struct();
+
+for signalIndex = 1:size(headerNames, 1)
+    standardName = string(headerNames{signalIndex, 1});
+    possibleNames = string(headerNames{signalIndex, 2});
+    requestedHeader = getMappedHeader(importSettings, standardName);
+
+    if strlength(requestedHeader) > 0
+        columnIndex = find( ...
+            normalizedHeaders == normalizeHeader(requestedHeader));
+    else
+        columnIndex = find(ismember( ...
+            normalizedHeaders, normalizeHeader(possibleNames)));
     end
 
-    % Extract Excel Data At Found Sheet
-    excelData = readtable(filePath, 'Sheet', matchedSheets(1), ...
-                                    'VariableNamingRule', 'preserve');
-
-    % Extract Headers From The Data
-    headers = string(excelData.Properties.VariableNames);
-
-    % Initialze Struct for containing Signal Data
-    signalData = struct();
-
-    % Iterate Through Header Names Above to Find Matching Header
-    for signalIndex = 1:size(headerNames, 1)
-        standardName = headerNames{signalIndex,1};
-        possibleNames = headerNames{signalIndex,2};
-
-        % Find Column with respective header name
-        columnIndex = find(ismember(headers, possibleNames));
-
-        % Error message if no such column is found
-        if isempty(columnIndex)
-            error( ...
-                'TFA:MissingDataColumn', ...
-                'Missing required %s column. Expected one of: %s. Found: %s.', ...
-                string(standardName), strjoin(possibleNames, ', '), ...
-                strjoin(headers, ', '));
-
-        elseif numel(columnIndex) > 1
-            error( ...
-                'TFA:AmbiguousDataColumn', ...
-                'Multiple columns matched %s aliases: %s.', ...
-                string(standardName), strjoin(headers(columnIndex), ', '));
-
-        else
-            % If a header is found then assign its column as an horizontal
-            % array in the signalData struct
-            matchedHeader = headers(columnIndex);
-
-            signalValues = excelData{:,matchedHeader};
-
-            if ~isnumeric(signalValues)
-                error( ...
-                    'TFA:NonNumericDataColumn', ...
-                    'The required %s column must contain numeric values.', ...
-                    string(standardName));
-            end
-
-            signalData.(standardName) = reshape(signalValues, 1, []);
-        end
-
+    if isempty(columnIndex)
+        error( ...
+            'TFA:MissingDataColumn', ...
+            ['Missing required %s column. Expected one of: %s. ' ...
+             'Found: %s.'], ...
+            standardName, strjoin(possibleNames, ', '), ...
+            strjoin(headers, ', '));
+    elseif numel(columnIndex) > 1
+        error( ...
+            'TFA:AmbiguousDataColumn', ...
+            'Multiple columns matched %s aliases: %s.', ...
+            standardName, strjoin(headers(columnIndex), ', '));
     end
+
+    signalValues = importedTable{:, columnIndex};
+    if ~isnumeric(signalValues)
+        error( ...
+            'TFA:NonNumericDataColumn', ...
+            'The required %s column must contain numeric values.', ...
+            standardName);
+    end
+    signalData.(standardName) = reshape(signalValues, 1, []);
+end
+
+end
+
+function selectedSheet = selectSheet(fileSheets, preferredSheets)
+% selectSheet Honor the declared alias priority rather than tab order.
+
+selectedSheet = "";
+normalizedFileSheets = normalizeHeader(fileSheets);
+for sheetIndex = 1:numel(preferredSheets)
+    match = find(normalizedFileSheets == ...
+        normalizeHeader(preferredSheets(sheetIndex)), 1);
+    if ~isempty(match)
+        selectedSheet = fileSheets(match);
+        return
+    end
+end
+
+end
+
+function normalized = normalizeHeader(headers)
+% normalizeHeader Make matching tolerant to case, spaces, and punctuation.
+
+normalized = lower(regexprep(string(headers), '[^a-zA-Z0-9]', ''));
+
+end
+
+function mappedHeader = getMappedHeader(importSettings, signalName)
+% getMappedHeader Read an optional explicit column map.
+
+mappedHeader = "";
+if isfield(importSettings, "columnMap") && ...
+        isstruct(importSettings.columnMap) && ...
+        isfield(importSettings.columnMap, signalName)
+    mappedHeader = string(importSettings.columnMap.(signalName));
+    if ~isscalar(mappedHeader)
+        error("TFA:InvalidColumnMap", ...
+            "Each column map entry must contain one header name.");
+    end
+end
+
 end

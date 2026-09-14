@@ -5,9 +5,14 @@ function subjectResult = runNcSubjectBlockedValidation( ...
     subjectResult = createEmptyNcSubjectResult(subjectInfo);
 
     signalData = loadSubjectData(subjectInfo.SourceFile);
+    preprocessingSettings = settings.analysis.preprocessing;
+    % Acquisition cleanup is allowed to use the complete recording. Signal
+    % conditioning is applied below using training-block statistics only.
+    preprocessingSettings.normalizeCbv = false;
+    preprocessingSettings.meanRemovalEnabled = false;
+    preprocessingSettings.detrendEnabled = false;
     processed = preprocessTfaSignals( ...
-        signalData, settings.analysis.fsTarget, ...
-        settings.analysis.preprocessing);
+        signalData, settings.analysis.fsTarget, preprocessingSettings);
 
     blockSamples = round( ...
         settings.validation.blockLengthSeconds * settings.analysis.fsTarget);
@@ -29,6 +34,8 @@ function subjectResult = runNcSubjectBlockedValidation( ...
     foldSisoError = [];
     foldMisoError = [];
     frequencyHz = [];
+    usableNyquistFrequencyHz = ...
+        processed.quality.nativeNyquistFrequencyHz;
 
     for foldIndex = 1:settings.validation.numFolds
         testStart = (foldIndex - 1) * blockSamples + 1;
@@ -37,11 +44,17 @@ function subjectResult = runNcSubjectBlockedValidation( ...
         trainingBlockIndices = setdiff( ...
             1:settings.validation.numFolds, foldIndex, "stable");
 
+        [trainingMap, trainingCo2, trainingCbv, validationMap, ...
+            validationCo2, validationCbv] = conditionNcFoldSignals( ...
+            map, co2, cbv, trainingBlockIndices, testIndices, ...
+            blockSamples, settings.analysis.preprocessing);
+
         trainingSpectra = estimateSeparateTrainingBlocks( ...
-            map, co2, cbv, trainingBlockIndices, blockSamples, ...
+            trainingMap, trainingCo2, trainingCbv, ...
+            1:numel(trainingBlockIndices), blockSamples, ...
             settings.analysis.fsTarget, settings.analysis.pwelch);
         validationSpectra = estimateWelchSpectra( ...
-            map(testIndices), co2(testIndices), cbv(testIndices), ...
+            validationMap, validationCo2, validationCbv, ...
             settings.analysis.fsTarget, settings.analysis.pwelch);
 
         miso = runMISOTFA( ...
@@ -80,6 +93,10 @@ function subjectResult = runNcSubjectBlockedValidation( ...
                 "Blocked validation folds did not use the same frequency grid.");
         end
 
+        usableFrequency = foldFrequencyHz <= usableNyquistFrequencyHz;
+        sisoError(~usableFrequency) = NaN;
+        misoError(~usableFrequency) = NaN;
+
         foldSisoError(:, foldIndex) = sisoError;
         foldMisoError(:, foldIndex) = misoError;
     end
@@ -100,6 +117,9 @@ function subjectResult = runNcSubjectBlockedValidation( ...
         isfinite(subjectResult.misoError));
     subjectResult.recordingDurationSeconds = ...
         numel(processed.map) / settings.analysis.fsTarget;
+    subjectResult.usableNyquistFrequencyHz = usableNyquistFrequencyHz;
+    subjectResult.nativeSampleIntervalSeconds = ...
+        processed.quality.nativeSampleIntervalSeconds;
     subjectResult.co2StartupRemovedSeconds = ...
         processed.co2Startup.removedDurationSeconds;
     subjectResult.co2DelayCorrectionSeconds = ...
@@ -108,6 +128,50 @@ function subjectResult = runNcSubjectBlockedValidation( ...
         settings.analysis.pwelch.windowLengthSeconds;
     subjectResult.welchWindowCountForTraining = ...
         trainingSpectra.welchInfo.numWindows;
+
+end
+
+function [trainingMap, trainingCo2, trainingCbv, validationMap, ...
+    validationCo2, validationCbv] = conditionNcFoldSignals( ...
+    map, co2, cbv, trainingBlockIndices, testIndices, blockSamples, ...
+    preprocessingSettings)
+% conditionNcFoldSignals Apply conditioning using training statistics only.
+
+trainingIndices = [];
+for blockIndex = trainingBlockIndices
+    blockStart = (blockIndex - 1)*blockSamples + 1;
+    blockEnd = blockIndex*blockSamples;
+    trainingIndices = [trainingIndices, blockStart:blockEnd]; %#ok<AGROW>
+end
+
+trainingMapMean = mean(map(trainingIndices), "omitnan");
+trainingCo2Mean = mean(co2(trainingIndices), "omitnan");
+trainingCbvBaseline = mean(cbv(trainingIndices), "omitnan");
+if ~isfinite(trainingCbvBaseline) || trainingCbvBaseline == 0
+    error("TFA:InvalidNcTrainingBaseline", ...
+        "The training blocks have an invalid CBFV baseline.");
+end
+
+trainingMap = map(trainingIndices);
+trainingCo2 = co2(trainingIndices);
+trainingCbv = cbv(trainingIndices);
+validationMap = map(testIndices);
+validationCo2 = co2(testIndices);
+validationCbv = cbv(testIndices);
+
+if preprocessingSettings.normalizeCbv
+    trainingCbv = (trainingCbv/trainingCbvBaseline)*100;
+    validationCbv = (validationCbv/trainingCbvBaseline)*100;
+end
+if preprocessingSettings.meanRemovalEnabled
+    trainingMap = trainingMap - trainingMapMean;
+    validationMap = validationMap - trainingMapMean;
+    trainingCo2 = trainingCo2 - trainingCo2Mean;
+    validationCo2 = validationCo2 - trainingCo2Mean;
+    trainingCbvMean = mean(trainingCbv, "omitnan");
+    trainingCbv = trainingCbv - trainingCbvMean;
+    validationCbv = validationCbv - trainingCbvMean;
+end
 
 end
 
@@ -166,6 +230,8 @@ function subjectResult = createEmptyNcSubjectResult(subjectInfo)
     subjectResult.numFoldsCompleted = 0;
     subjectResult.numValidFrequencyBins = 0;
     subjectResult.recordingDurationSeconds = NaN;
+    subjectResult.usableNyquistFrequencyHz = NaN;
+    subjectResult.nativeSampleIntervalSeconds = NaN;
     subjectResult.co2StartupRemovedSeconds = NaN;
     subjectResult.co2DelayCorrectionSeconds = NaN;
     subjectResult.welchWindowLengthSeconds = NaN;

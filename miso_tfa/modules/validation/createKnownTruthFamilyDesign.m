@@ -123,7 +123,21 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
 
     if lower(designMode) == "pairwisefivelevel"
         numLevels = cellfun(@numel, valueSets);
-        if any(numLevels ~= 5)
+        % The proof design balances the five original physiology factors.
+        % Input phase is an explicit sixth factor, but is fixed at zero until
+        % its empirical levels are confirmed. Preserve that fixed column
+        % without pretending that the five-factor orthogonal array balances
+        % a sixth varying factor.
+        hasFixedPhaseColumn = numFactors == 6 && numLevels(6) == 1;
+        if hasFixedPhaseColumn
+            pairwiseValueSets = valueSets(1:5);
+            pairwiseNumLevels = numLevels(1:5);
+        else
+            pairwiseValueSets = valueSets;
+            pairwiseNumLevels = numLevels;
+        end
+        if any(pairwiseNumLevels ~= 5) || ...
+                (numFactors ~= 5 && ~hasFixedPhaseColumn)
             error( ...
                 "TFA:PairwiseDesignRequiresFiveLevels", ...
                 ['Every assigned family factor must contain exactly five ' ...
@@ -131,10 +145,14 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
         end
         [levelIndices, designBlockId, designBaseRow] = ...
             createPairwiseBalancedFiveLevelDesign(numFamilies);
-        for factorIndex = 1:numFactors
-            currentValues = valueSets{factorIndex};
+        for factorIndex = 1:5
+            currentValues = pairwiseValueSets{factorIndex};
             factorValues(:,factorIndex) = ...
                 currentValues(levelIndices(:,factorIndex));
+        end
+        if hasFixedPhaseColumn
+            factorValues(:,6) = valueSets{6};
+            levelIndices(:,6) = 1;
         end
         return
     end

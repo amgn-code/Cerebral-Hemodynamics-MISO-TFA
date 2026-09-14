@@ -164,5 +164,34 @@ classdef preprocessTfaSignalsTest < matlab.unittest.TestCase
             testCase.verifyEqual(diff(result.t), ...
                 0.5*ones(size(diff(result.t))), AbsTol=1e-12);
         end
+
+        function reportsShortMissingGap(testCase)
+            signalData = createPreprocessingTestSignal( ...
+                createStableCo2(281));
+            signalData.map(100) = NaN;
+            signalData.co2(100) = NaN;
+            signalData.cbv(100) = NaN;
+
+            result = preprocessTfaSignals( ...
+                signalData, 4, preprocessingTestSettings());
+
+            testCase.verifyEqual(result.quality.numMissingRows, 1);
+            testCase.verifyLessThanOrEqual( ...
+                result.quality.largestFiniteGapSeconds, 2);
+        end
+
+        function rejectsLongMissingGap(testCase)
+            signalData = createPreprocessingTestSignal( ...
+                createStableCo2(281));
+            missingRows = 100:112;
+            signalData.map(missingRows) = NaN;
+            signalData.co2(missingRows) = NaN;
+            signalData.cbv(missingRows) = NaN;
+
+            testCase.verifyError( ...
+                @() preprocessTfaSignals( ...
+                    signalData, 4, preprocessingTestSettings()), ...
+                "TFA:LongDataGap");
+        end
     end
 end

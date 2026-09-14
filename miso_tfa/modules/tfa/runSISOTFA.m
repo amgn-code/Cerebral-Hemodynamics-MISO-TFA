@@ -53,6 +53,8 @@ function sisoResults = runSISOTFA(spectra, phaseSettings)
     sisoResults.map.phase.wrapped = mapPhaseWrapped;
     sisoResults.map.phase.unwrapped = mapPhaseUnwrapped;
     sisoResults.map.coherence.pairwise = mapCbvCoherence;
+    sisoResults.map.coherence.nullOrdinary = ...
+        min(1, 1/spectra.welchInfo.effectiveAverages);
     sisoResults.map.unexplainedFraction = mapUnexplainedFraction;
     sisoResults.map.residualPower = mapResidualPower;
 
@@ -62,6 +64,8 @@ function sisoResults = runSISOTFA(spectra, phaseSettings)
     sisoResults.co2.phase.wrapped = co2PhaseWrapped;
     sisoResults.co2.phase.unwrapped = co2PhaseUnwrapped;
     sisoResults.co2.coherence.pairwise = co2CbvCoherence;
+    sisoResults.co2.coherence.nullOrdinary = ...
+        min(1, 1/spectra.welchInfo.effectiveAverages);
     sisoResults.co2.unexplainedFraction = co2UnexplainedFraction;
     sisoResults.co2.residualPower = co2ResidualPower;
 

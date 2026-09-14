@@ -42,6 +42,11 @@ band so changing the displayed band cannot change the generated pathway truth.
 The primary workflow uses the unregularized MISO solution; ridge sensitivity is
 not part of the simplified study.
 
+NC validation performs acquisition cleanup before splitting the record, then
+fits centering and CBV conditioning from the training blocks and applies those
+parameters to the held-out block. Frequencies above each recording's native
+usable Nyquist frequency are masked and reported in the subject status table.
+
 Run the independent test set with:
 
 ```matlab

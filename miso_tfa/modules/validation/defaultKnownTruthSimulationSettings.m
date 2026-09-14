@@ -109,6 +109,7 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
     % Ridge is not part of the simplified primary study. The numerical
     % solver retains an optional branch for historical diagnostics, but the
     % independent project does not schedule or export ridge analyses.
+    settings.estimators.runRidge = false;
     settings.estimators.ridgeLambdas = [];
 
     % These one-factor-at-a-time checks use the same reference observation.

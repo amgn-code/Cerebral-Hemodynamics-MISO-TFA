@@ -1,4 +1,4 @@
-function connectedData = connectData(filePath)
+function connectedData = connectData(filePath, importSettings)
 % connectData Connect one user recording to the platform.
 %
 % The returned structure contains canonical time, MAP, CO2, and CBV arrays,
@@ -6,7 +6,10 @@ function connectedData = connectData(filePath)
 % to later interface pages.
 
     setup();
-    connectedData = connectTfaData(filePath);
+    if nargin < 2
+        importSettings = struct();
+    end
+    connectedData = connectTfaData(filePath, importSettings);
     connectedData.interfaceName = "dataConnection";
 
 end

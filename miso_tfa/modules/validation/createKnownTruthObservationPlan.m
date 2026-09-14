@@ -105,9 +105,10 @@ function observationPlan = createKnownTruthObservationPlan(settings)
         isinf(observationPlan.CO2InputSNRdB) & ...
         observationPlan.AlignmentErrorSeconds == 0;
 
-    % Ridge and estimator sensitivity are evaluated once per family at
-    % the same standard observation used for non-duration comparisons.
-    runRidge = true;
+    % Ridge and estimator sensitivity are optional legacy diagnostics. The
+    % independent study keeps them off unless a caller explicitly enables
+    % the branch for a historical comparison.
+    runRidge = false;
     if isfield(settings.estimators, "runRidge")
         runRidge = settings.estimators.runRidge;
     end

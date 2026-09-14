@@ -42,6 +42,26 @@ function processedSignalData = preprocessTfaSignals( ...
             'At least three finite samples are required for preprocessing.');
     end
 
+    %% Check Gaps Before Interpolation
+
+    if isfield(preprocessingSettings, "maximumGapSeconds")
+        maximumGapSeconds = preprocessingSettings.maximumGapSeconds;
+    else
+        maximumGapSeconds = 2;
+    end
+    timeIntervals = diff(timeValid);
+    largestFiniteGapSeconds = max(timeIntervals);
+    nativeSampleIntervalSeconds = median(timeIntervals);
+    nativeNyquistFrequencyHz = 0.5/nativeSampleIntervalSeconds;
+    longGapMask = timeIntervals > maximumGapSeconds;
+    if any(longGapMask)
+        error( ...
+            'TFA:LongDataGap', ...
+            ['A gap of %.3g seconds exceeds the maximum allowed gap ' ...
+             'of %.3g seconds.'], ...
+            largestFiniteGapSeconds, maximumGapSeconds);
+    end
+
     %% Remove the CO2 Startup Transition
 
     originalStartTimeSeconds = timeValid(1);
@@ -58,7 +78,13 @@ function processedSignalData = preprocessTfaSignals( ...
     % recording. The upper group of changes represents unusually large
     % transitions without tying the calculation to a fixed data point.
     co2Jumps = abs(diff(co2Valid(firstNonzeroIndex:end)));
-    sortedCo2Jumps = sort(co2Jumps);
+    stableFraction = 0.80;
+    if isfield(preprocessingSettings, "co2StartupStableFraction")
+        stableFraction = preprocessingSettings.co2StartupStableFraction;
+    end
+    stableStart = max(1, round(stableFraction*numel(co2Jumps)));
+    co2JumpsForThreshold = co2Jumps(stableStart:end);
+    sortedCo2Jumps = sort(co2JumpsForThreshold);
     upperJumpIndex = max(1, round(0.9*numel(sortedCo2Jumps)));
     upperCo2Jumps = sortedCo2Jumps(upperJumpIndex:end);
     co2JumpThreshold = mean(upperCo2Jumps) + std(upperCo2Jumps);
@@ -66,7 +92,21 @@ function processedSignalData = preprocessTfaSignals( ...
     keepSamples = true(size(co2Valid));
     sampleIndex = 1;
 
+    if isfield(preprocessingSettings, "maximumCo2StartupSeconds")
+        maximumCo2StartupSeconds = ...
+            preprocessingSettings.maximumCo2StartupSeconds;
+    else
+        maximumCo2StartupSeconds = 45;
+    end
+
     while sampleIndex < numel(co2Valid)
+        if timeValid(sampleIndex) - originalStartTimeSeconds > ...
+                maximumCo2StartupSeconds
+            error( ...
+                'TFA:Co2StartupTooLong', ...
+                ['CO2 startup cleanup exceeded the maximum of %.3g ' ...
+                 'seconds.'], maximumCo2StartupSeconds);
+        end
         currentJump = abs( ...
             co2Valid(sampleIndex + 1) - co2Valid(sampleIndex));
 
@@ -210,5 +250,18 @@ function processedSignalData = preprocessTfaSignals( ...
     processedSignalData.co2Startup.originalEndTimeSeconds = ...
         originalEndTimeSeconds;
     processedSignalData.co2Alignment = co2Alignment;
+
+    processedSignalData.quality.numMissingRows = ...
+        nnz(~validSamples);
+    processedSignalData.quality.numFiniteIntervals = ...
+        numel(timeIntervals);
+    processedSignalData.quality.largestFiniteGapSeconds = ...
+        largestFiniteGapSeconds;
+    processedSignalData.quality.maximumGapSeconds = maximumGapSeconds;
+    processedSignalData.quality.interpolationAllowed = true;
+    processedSignalData.quality.nativeSampleIntervalSeconds = ...
+        nativeSampleIntervalSeconds;
+    processedSignalData.quality.nativeNyquistFrequencyHz = ...
+        nativeNyquistFrequencyHz;
 
 end

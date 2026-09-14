@@ -13,7 +13,7 @@ function settings = defaultTfaNumericalSettings()
     settings.retainAnalysisInput = false;
 
     settings.fsTarget = 4;
-    settings.frequencyRangeHz = [0 0.35];
+    settings.frequencyRangeHz = [0.005 0.35];
     settings.frequencyBandEdgesHz = ...
         [0.005; 0.024; 0.070; 0.200; 0.350];
     settings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
@@ -25,6 +25,9 @@ function settings = defaultTfaNumericalSettings()
     settings.preprocessing.detrendOrder = 1;
     settings.preprocessing.meanRemovalEnabled = true;
     settings.preprocessing.co2DelayCorrectionSeconds = 0;
+    settings.preprocessing.maximumGapSeconds = 2;
+    settings.preprocessing.maximumCo2StartupSeconds = 45;
+    settings.preprocessing.co2StartupStableFraction = 0.80;
 
     settings.pwelch.windowLengthSeconds = 128;
     settings.pwelch.windowOverlap = 0.5;

@@ -1,4 +1,4 @@
-function connectedData = connectTfaData(filePath)
+function connectedData = connectTfaData(filePath, importSettings)
 % connectTfaData Load and identify one user-supplied TFA recording.
 %
 % This is the data connection interface. It owns the file path and column
@@ -8,7 +8,7 @@ function connectedData = connectTfaData(filePath)
     if nargin < 1 || isempty(filePath)
         error( ...
             "TFA:MissingInputFile", ...
-            "Provide the path to one Excel recording.");
+            "Provide the path to one Excel or CSV recording.");
     end
 
     filePath = string(filePath);
@@ -24,7 +24,10 @@ function connectedData = connectTfaData(filePath)
             "The input file does not exist: %s", filePath);
     end
 
-    signalData = loadSubjectData(filePath);
+    if nargin < 2
+        importSettings = struct();
+    end
+    signalData = loadSubjectData(filePath, importSettings);
     [~, subjectID, ~] = fileparts(filePath);
 
     connectedData.filePath = filePath;
