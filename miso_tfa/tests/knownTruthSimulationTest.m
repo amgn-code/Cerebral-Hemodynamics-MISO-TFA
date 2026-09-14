@@ -69,8 +69,6 @@ classdef knownTruthSimulationTest < matlab.unittest.TestCase
             results = runKnownTruthSimulationGrid(settings);
 
             testCase.verifyEqual(height(results.observations), 1);
-            testCase.verifyTrue(isempty(results.ridge));
-            testCase.verifyTrue(isempty(results.ridgeFrequency));
             testCase.verifyTrue(ismember( ...
                 "MAPComplexAdvantage", ...
                 string(results.observations.Properties.VariableNames)));
@@ -91,6 +89,19 @@ classdef knownTruthSimulationTest < matlab.unittest.TestCase
             testCase.verifyTrue(ismember( ...
                 "InputPhaseLagSeconds", ...
                 design.Properties.VariableNames));
+        end
+
+        function phaseLagGenerationPreservesRealSignals(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            settings.families.inputPhaseLagSecondsValues = 2;
+            settings.families.numFamilies = 9;
+            design = createKnownTruthFamilyDesign(settings);
+            family = createKnownTruthFamily(design(1,:), settings);
+
+            testCase.verifyTrue(isreal(family.training.map));
+            testCase.verifyTrue(isreal(family.training.co2));
+            testCase.verifyEqual( ...
+                family.training.truth.inputPhaseLagSeconds, 2);
         end
 
         function knownTruthFrequencyErrorsRespectPhaseMask(testCase)
@@ -118,8 +129,4 @@ function settings = smallSettings()
     settings.observations.referenceOutputSnrDb = Inf;
     settings.observations.runInputNoiseExperiment = false;
     settings.observations.runAlignmentExperiment = false;
-    settings.estimators.runRidge = false;
-    settings.estimators.ridgeLambdas = [];
-    settings.estimatorSensitivity.enabled = false;
-
 end

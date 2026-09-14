@@ -106,18 +106,6 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
 
     %% Estimators and Saved Metrics
 
-    % Ridge is not part of the simplified primary study. The numerical
-    % solver retains an optional branch for historical diagnostics, but the
-    % independent project does not schedule or export ridge analyses.
-    settings.estimators.runRidge = false;
-    settings.estimators.ridgeLambdas = [];
-
-    % These one-factor-at-a-time checks use the same reference observation.
-    settings.estimatorSensitivity.enabled = true;
-    settings.estimatorSensitivity.windowLengthSeconds = ...
-        [64 75 100 128 150];
-    settings.estimatorSensitivity.windowOverlap = [0.25 0.50 0.75];
-
     settings.metrics.errorFloor = 1e-12;
     settings.metrics.phaseMinimumTruthGainFraction = 0.05;
     settings.metrics.extremeCoefficientThreshold = 25;
@@ -245,11 +233,6 @@ function settings = applySimpleStudy(settings)
     settings.welch.windowLengthSeconds = 100;
     settings.welch.windowOverlap = 0.5;
     settings.welch.minimumWindows = 3;
-    settings.estimatorSensitivity.enabled = true;
-    settings.estimatorSensitivity.windowLengthSeconds = [100 128];
-    settings.estimatorSensitivity.windowOverlap = 0.5;
-    settings.estimators.runRidge = false;
-
     settings.grouping.inputCoherenceEdges = 0:0.25:1;
     settings.grouping.petco2ContributionPowerShareEdges = 0:0.25:1;
     settings.grouping.minimumValidN = 1;

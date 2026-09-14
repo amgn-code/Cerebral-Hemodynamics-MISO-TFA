@@ -23,14 +23,8 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
 
     observationRows = repmat( ...
         createEmptyObservationRow(), numObservations, 1);
-    ridgeTables = cell(numFamilies, 1);
-    ridgeFrequencyTables = cell(numFamilies, 1);
-    estimatorSettingTables = cell(numFamilies, 1);
-    estimatorFrequencyTables = cell(numFamilies, 1);
     frequencyResults = struct();
     exampleFamily = struct();
-    referencePlan = observationPlan( ...
-        observationPlan.IsReferenceObservation, :);
 
     observationIndex = 0;
     for familyIndex = 1:numFamilies
@@ -48,8 +42,6 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
             exampleFamily = family;
         end
 
-        familyRidgeTables = cell(0, 1);
-        familyRidgeFrequencyTables = cell(0, 1);
         for planIndex = 1:numPlans
             observationIndex = observationIndex + 1;
             planRow = observationPlan(planIndex, :);
@@ -59,7 +51,7 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
             validation = createKnownTruthObservation( ...
                 family.validation, planRow);
             analysis = analyzeKnownTruthObservation( ...
-                training, validation, settings, planRow.RunRidge);
+                training, validation, settings);
 
             observationRows(observationIndex) = ...
                 createKnownTruthObservationResultRow( ...
@@ -77,81 +69,21 @@ function simulationResults = runKnownTruthSimulationGrid(settings)
                     observationIndex, analysis);
             end
 
-            if ~isempty(analysis.ridge)
-                ridgeTable = analysis.ridge;
-                ridgeTable.ObservationID = repmat( ...
-                    observationIndex, height(ridgeTable), 1);
-                ridgeTable.FamilyID = repmat( ...
-                    familyRow.FamilyID, height(ridgeTable), 1);
-                ridgeTable.ScenarioID = repmat( ...
-                    familyRow.ScenarioID, height(ridgeTable), 1);
-                ridgeTable.TargetInputCoherence = repmat( ...
-                    familyRow.TargetInputCoherence, ...
-                    height(ridgeTable), 1);
-                ridgeTable.DesignedPSDShapeOverlap = repmat( ...
-                    familyRow.DesignedPSDShapeOverlap, ...
-                    height(ridgeTable), 1);
-                ridgeTable.RealizedInputCoherence = repmat( ...
-                    observationRows(observationIndex). ...
-                    RealizedInputCoherence, ...
-                    height(ridgeTable), 1);
-                ridgeTable.RealizedPSDShapeOverlap = repmat( ...
-                    observationRows(observationIndex). ...
-                    RealizedPSDShapeOverlap, ...
-                    height(ridgeTable), 1);
-                familyRidgeTables{end + 1,1} = ridgeTable; %#ok<AGROW>
-                ridgeFrequencyTable = analysis.ridgeFrequency;
-                ridgeFrequencyTable.ObservationID = repmat( ...
-                    observationIndex, height(ridgeFrequencyTable), 1);
-                ridgeFrequencyTable.FamilyID = repmat( ...
-                    familyRow.FamilyID, ...
-                    height(ridgeFrequencyTable), 1);
-                familyRidgeFrequencyTables{end + 1,1} = ...
-                    ridgeFrequencyTable; %#ok<AGROW>
-            end
-        end
-
-        if ~isempty(familyRidgeTables)
-            ridgeTables{familyIndex} = vertcat( ...
-                familyRidgeTables{:});
-        end
-        if ~isempty(familyRidgeFrequencyTables)
-            ridgeFrequencyTables{familyIndex} = vertcat( ...
-                familyRidgeFrequencyTables{:});
-        end
-
-        if settings.estimatorSensitivity.enabled
-            [estimatorSettingTables{familyIndex}, ...
-                estimatorFrequencyTables{familyIndex}] = ...
-                runKnownTruthEstimatorSettingExperiment( ...
-                    family, familyRow, referencePlan, settings);
         end
     end
 
     observationTable = struct2table(observationRows);
     observationTable = attachFamilyCharacteristics(observationTable);
-    ridgeTable = concatenateTableParts(ridgeTables);
-    ridgeFrequencyTable = concatenateTableParts(ridgeFrequencyTables);
-    estimatorSettingTable = concatenateTableParts( ...
-        estimatorSettingTables);
-    estimatorFrequencyTable = concatenateTableParts( ...
-        estimatorFrequencyTables);
 
     simulationResults.settings = settings;
     simulationResults.familyDesign = familyDesign;
     simulationResults.observationPlan = observationPlan;
     simulationResults.observations = observationTable;
-    simulationResults.ridge = ridgeTable;
-    simulationResults.ridgeFrequency = ridgeFrequencyTable;
-    simulationResults.estimatorSettings = estimatorSettingTable;
-    simulationResults.estimatorFrequency = estimatorFrequencyTable;
     simulationResults.frequency = frequencyResults;
     simulationResults.exampleFamily = exampleFamily;
     simulationResults.numFamilies = numFamilies;
     simulationResults.numObservationPlans = numPlans;
     simulationResults.numObservations = numObservations;
-    simulationResults.numEstimatorSettingAnalyses = ...
-        height(estimatorSettingTable);
     simulationResults.elapsedSeconds = toc(simulationTimer);
 
     fprintf( ...
@@ -183,11 +115,11 @@ function row = createEmptyObservationRow()
             'MAPPathwayTimeConstantSeconds', ...
             'CO2PathwayTimeConstantSeconds'});
     dummyPlan = table( ...
-        0, "Main", 0, Inf, Inf, Inf, 0, false, ...
+        0, "Main", 0, Inf, Inf, Inf, 0, ...
         'VariableNames', { ...
             'PlanID', 'Experiment', 'DurationSeconds', ...
             'OutputSNRdB', 'MAPInputSNRdB', 'CO2InputSNRdB', ...
-            'AlignmentErrorSeconds', 'RunRidge'});
+            'AlignmentErrorSeconds'});
     dummyPlan.IsReferenceObservation = false;
     dummyPlan.IsFamilyCharacterizationObservation = false;
 
@@ -231,18 +163,6 @@ function row = createEmptyObservationRow()
 
     row = createKnownTruthObservationResultRow( ...
         0, dummyFamily, dummyPlan, dummyAnalysis);
-
-end
-
-function combinedTable = concatenateTableParts(tableParts)
-% concatenateTableParts Join the nonempty results from completed families.
-
-    tableParts = tableParts(~cellfun(@isempty, tableParts));
-    if isempty(tableParts)
-        combinedTable = table();
-    else
-        combinedTable = vertcat(tableParts{:});
-    end
 
 end
 

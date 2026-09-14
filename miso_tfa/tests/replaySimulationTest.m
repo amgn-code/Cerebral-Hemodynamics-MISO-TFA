@@ -21,8 +21,6 @@ classdef replaySimulationTest < matlab.unittest.TestCase
             interfaceSettings.simulation.observations.durationSeconds = 300;
             interfaceSettings.simulation.observations.runAlignmentExperiment = false;
             interfaceSettings.simulation.observations.runInputNoiseExperiment = false;
-            interfaceSettings.simulation.estimatorSensitivity.enabled = false;
-
             outputSettings = defaultSimulationOutputSettings("off");
             outputSettings.createFigures = false;
             outputSettings.savePng = false;

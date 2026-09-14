@@ -77,9 +77,6 @@ classdef platformInterfaceTest < matlab.unittest.TestCase
             settings.simulation.observations.referenceOutputSnrDb = 15;
             settings.simulation.observations.runInputNoiseExperiment = false;
             settings.simulation.observations.runAlignmentExperiment = false;
-            settings.simulation.estimatorSensitivity.enabled = false;
-            settings.simulation.estimators.runRidge = false;
-
             outputFolder = tempname();
             mkdir(outputFolder);
             testCase.addTeardown(@() rmdir(outputFolder, "s"));

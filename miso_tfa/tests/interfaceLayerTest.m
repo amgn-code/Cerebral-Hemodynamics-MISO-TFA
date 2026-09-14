@@ -72,9 +72,6 @@ classdef interfaceLayerTest < matlab.unittest.TestCase
             interfaceSettings.simulation.observations.referenceOutputSnrDb = 15;
             interfaceSettings.simulation.observations.runInputNoiseExperiment = false;
             interfaceSettings.simulation.observations.runAlignmentExperiment = false;
-            interfaceSettings.simulation.estimatorSensitivity.enabled = false;
-            interfaceSettings.simulation.estimators.runRidge = false;
-
             results = runSimulationInterface(interfaceSettings);
 
             testCase.verifyEqual(results.numFamilies, 1);

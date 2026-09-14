@@ -39,8 +39,9 @@ confirmed against NC data or cited physiology before the final paper run.
 The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. The primary reporting
 band ends at 0.35 Hz. The simulation stores a separate pathway-calibration
 band so changing the displayed band cannot change the generated pathway truth.
-The primary workflow uses the unregularized MISO solution; ridge sensitivity is
-not part of the simplified study.
+The simulation workflow exposes only the unregularized MISO/SISO comparison.
+The low-level solver retains an optional regularization branch for numerical
+diagnostics, but it is not a simulation factor or a saved simulation result.
 
 NC validation performs acquisition cleanup before splitting the record, then
 fits centering and CBV conditioning from the training blocks and applies those
