@@ -41,8 +41,23 @@ settings = defaultSimulationInterfaceSettings("simple");
 simulationResults = runSimulationInterface(settings);
 ```
 
-The simulation interface passes its nested settings to the known-truth
-runner. It does not connect real-data files.
+`runSimulationInterface` is the numerical boundary: it passes its nested
+settings to the known-truth runner and does not connect real-data files.
+The platform page `runSimulation` adds the five primary frequency maps and
+can export them with their source tables and reproducibility record:
+
+```matlab
+settings = simulationSettings("simple");
+outputSettings = defaultSimulationOutputSettings("off");
+outputSettings.outputFolder = "/path/to/simulation_output";
+results = runSimulation(settings, outputSettings);
+```
+
+`createSimulationOutputs` builds the maps and
+`exportSimulationResults` writes PNG figures, CSV source data, a compact
+manifest, and a MAT archive containing the complete settings and numerical
+results. These reusable modules live in `src`; the simulation page no
+longer depends on the approach-paper reporting folder.
 
 ## NC bootstrap
 

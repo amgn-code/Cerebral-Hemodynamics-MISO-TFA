@@ -52,6 +52,36 @@ misoResults = misoTesting( ...
     connectedData, defaultMisoRealDataSettings(), displaySettings);
 ```
 
+## Simulation outputs
+
+`runSimulation` now returns the numerical simulation together with five
+primary frequency-by-metric maps:
+
+1. MAP-CO2 input coherence;
+2. assigned CO2-to-MAP pathway ratio;
+3. CBFV output signal-to-noise ratio;
+4. MISO minus MAP pairwise coherence; and
+5. MISO minus MAP partial coherence given CO2.
+
+Every heatmap cell reports MISO advantage as
+`log10(mean SISO error / mean MISO error)`. Its source table retains the
+paired SISO and MISO errors, the number of observations, and bootstrap
+uncertainty. To save the figures, source tables, exact settings, and a run
+manifest:
+
+```matlab
+settings = simulationSettings("simple");
+outputSettings = defaultSimulationOutputSettings("off");
+outputSettings.outputFolder = "/path/to/simulation_output";
+
+simulationResults = runSimulation(settings, outputSettings);
+```
+
+The exported MAT file contains the complete numerical result without live
+figure handles. The CSV manifest records the simulation and bootstrap
+seeds, MATLAB version, sampling and frequency settings, run dimensions, and
+Git state. This makes each saved run identifiable and reproducible.
+
 ## NC bootstrap protocol
 
 The NC page uses the inspected NC folder structure and a fixed, reproducible

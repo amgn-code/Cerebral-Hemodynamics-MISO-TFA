@@ -36,6 +36,12 @@ REPORT_PATH = ROOT / "output" / "pdf" / "chunk_progress_report.pdf"
 NC_FIGURE = ROOT / "output" / "nc_bootstrap_production" / "nc_bootstrap_advantage.png"
 MISO_PAGE_FIGURE = ROOT / "output" / "figures" / "cleanup_chunk14_miso_summary.png"
 SISO_PAGE_FIGURE = ROOT / "output" / "figures" / "cleanup_chunk14_siso_summary.png"
+SIMULATION_INPUT_FIGURE = (
+    ROOT / "output" / "simulation_platform_example" / "input_coherence.png"
+)
+SIMULATION_SNR_FIGURE = (
+    ROOT / "output" / "simulation_platform_example" / "output_snr.png"
+)
 
 NAVY = colors.HexColor("#17324D")
 BLUE = colors.HexColor("#2F6FA3")
@@ -455,7 +461,7 @@ def build_story():
         [
             P("MISO-SISO simulation study", "ReportTitle"),
             P(
-                "Visual implementation report through cleanup chunk 14. "
+                "Visual implementation report through cleanup chunk 15. "
                 "This document consolidates the current simulation and NC outputs with the simplified real-data model pages and their cleanup history.",
                 "ReportSubtitle",
             ),
@@ -463,7 +469,7 @@ def build_story():
             P(
                 "The project now has a small, explicit known-truth study that can be run without learned signal generation. "
                 "It varies three assigned factors, evaluates both estimators against the saved generating filters, and exports frequency-first figures. "
-                "The latest chunk adds two frequency-wise MISO coherence diagnostics as interpretive axes rather than new assigned factors.",
+                "The latest chunk moves the five primary simulation maps and their reproducibility record into the platform workflow.",
             ),
             WorkflowDiagram(),
             Spacer(1, 8),
@@ -482,6 +488,7 @@ def build_story():
             ["Clean platform scaffold", "Implemented in this chunk", "Six-page boundary with tested backend adapters"],
             ["Real-data numerical core", "Consolidated in chunk 13", "Public model pages no longer use legacy figure or output execution"],
             ["MISO and SISO page outputs", "Consolidated in chunk 14", "One model-specific frequency table and one compact figure per page"],
+            ["Simulation outputs", "Consolidated in chunk 15", "Five fixed maps, source tables, settings, seeds, and Git identity"],
             ["NC bootstrap protocol", "Implemented", "3 x 90-s blocked validation with subject-level bootstrap"],
             ["NC bootstrap / cross-validation", "Implemented in this chunk", "Held-out frequency errors, advantage curve, and audit tables"],
             ["NC production export", "Implemented in this chunk", "Figure, frequency CSV, status CSV, subject audit CSV, and MAT archive"],
@@ -654,6 +661,61 @@ def build_story():
             P(
                 "The platform MISO and SISO pages now have 29 project-file dependencies each and zero dependencies under the legacy plotting or output folders. "
                 "The older combined MISO-SISO descriptive exporter remains available only as a compatibility path during cleanup.",
+                "SmallReport",
+            ),
+            PageBreak(),
+        ]
+    )
+
+    simulation_figure_table = Table(
+        [
+            [
+                Image(str(SIMULATION_INPUT_FIGURE), width=252, height=189),
+                Image(str(SIMULATION_SNR_FIGURE), width=252, height=189),
+            ],
+            [
+                P("Assigned MAP-CO2 coherence map from the platform simulation page.", "FigureCaption"),
+                P("Assigned CBFV output SNR map from the same paired run.", "FigureCaption"),
+            ],
+        ],
+        colWidths=[264, 264],
+    )
+    simulation_figure_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ]
+        )
+    )
+    story.extend(
+        [
+            P("Cleanup chunk 15: simulation output and reproducibility", "SectionTitle"),
+            P(
+                "The platform simulation page now produces the paper-facing frequency maps directly from the numerical run. "
+                "Each map carries the exact table used to draw it, and the same call can save a complete, reloadable result.",
+            ),
+            simulation_figure_table,
+        ]
+    )
+    simulation_output_rows = [
+        ["Returned or saved item", "Contents"],
+        ["Three assigned-factor maps", "Input coherence, CO2-to-MAP pathway ratio, and output SNR"],
+        ["Two diagnostic maps", "MISO minus MAP pairwise and partial coherence"],
+        ["Five source CSV files", "Frequency, metric level, paired errors, advantage, counts, and uncertainty"],
+        ["Run manifest and map index", "Seeds, MATLAB version, frequency settings, dimensions, score definition, Git state, and map names"],
+        ["MAT archive", "Complete numerical results and exact settings with figure handles removed"],
+    ]
+    story.append(styled_table(simulation_output_rows, [175, 353]))
+    story.extend(
+        [
+            Spacer(1, 6),
+            P(
+                "The example export contains 9 families, 9 observation plans per family, 81 paired observations, five PNGs, five source tables, two manifest tables, and one MAT archive. "
+                "The active runSimulation dependency set contains 58 project files and zero files under studies/approachPaper.",
                 "SmallReport",
             ),
             PageBreak(),
@@ -850,6 +912,7 @@ def build_story():
         ["12", "NC production run and export", "Freezes the 2,000-resample result and writes the figure plus frequency, status, subject-audit, and MAT files"],
         ["13", "Real-data core consolidation", "Separates numerical MISO/SISO analysis from the old batch plotting and output workflow while preserving compatibility"],
         ["14", "Compact model-page outputs and frequency tables", "Gives each real-data model page one readable output and removes all legacy plotting/output dependencies from its active path"],
+        ["15", "Platform simulation outputs and reproducibility manifest", "Returns five fixed maps with source data and preserves the exact settings, seeds, software version, and repository identity for every saved run"],
     ]
     story.append(styled_table(history_rows, [45, 215, 268]))
     story.extend(
@@ -857,11 +920,11 @@ def build_story():
             Spacer(1, 10),
             P("Validation completed", "SubTitle"),
             P(
-                "The full MATLAB suite passed after chunk 14: 152 passed, 0 failed, and 0 incomplete. The focused real-data, platform, settings, and compatibility checks also passed, and MATLAB Code Analyzer reported no issues in the changed MATLAB files. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
+                "The full MATLAB suite passed after chunk 15: 152 passed, 0 failed, and 0 incomplete. MATLAB Code Analyzer reported zero issues across all 16 moved, added, or modified MATLAB files. Dependency analysis confirmed that the platform simulation page no longer calls the approach-paper reporting folder. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
             ),
             P("Next implementation boundary", "SubTitle"),
             P(
-                "The next cleanup boundary is the simplified simulation heatmap exporter and reproducibility manifest. Once those active capabilities are independent, the superseded batch, group, statistics, robustness, and approach-paper orchestration can be removed. Scientific changes to the simulation protocol remain reserved for the Astra review.",
+                "The next cleanup boundary is the existing CO2 timing and alignment capability: retain the useful logic as a shared, explicit module and connect it only where the active workflows need it. After that integration is tested, the superseded batch, group, statistics, robustness, and approach-paper orchestration can be removed. Scientific changes to the simulation protocol remain reserved for the Astra review.",
             ),
         ]
     )

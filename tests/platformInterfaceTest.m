@@ -80,11 +80,32 @@ classdef platformInterfaceTest < matlab.unittest.TestCase
             settings.simulation.estimatorSensitivity.enabled = false;
             settings.simulation.estimators.runRidge = false;
 
-            results = runSimulation(settings);
+            outputFolder = tempname();
+            mkdir(outputFolder);
+            testCase.addTeardown(@() rmdir(outputFolder, "s"));
+            outputSettings = defaultSimulationOutputSettings("off");
+            outputSettings.outputFolder = outputFolder;
+            results = runSimulation(settings, outputSettings);
+            for mapNumber = 1:numel(results.outputs.maps)
+                testCase.addTeardown( ...
+                    @() close(results.outputs.maps(mapNumber).figureHandle));
+            end
 
             testCase.verifyEqual(results.interfaceName, "simulationRunner");
             testCase.verifyEqual(results.numFamilies, 1);
             testCase.verifyGreaterThanOrEqual(results.numObservations, 1);
+            testCase.verifyEqual(numel(results.outputs.maps), 5);
+            testCase.verifyEqual( ...
+                height(results.outputs.manifest.mapIndex), 5);
+            testCase.verifyTrue(ismember( ...
+                "Advantage", ...
+                string(results.outputs.maps(1).frequencyTable. ...
+                Properties.VariableNames)));
+            testCase.verifyTrue(all(isfile( ...
+                results.exportResults.savedFiles)));
+            testCase.verifyTrue(isfile( ...
+                results.exportResults.manifestFile));
+            testCase.verifyTrue(isfile(results.exportResults.matFile));
         end
     end
 end
