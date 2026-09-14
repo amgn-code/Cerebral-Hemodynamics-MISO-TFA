@@ -523,7 +523,7 @@ def build_story():
         [
             P("MISO-SISO simulation study", "ReportTitle"),
             P(
-                "Visual implementation report through cleanup chunk 16. "
+                "Visual implementation report through cleanup chunk 17. "
                 "This document consolidates the current simulation and NC outputs with the simplified real-data model pages and their cleanup history.",
                 "ReportSubtitle",
             ),
@@ -552,6 +552,7 @@ def build_story():
             ["MISO and SISO page outputs", "Consolidated in chunk 14", "One model-specific frequency table and one compact figure per page"],
             ["Simulation outputs", "Consolidated in chunk 15", "Five fixed maps, source tables, settings, seeds, and Git identity"],
             ["CO2 measurement alignment", "Consolidated in chunk 16", "One zero-default setting, cropped edges, and returned correction metadata"],
+            ["Legacy dependency boundary", "Audited in chunk 17", "89-file active platform set is independent of the retained legacy study"],
             ["NC bootstrap protocol", "Implemented", "3 x 90-s blocked validation with subject-level bootstrap"],
             ["NC bootstrap / cross-validation", "Implemented in this chunk", "Held-out frequency errors, advantage curve, and audit tables"],
             ["NC production export", "Implemented in this chunk", "Figure, frequency CSV, status CSV, subject audit CSV, and MAT archive"],
@@ -821,6 +822,49 @@ def build_story():
 
     story.extend(
         [
+            P("Cleanup chunk 17: final dependency boundary", "SectionTitle"),
+            P(
+                "The final cleanup pass measured the active platform and the older workflows separately. "
+                "The public pages are now isolated, while the remaining legacy files are retained deliberately because they still support the backward-compatible batch path, the approach-paper study, and their regression tests.",
+            ),
+        ]
+    )
+    dependency_rows = [
+        ["Entry point", "Required files", "Approach paper", "Robustness"],
+        ["connectData", "4", "0", "0"],
+        ["misoTesting", "30", "0", "0"],
+        ["sisoTesting", "30", "0", "0"],
+        ["ncBootstrap", "27", "0", "0"],
+        ["simulationSettings", "4", "0", "0"],
+        ["runSimulation", "58", "0", "0"],
+        ["Active union", "89 unique files", "0", "0"],
+    ]
+    story.append(styled_table(dependency_rows, [165, 120, 105, 108]))
+    story.extend(
+        [
+            Spacer(1, 8),
+            P("Why the remaining legacy files stay", "SubTitle"),
+            styled_table(
+                [
+                    ["Subsystem", "Measured role"],
+                    ["runTFA + plotting/statistics", "67-file compatibility workflow; 18 plotting and 10 statistics dependencies"],
+                    ["userFacing wrapper", "Separate 28-file file-based compatibility path"],
+                    ["approachPaper", "162-file paper-study workflow with simulation, robustness, plots, and tables"],
+                    ["robustness", "Nine-file sensitivity/surrogate subsystem used by the approach-paper robustness study and tests"],
+                ],
+                [170, 328],
+            ),
+            Spacer(1, 7),
+            P(
+                "No broad deletion is justified before the scientific review confirms that the new platform replaces every historical paper output that still matters. The boundary is documented in docs/PROJECT_CLEANUP_AUDIT.md, so the next reviewer can remove the legacy subsystem in one deliberate change if that decision is made.",
+                "SmallReport",
+            ),
+            PageBreak(),
+        ]
+    )
+
+    story.extend(
+        [
             P("Actual NC data inspection", "SectionTitle"),
             P(
                 "The NC folder was inspected before defining the bootstrap interface. "
@@ -1011,6 +1055,7 @@ def build_story():
         ["14", "Compact model-page outputs and frequency tables", "Gives each real-data model page one readable output and removes all legacy plotting/output dependencies from its active path"],
         ["15", "Platform simulation outputs and reproducibility manifest", "Returns five fixed maps with source data and preserves the exact settings, seeds, software version, and repository identity for every saved run"],
         ["16", "Explicit CO2 measurement-delay correction", "Shares one cropping rule across simulation and real data, defaults to zero, records the applied correction, and keeps acquisition timing separate from physiological response delay"],
+        ["17", "Final active-versus-legacy dependency audit", "Confirms 89 unique active platform files with zero approach-paper or robustness dependencies and documents why the tested legacy subsystem remains temporarily retained"],
     ]
     story.append(styled_table(history_rows, [45, 215, 268]))
     story.extend(
@@ -1022,7 +1067,7 @@ def build_story():
             ),
             P("Next implementation boundary", "SubTitle"),
             P(
-                "The next cleanup boundary is a final dependency audit followed by deletion of superseded batch, group, statistics, robustness, and approach-paper orchestration that no active platform page needs. Any small reusable calculation still reached by an active page will be moved first. Scientific changes to the simulation protocol remain reserved for the Astra review.",
+                "The Sol cleanup is complete at the architectural boundary. The next step is Claude's scientific review: confirm the simulation factors, physiological ranges, MISO-versus-SISO estimand, phase/delay interpretation, NC validation claims, and the final decision on whether to remove the retained legacy paper workflow.",
             ),
         ]
     )
