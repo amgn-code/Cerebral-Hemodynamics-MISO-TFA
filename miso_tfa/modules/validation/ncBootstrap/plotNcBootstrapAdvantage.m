@@ -1,0 +1,52 @@
+function [figureHandle, sourceData] = ...
+    plotNcBootstrapAdvantage(results, plotSettings)
+% plotNcBootstrapAdvantage Plot the NC frequency-wise MISO advantage.
+
+    if nargin < 2 || isempty(plotSettings)
+        plotSettings.enabled = true;
+        plotSettings.visible = "on";
+    end
+
+    sourceData = results.frequencyTable;
+    frequencyHz = sourceData.FrequencyHz;
+    advantage = sourceData.Advantage;
+    ciLower = sourceData.CILower;
+    ciUpper = sourceData.CIUpper;
+
+    figureHandle = figure( ...
+        "Visible", char(plotSettings.visible), ...
+        "Color", "w", ...
+        "Name", "NC MISO advantage");
+    axesHandle = axes(figureHandle);
+    hold(axesHandle, "on");
+
+    finiteInterval = isfinite(ciLower) & isfinite(ciUpper);
+    if any(finiteInterval)
+        fill(axesHandle, ...
+            [frequencyHz(finiteInterval); ...
+            flipud(frequencyHz(finiteInterval))], ...
+            [ciLower(finiteInterval); ...
+            flipud(ciUpper(finiteInterval))], ...
+            [0.86 0.91 0.95], ...
+            "EdgeColor", "none", ...
+            "FaceAlpha", 0.8);
+    end
+
+    plot(axesHandle, frequencyHz, advantage, ...
+        "Color", [0.12 0.35 0.55], ...
+        "LineWidth", 1.8);
+    yline(axesHandle, 0, "Color", [0.35 0.35 0.35], ...
+        "LineStyle", "--");
+
+    xlabel(axesHandle, "Frequency (Hz)");
+    ylabel(axesHandle, "MISO advantage, log10(SISO error / MISO error)");
+    title(axesHandle, "NC held-out MISO advantage");
+    grid(axesHandle, "on");
+    box(axesHandle, "off");
+
+    if any(finiteInterval)
+        legend(axesHandle, {"95% bootstrap CI", "MISO advantage", ...
+            "Equal error"}, "Location", "best");
+    end
+
+end
