@@ -10,6 +10,8 @@ function settings = defaultTfaAnalysisSettings(groupsToCompare)
         groupsToCompare = ["NC"; "MCI"];
     end
 
+    settings = defaultTfaNumericalSettings();
+
     groupsToCompare = upper(string(groupsToCompare(:)));
     if isempty(groupsToCompare) || numel(groupsToCompare) > 2 || ...
             numel(unique(groupsToCompare)) ~= numel(groupsToCompare)
@@ -18,41 +20,6 @@ function settings = defaultTfaAnalysisSettings(groupsToCompare)
             ['groupsToCompare must contain one or two unique group ' ...
              'names.']);
     end
-
-    %% Models and Frequency Range
-
-    settings.runMISO = true;
-    settings.runSISO = true;
-    settings.misoSolver = defaultMisoSolverSettings();
-    settings.retainAnalysisInput = false;
-
-    settings.fsTarget = 4;
-    settings.frequencyRangeHz = [0 0.35];
-    settings.frequencyBandEdgesHz = ...
-        [0.005; 0.024; 0.070; 0.200; 0.350];
-    settings.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
-
-    %% Preprocessing, Welch Spectra, and Phase
-
-    settings.preprocessing.normalizeCbv = true;
-    settings.preprocessing.detrendEnabled = false;
-    settings.preprocessing.detrendOrder = 1;
-    settings.preprocessing.meanRemovalEnabled = true;
-
-    settings.pwelch.windowLengthSeconds = 128;
-    settings.pwelch.windowOverlap = 0.5;
-    settings.pwelch.minimumWindows = 3;
-    settings.pwelch.smoothingEnabled = true;
-    settings.pwelch.smoothingKernel = [0.25 0.50 0.25];
-
-    settings.phase.unwrapMethod = "standard";
-    settings.phase.custom.windowSize = 11;
-    settings.phase.custom.numPasses = 3;
-    settings.phase.custom.useCoherenceWeights = true;
-    settings.phase.custom.weightMode = "power";
-    settings.phase.custom.weightPower = 4;
-    settings.phase.custom.expAlpha = 4;
-    settings.phase.custom.minWeight = 0.01;
 
     %% Statistical Analysis
 

@@ -19,6 +19,8 @@ classdef interfaceLayerTest < matlab.unittest.TestCase
             testCase.verifyFalse(settings.siso.runMISO);
             testCase.verifyTrue(settings.siso.runSISO);
             testCase.verifyEqual(settings.filePath, "");
+            testCase.verifyFalse(isfield(settings.miso, "plot"));
+            testCase.verifyFalse(isfield(settings.siso, "plot"));
         end
 
         function connectionInterfaceReturnsCanonicalData(testCase)

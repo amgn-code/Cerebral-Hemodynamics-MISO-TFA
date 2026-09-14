@@ -11,6 +11,10 @@ miso = runMisoRealData(connectedData);
 siso = runSisoRealData(connectedData);
 ```
 
+The platform pages `misoTesting` and `sisoTesting` add one model-specific
+frequency table and one compact gain, phase, and coherence figure. This
+keeps descriptive real-data output separate from the numerical runners.
+
 For a combined run with separate settings:
 
 ```matlab
@@ -19,7 +23,7 @@ settings.miso.misoSolver = defaultMisoSolverSettings();
 results = runMisoSisoRealData(connectedData, settings);
 ```
 
-To create a compact descriptive frequency report after the analysis:
+The older combined descriptive export remains available during cleanup:
 
 ```matlab
 exportResults = exportRealDataResults( ...

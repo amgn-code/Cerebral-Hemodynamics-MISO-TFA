@@ -35,14 +35,31 @@ classdef platformInterfaceTest < matlab.unittest.TestCase
             misoSettings.pwelch.windowLengthSeconds = 32;
             sisoSettings = defaultSisoRealDataSettings();
             sisoSettings.pwelch.windowLengthSeconds = 32;
+            displaySettings = defaultRealDataDisplaySettings("off");
 
-            miso = misoTesting(connectedData, misoSettings);
-            siso = sisoTesting(connectedData, sisoSettings);
+            miso = misoTesting( ...
+                connectedData, misoSettings, displaySettings);
+            siso = sisoTesting( ...
+                connectedData, sisoSettings, displaySettings);
+            testCase.addTeardown(@() close(miso.figureHandle));
+            testCase.addTeardown(@() close(siso.figureHandle));
 
             testCase.verifyTrue(miso.runStatus.analysisSucceeded);
             testCase.verifyTrue(siso.runStatus.analysisSucceeded);
             testCase.verifyEqual(miso.interfaceName, "misoTesting");
             testCase.verifyEqual(siso.interfaceName, "sisoTesting");
+            testCase.verifyEqual( ...
+                height(miso.frequencyTable), numel(miso.misoResults.f));
+            testCase.verifyEqual( ...
+                height(siso.frequencyTable), numel(siso.sisoResults.f));
+            testCase.verifyTrue(ismember( ...
+                "MultipleCoherence", ...
+                string(miso.frequencyTable.Properties.VariableNames)));
+            testCase.verifyTrue(ismember( ...
+                "MAPCoherence", ...
+                string(siso.frequencyTable.Properties.VariableNames)));
+            testCase.verifyTrue(isgraphics(miso.figureHandle));
+            testCase.verifyTrue(isgraphics(siso.figureHandle));
         end
 
         function simulationPagesExposeSettingsAndRunner(testCase)

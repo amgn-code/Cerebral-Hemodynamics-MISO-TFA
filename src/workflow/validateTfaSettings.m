@@ -375,25 +375,25 @@ function analysisSettings = validateTfaSettings(analysisSettings)
     end
     analysisSettings.phase.unwrapMethod = unwrapMethod;
 
-    if ~isfield(analysisSettings, "plot") || isempty(analysisSettings.plot)
-        analysisSettings.plot = defaultPlotSettings();
-    end
+    if isfield(analysisSettings, "plot") && ...
+            ~isempty(analysisSettings.plot)
+        if ~isfield(analysisSettings.plot.show.statistics, ...
+                "frequencyWiseComparison")
+            analysisSettings.plot.show.statistics.frequencyWiseComparison = ...
+                false;
+        end
 
-    if ~isfield(analysisSettings.plot.show.statistics, ...
-            "frequencyWiseComparison")
-        analysisSettings.plot.show.statistics.frequencyWiseComparison = ...
-            false;
-    end
+        transferFunctionStyle = ...
+            string(analysisSettings.plot.transferFunctionStyle);
+        if ~any(transferFunctionStyle == ["stem", "line"])
+            error( ...
+                "TFA:UnknownTransferFunctionStyle", ...
+                "plot.transferFunctionStyle must be ""stem"" or ""line"".");
+        end
 
-    transferFunctionStyle = ...
-        string(analysisSettings.plot.transferFunctionStyle);
-    if ~any(transferFunctionStyle == ["stem", "line"])
-        error( ...
-            "TFA:UnknownTransferFunctionStyle", ...
-            "plot.transferFunctionStyle must be ""stem"" or ""line"".");
+        analysisSettings.plot.transferFunctionStyle = ...
+            transferFunctionStyle;
+        analysisSettings.plot.frequencyLimitsHz = frequencyRangeHz;
     end
-
-    analysisSettings.plot.transferFunctionStyle = transferFunctionStyle;
-    analysisSettings.plot.frequencyLimitsHz = frequencyRangeHz;
 
 end

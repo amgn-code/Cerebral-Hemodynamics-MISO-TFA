@@ -34,6 +34,8 @@ PLOT_ROOT = (
 )
 REPORT_PATH = ROOT / "output" / "pdf" / "chunk_progress_report.pdf"
 NC_FIGURE = ROOT / "output" / "nc_bootstrap_production" / "nc_bootstrap_advantage.png"
+MISO_PAGE_FIGURE = ROOT / "output" / "figures" / "cleanup_chunk14_miso_summary.png"
+SISO_PAGE_FIGURE = ROOT / "output" / "figures" / "cleanup_chunk14_siso_summary.png"
 
 NAVY = colors.HexColor("#17324D")
 BLUE = colors.HexColor("#2F6FA3")
@@ -453,8 +455,8 @@ def build_story():
         [
             P("MISO-SISO simulation study", "ReportTitle"),
             P(
-                "Visual implementation report through cleanup chunk 13. "
-                "This document consolidates the previous implementation work, the current simulation and NC outputs, and the first active-code consolidation step.",
+                "Visual implementation report through cleanup chunk 14. "
+                "This document consolidates the current simulation and NC outputs with the simplified real-data model pages and their cleanup history.",
                 "ReportSubtitle",
             ),
             P("Where the project is now", "SectionTitle"),
@@ -479,6 +481,7 @@ def build_story():
             ["Real-data report export", "Implemented in this chunk", "Frequency table, diagnostic figure, CSV, and MAT output"],
             ["Clean platform scaffold", "Implemented in this chunk", "Six-page boundary with tested backend adapters"],
             ["Real-data numerical core", "Consolidated in chunk 13", "Public model pages no longer use legacy figure or output execution"],
+            ["MISO and SISO page outputs", "Consolidated in chunk 14", "One model-specific frequency table and one compact figure per page"],
             ["NC bootstrap protocol", "Implemented", "3 x 90-s blocked validation with subject-level bootstrap"],
             ["NC bootstrap / cross-validation", "Implemented in this chunk", "Held-out frequency errors, advantage curve, and audit tables"],
             ["NC production export", "Implemented in this chunk", "Figure, frequency CSV, status CSV, subject audit CSV, and MAT archive"],
@@ -522,8 +525,8 @@ def build_story():
         [
             Spacer(1, 8),
             P(
-                "The interfaces deliberately have no implicit figure, workbook, or simulation output. "
-                "Reporting and exporting remain separate modules, while the simulation keeps its own truth-error workflow.",
+                "The model pages now return a compact figure and its exact frequency table. "
+                "The data connector remains output-free, and the simulation keeps its separate truth-error workflow.",
                 "SmallReport",
             ),
             PageBreak(),
@@ -553,8 +556,8 @@ def build_story():
     platform_rows = [
         ["Page", "Current status", "Returned object"],
         ["connectData", "Implemented", "Canonical signals, source path, metadata, load status"],
-        ["misoTesting", "Implemented", "MISO transfer functions, coherence, conditioning diagnostics"],
-        ["sisoTesting", "Implemented", "MAP and CO2 SISO transfer functions and coherence"],
+        ["misoTesting", "Implemented", "Gain, phase, partial/multiple coherence figure and frequency table"],
+        ["sisoTesting", "Implemented", "Gain, phase, ordinary coherence figure and frequency table"],
         ["ncBootstrap", "Implemented", "Held-out errors, advantage curve, CI, counts, and status table"],
         ["simulationSettings", "Implemented", "Editable known-truth design and seed"],
         ["runSimulation", "Implemented", "Truth, observations, errors, diagnostics, and heatmaps"],
@@ -598,6 +601,59 @@ def build_story():
             P(
                 "The one remaining plotting dependency is defaultPlotSettings, which currently supplies shared defaults. "
                 "It can be moved when the compact user-facing MISO and SISO figures are integrated. No legacy files were deleted in this chunk.",
+                "SmallReport",
+            ),
+            PageBreak(),
+        ]
+    )
+
+    model_figure_table = Table(
+        [
+            [
+                Image(str(MISO_PAGE_FIGURE), width=252, height=198),
+                Image(str(SISO_PAGE_FIGURE), width=252, height=198),
+            ],
+            [
+                P("MISO page: two pathway estimates plus partial and multiple coherence.", "FigureCaption"),
+                P("SISO page: two independent pathway estimates plus ordinary coherence.", "FigureCaption"),
+            ],
+        ],
+        colWidths=[264, 264],
+    )
+    model_figure_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ]
+        )
+    )
+    story.extend(
+        [
+            P("Cleanup chunk 14: compact model-page outputs", "SectionTitle"),
+            P(
+                "Each real-data model page now returns one frequency table and one three-panel figure. "
+                "Gain, phase, and coherence remain visible across the retained frequency range without bringing the old batch, group, or statistical plots into the user workflow.",
+            ),
+            model_figure_table,
+        ]
+    )
+    output_rows = [
+        ["Page", "Plotted quantities", "Additional table quantities"],
+        ["MISO", "MAP/CO2 gain; wrapped phase; partial and multiple coherence", "MAP-CO2 input coherence and input phase"],
+        ["SISO", "MAP/CO2 gain; wrapped phase; ordinary coherence", "The same seven plotted frequency columns"],
+        ["Both", "Frequency is the horizontal axis; no truth-based advantage", "Phase is reported in degrees; every plotted value is exported in the returned table"],
+    ]
+    story.append(styled_table(output_rows, [75, 245, 208]))
+    story.extend(
+        [
+            Spacer(1, 7),
+            P(
+                "The platform MISO and SISO pages now have 29 project-file dependencies each and zero dependencies under the legacy plotting or output folders. "
+                "The older combined MISO-SISO descriptive exporter remains available only as a compatibility path during cleanup.",
                 "SmallReport",
             ),
             PageBreak(),
@@ -750,7 +806,7 @@ def build_story():
     story.extend(
         [
             PageBreak(),
-            P("Source data and implementation history", "SectionTitle"),
+            P("Source data behind the heatmaps", "SectionTitle"),
             P(
                 "Every heatmap is accompanied by a frequencyMap table. The table is the reviewable numerical source for the image, and the workbook also contains a readable frequency grid.",
             ),
@@ -767,7 +823,17 @@ def build_story():
         ["ScoreVersion", "frequency-ratio-of-mean-errors-v1"],
     ]
     story.append(styled_table(source_rows, [165, 363]))
-    story.append(Spacer(1, 10))
+    story.extend(
+        [
+            Spacer(1, 10),
+            P(
+                "The returned tables preserve estimator errors and uncertainty even when the primary paper figure shows advantage alone. This keeps the image simple while retaining an auditable numerical record.",
+                "SmallReport",
+            ),
+            PageBreak(),
+            P("Implementation history and next boundary", "SectionTitle"),
+        ]
+    )
     history_rows = [
         ["Chunk", "What changed", "Why it matters"],
         ["1", "Truth-error normalization and MISO coherence diagnostics", "Makes pathway truth comparisons consistent and saves interpretive coherence quantities"],
@@ -783,6 +849,7 @@ def build_story():
         ["11", "NC bootstrap implementation", "Runs all 23 recordings, compares held-out MISO/SISO errors, bootstraps subjects, and returns an audit-ready frequency table"],
         ["12", "NC production run and export", "Freezes the 2,000-resample result and writes the figure plus frequency, status, subject-audit, and MAT files"],
         ["13", "Real-data core consolidation", "Separates numerical MISO/SISO analysis from the old batch plotting and output workflow while preserving compatibility"],
+        ["14", "Compact model-page outputs and frequency tables", "Gives each real-data model page one readable output and removes all legacy plotting/output dependencies from its active path"],
     ]
     story.append(styled_table(history_rows, [45, 215, 268]))
     story.extend(
@@ -790,11 +857,11 @@ def build_story():
             Spacer(1, 10),
             P("Validation completed", "SubTitle"),
             P(
-                "The full MATLAB test suite passed after chunk 13: 152 passed, 0 failed, and 0 incomplete. The 21 focused real-data and platform regression tests also passed. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
+                "The full MATLAB suite passed after chunk 14: 152 passed, 0 failed, and 0 incomplete. The focused real-data, platform, settings, and compatibility checks also passed, and MATLAB Code Analyzer reported no issues in the changed MATLAB files. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
             ),
             P("Next implementation boundary", "SubTitle"),
             P(
-                "The next cleanup boundary is to integrate compact MISO/SISO user figures and the simplified simulation heatmap exporter, then remove the superseded batch, group, statistics, robustness, and approach-paper orchestration. Scientific changes to the simulation protocol remain reserved for the Astra review.",
+                "The next cleanup boundary is the simplified simulation heatmap exporter and reproducibility manifest. Once those active capabilities are independent, the superseded batch, group, statistics, robustness, and approach-paper orchestration can be removed. Scientific changes to the simulation protocol remain reserved for the Astra review.",
             ),
         ]
     )

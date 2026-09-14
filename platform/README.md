@@ -37,6 +37,21 @@ connection has no plotting responsibility. The existing functions under
 `src` remain the backend modules during this transition; the platform pages
 are the stable user-facing boundary.
 
+Each model page returns one compact frequency table and one three-panel
+figure containing gain, phase in degrees, and coherence. The MISO table also
+retains the MAP-CO2 input coherence and phase because those quantities help
+interpret a two-input fit. The pages do not calculate model advantage;
+truth-based advantage belongs to simulation and held-out advantage belongs
+to the NC bootstrap page.
+
+Figures are visible by default. For scripted or headless use:
+
+```matlab
+displaySettings = defaultRealDataDisplaySettings("off");
+misoResults = misoTesting( ...
+    connectedData, defaultMisoRealDataSettings(), displaySettings);
+```
+
 ## NC bootstrap protocol
 
 The NC page uses the inspected NC folder structure and a fixed, reproducible

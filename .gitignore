@@ -10,6 +10,8 @@ codegen/
 
 # Local analysis output
 results/
+output/
+**/__pycache__/
 
 # LaTeX build output. Each document keeps generated files in its own build/.
 manuscript/*/build/
