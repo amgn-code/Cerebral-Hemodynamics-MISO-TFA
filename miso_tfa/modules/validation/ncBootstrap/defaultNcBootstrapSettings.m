@@ -8,6 +8,8 @@ function settings = defaultNcBootstrapSettings()
 
     analysis = defaultTfaAnalysisSettings("NC");
     analysis.frequencyRangeHz = [0.02 0.35];
+    analysis.frequencyBandEdgesHz = [0.02; 0.07; 0.20; 0.35];
+    analysis.frequencyBandNames = ["VLF"; "LF"; "HF"];
     analysis.pwelch.windowLengthSeconds = 90;
     analysis.pwelch.windowOverlap = 0;
     analysis.pwelch.minimumWindows = 2;

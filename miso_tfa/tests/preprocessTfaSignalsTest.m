@@ -193,5 +193,16 @@ classdef preprocessTfaSignalsTest < matlab.unittest.TestCase
                     signalData, 4, preprocessingTestSettings()), ...
                 "TFA:LongDataGap");
         end
+
+        function rejectsNonMonotonicTimeBeforeGapChecks(testCase)
+            signalData = createPreprocessingTestSignal( ...
+                createStableCo2(281));
+            signalData.t(20) = signalData.t(19);
+
+            testCase.verifyError( ...
+                @() preprocessTfaSignals( ...
+                    signalData, 4, preprocessingTestSettings()), ...
+                "TFA:InvalidTimeValues");
+        end
     end
 end

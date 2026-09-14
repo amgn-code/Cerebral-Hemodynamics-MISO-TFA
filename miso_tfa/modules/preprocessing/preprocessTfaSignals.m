@@ -42,6 +42,12 @@ function processedSignalData = preprocessTfaSignals( ...
             'At least three finite samples are required for preprocessing.');
     end
 
+    if any(diff(timeValid) <= 0)
+        error( ...
+            'TFA:InvalidTimeValues', ...
+            'Finite time values must be unique and strictly increasing.');
+    end
+
     %% Check Gaps Before Interpolation
 
     if isfield(preprocessingSettings, "maximumGapSeconds")
@@ -133,12 +139,6 @@ function processedSignalData = preprocessTfaSignals( ...
     stableStartTimeSeconds = timeValid(1);
     co2StartupRemovedSeconds = ...
         stableStartTimeSeconds - originalStartTimeSeconds;
-
-    if any(diff(timeValid) <= 0)
-        error( ...
-            'TFA:InvalidTimeValues', ...
-            'Finite time values must be unique and strictly increasing.');
-    end
 
     %% Resample Signals
 

@@ -23,6 +23,9 @@ classdef ncBootstrapTest < matlab.unittest.TestCase
             testCase.verifyEqual(settings.analysis.pwelch.windowOverlap, 0);
             testCase.verifyEqual(settings.analysis.frequencyRangeHz, ...
                 [0.02 0.35]);
+            testCase.verifyEqual( ...
+                settings.analysis.frequencyBandEdgesHz, ...
+                [0.02; 0.07; 0.20; 0.35]);
         end
 
         function pageReturnsFrequencyAdvantageAndAuditTables(testCase)
