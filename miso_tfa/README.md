@@ -35,6 +35,9 @@ CBFV output SNR, MAP measurement SNR, and CO2 measurement SNR. CO2 timing
 misalignment is a secondary robustness condition. Each level carries a
 provenance label in `config/simulationFactors.m`; provisional levels must be
 confirmed against NC data or cited physiology before the final paper run.
+The default `simple` profile keeps input phase at zero until those phase
+levels are confirmed; the generator and family design already support phase
+as an explicit factor for a reviewed follow-up run.
 
 The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. The primary reporting
 band ends at 0.35 Hz. The simulation stores a separate pathway-calibration

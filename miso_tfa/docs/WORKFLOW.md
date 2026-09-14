@@ -49,3 +49,8 @@ The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. Results are reported in
 the 0.005–0.35 Hz physiological band. The pathway calibration band is stored
 separately so changing a display range cannot silently change the generated
 truth.
+
+The generator varies MAP–CO2 input phase when that factor is enabled. The
+MAP–CBFV and CO2–CBFV phases are consequences of the two input signals and the
+two known pathways; they are recorded as outputs and are not independently
+assigned parameters.

@@ -41,5 +41,16 @@ classdef projectSettingsTest < matlab.unittest.TestCase
                 numerical.frequencyBandNames, ...
                 project.analysis.frequencyBandNames);
         end
+
+        function simulationSettingsRetainFactorProvenance(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            factorNames = string({settings.factorProvenance.name});
+
+            testCase.verifyEqual(numel(factorNames), 8);
+            testCase.verifyTrue(ismember( ...
+                "inputCoherence", factorNames));
+            testCase.verifyTrue(all( ...
+                strlength(string({settings.factorProvenance.provenance})) > 0));
+        end
     end
 end

@@ -15,7 +15,7 @@ function connectedData = connectTfaData(filePath, importSettings)
     if ~isscalar(filePath) || strlength(filePath) == 0
         error( ...
             "TFA:MissingInputFile", ...
-            "filePath must contain one nonempty Excel file path.");
+            "filePath must contain one nonempty Excel or CSV file path.");
     end
 
     if ~isfile(filePath)
