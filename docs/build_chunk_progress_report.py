@@ -346,6 +346,68 @@ class RealDataConsolidationDiagram(Flowable):
         )
 
 
+class Co2AlignmentDiagram(Flowable):
+    """Show the explicit CO2 correction order and sign convention."""
+
+    def __init__(self, width=510, height=186):
+        Flowable.__init__(self)
+        self.width = width
+        self.height = height
+
+    def wrap(self, available_width, available_height):
+        return min(self.width, available_width), self.height
+
+    def draw(self):
+        c = self.canv
+        steps = [
+            (0, 118, 100, "Stable input", "startup removed"),
+            (130, 118, 100, "Resample", "common 4 Hz grid"),
+            (260, 118, 100, "CO2 correction", "stated value only"),
+            (390, 118, 120, "TFA input", "detrend and Welch"),
+        ]
+        for index, (x, y, width, top, bottom) in enumerate(steps):
+            c.setFillColor(PALE_BLUE if index < 2 else PALE_ORANGE)
+            c.setStrokeColor(BLUE if index < 2 else ORANGE)
+            c.roundRect(x, y, width, 42, 5, fill=1, stroke=1)
+            c.setFillColor(NAVY)
+            c.setFont("Helvetica-Bold", 8.2)
+            c.drawCentredString(x + width / 2, y + 25, top)
+            c.setFillColor(INK)
+            c.setFont("Helvetica", 7.2)
+            c.drawCentredString(x + width / 2, y + 11, bottom)
+            if index < len(steps) - 1:
+                next_x = steps[index + 1][0]
+                c.setStrokeColor(MID_GRAY)
+                c.line(x + width, y + 21, next_x, y + 21)
+                c.line(next_x - 5, y + 24, next_x, y + 21)
+                c.line(next_x - 5, y + 18, next_x, y + 21)
+
+        signs = [
+            (0, "+ value", "advance recorded CO2", "crop CO2 start + output end"),
+            (177, "zero", "leave timing unchanged", "default primary analysis"),
+            (354, "- value", "delay recorded CO2", "crop output start + CO2 end"),
+        ]
+        for x, top, middle, bottom in signs:
+            c.setFillColor(PALE_GRAY)
+            c.setStrokeColor(colors.HexColor("#BAC4CC"))
+            c.roundRect(x, 25, 156, 62, 5, fill=1, stroke=1)
+            c.setFillColor(NAVY)
+            c.setFont("Helvetica-Bold", 8.3)
+            c.drawCentredString(x + 78, 68, top)
+            c.setFillColor(INK)
+            c.setFont("Helvetica", 7.3)
+            c.drawCentredString(x + 78, 52, middle)
+            c.drawCentredString(x + 78, 38, bottom)
+
+        c.setFillColor(MID_GRAY)
+        c.setFont("Helvetica", 7.6)
+        c.drawCentredString(
+            255,
+            4,
+            "Correction uses no wrapping, fractional interpolation, or data-driven delay optimization",
+        )
+
+
 class NCDataInspectionDiagram(Flowable):
     """Show the observed NC file handoff and the temporal CV constraint."""
 
@@ -461,7 +523,7 @@ def build_story():
         [
             P("MISO-SISO simulation study", "ReportTitle"),
             P(
-                "Visual implementation report through cleanup chunk 15. "
+                "Visual implementation report through cleanup chunk 16. "
                 "This document consolidates the current simulation and NC outputs with the simplified real-data model pages and their cleanup history.",
                 "ReportSubtitle",
             ),
@@ -469,7 +531,7 @@ def build_story():
             P(
                 "The project now has a small, explicit known-truth study that can be run without learned signal generation. "
                 "It varies three assigned factors, evaluates both estimators against the saved generating filters, and exports frequency-first figures. "
-                "The latest chunk moves the five primary simulation maps and their reproducibility record into the platform workflow.",
+                "The latest chunk makes CO2 measurement-delay correction explicit, optional, and auditable across the active workflows.",
             ),
             WorkflowDiagram(),
             Spacer(1, 8),
@@ -489,6 +551,7 @@ def build_story():
             ["Real-data numerical core", "Consolidated in chunk 13", "Public model pages no longer use legacy figure or output execution"],
             ["MISO and SISO page outputs", "Consolidated in chunk 14", "One model-specific frequency table and one compact figure per page"],
             ["Simulation outputs", "Consolidated in chunk 15", "Five fixed maps, source tables, settings, seeds, and Git identity"],
+            ["CO2 measurement alignment", "Consolidated in chunk 16", "One zero-default setting, cropped edges, and returned correction metadata"],
             ["NC bootstrap protocol", "Implemented", "3 x 90-s blocked validation with subject-level bootstrap"],
             ["NC bootstrap / cross-validation", "Implemented in this chunk", "Held-out frequency errors, advantage curve, and audit tables"],
             ["NC production export", "Implemented in this chunk", "Figure, frequency CSV, status CSV, subject audit CSV, and MAT archive"],
@@ -724,6 +787,40 @@ def build_story():
 
     story.extend(
         [
+            P("Cleanup chunk 16: explicit CO2 timing correction", "SectionTitle"),
+            P(
+                "CO2 startup cleanup and CO2 measurement alignment now have separate names and records. "
+                "Startup cleanup identifies an unstable beginning. The optional delay correction shifts an otherwise valid CO2 trace relative to MAP and CBFV after resampling and before detrending or spectral estimation.",
+            ),
+            Co2AlignmentDiagram(),
+            Spacer(1, 4),
+        ]
+    )
+    alignment_rows = [
+        ["Item", "Implemented behavior"],
+        ["Default", "co2DelayCorrectionSeconds = 0 for real data and NC bootstrap"],
+        ["Positive value", "Recorded CO2 is assumed to lag and is advanced"],
+        ["Negative value", "Recorded CO2 is delayed relative to MAP and CBFV"],
+        ["Sample handling", "Requested seconds are rounded to the 4 Hz sample grid; unmatched edges are cropped"],
+        ["Returned audit record", "Requested and applied correction, samples trimmed, retained length, source indices, and sign convention"],
+        ["Length failure", "CO2AlignmentTooShort is reported separately from LateCO2Startup"],
+        ["Scientific boundary", "No automatic delay search; measurement correction remains distinct from physiological pathway delay"],
+    ]
+    story.append(styled_table(alignment_rows, [155, 373]))
+    story.extend(
+        [
+            Spacer(1, 7),
+            P(
+                "The shared alignCo2ByDelay utility moved from the robustness folder to preprocessing because simulation perturbations, real-data analysis, and NC validation all use the same edge-cropping rule. "
+                "The active pages return co2Alignment metadata, while the NC status table records the applied correction for every subject.",
+                "SmallReport",
+            ),
+            PageBreak(),
+        ]
+    )
+
+    story.extend(
+        [
             P("Actual NC data inspection", "SectionTitle"),
             P(
                 "The NC folder was inspected before defining the bootstrap interface. "
@@ -913,6 +1010,7 @@ def build_story():
         ["13", "Real-data core consolidation", "Separates numerical MISO/SISO analysis from the old batch plotting and output workflow while preserving compatibility"],
         ["14", "Compact model-page outputs and frequency tables", "Gives each real-data model page one readable output and removes all legacy plotting/output dependencies from its active path"],
         ["15", "Platform simulation outputs and reproducibility manifest", "Returns five fixed maps with source data and preserves the exact settings, seeds, software version, and repository identity for every saved run"],
+        ["16", "Explicit CO2 measurement-delay correction", "Shares one cropping rule across simulation and real data, defaults to zero, records the applied correction, and keeps acquisition timing separate from physiological response delay"],
     ]
     story.append(styled_table(history_rows, [45, 215, 268]))
     story.extend(
@@ -920,11 +1018,11 @@ def build_story():
             Spacer(1, 10),
             P("Validation completed", "SubTitle"),
             P(
-                "The full MATLAB suite passed after chunk 15: 152 passed, 0 failed, and 0 incomplete. MATLAB Code Analyzer reported zero issues across all 16 moved, added, or modified MATLAB files. Dependency analysis confirmed that the platform simulation page no longer calls the approach-paper reporting folder. Existing expected warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
+                "The full MATLAB suite passed after chunk 16: 154 passed, 0 failed, and 0 incomplete. MATLAB Code Analyzer reported zero issues in the new alignment utility and the changed preprocessing, settings, workflow, status, and test files. The NC subject runner retains two pre-existing allocation hints on unchanged fold-assignment lines. Expected test warnings concern deliberately missing Excel folders and intentionally short synthetic records.",
             ),
             P("Next implementation boundary", "SubTitle"),
             P(
-                "The next cleanup boundary is the existing CO2 timing and alignment capability: retain the useful logic as a shared, explicit module and connect it only where the active workflows need it. After that integration is tested, the superseded batch, group, statistics, robustness, and approach-paper orchestration can be removed. Scientific changes to the simulation protocol remain reserved for the Astra review.",
+                "The next cleanup boundary is a final dependency audit followed by deletion of superseded batch, group, statistics, robustness, and approach-paper orchestration that no active platform page needs. Any small reusable calculation still reached by an active page will be moved first. Scientific changes to the simulation protocol remain reserved for the Astra review.",
             ),
         ]
     )

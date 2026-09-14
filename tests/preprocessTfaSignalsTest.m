@@ -71,6 +71,48 @@ classdef preprocessTfaSignalsTest < matlab.unittest.TestCase
             testCase.verifySize(result.cbv, [1 numel(result.cbv)]);
         end
 
+        function positiveCorrectionAdvancesCo2WithoutWrapping(testCase)
+            map = [1; 0; 0; 0; 0];
+            co2 = [0; 0; 1; 0; 0];
+            cbv = map;
+
+            [alignedMap, alignedCo2, alignedCbv, alignment] = ...
+                alignCo2ByDelay(map, co2, cbv, 1, 2);
+
+            testCase.verifyEqual(alignedMap, [1; 0; 0]);
+            testCase.verifyEqual(alignedCo2, [1; 0; 0]);
+            testCase.verifyEqual(alignedCbv, [1; 0; 0]);
+            testCase.verifyEqual( ...
+                alignment.appliedDelayCorrectionSamples, 2);
+            testCase.verifyEqual(alignment.trimmedSamples, 2);
+        end
+
+        function preprocessingAppliesStatedCo2Correction(testCase)
+            signalData = createPreprocessingTestSignal( ...
+                createStableCo2(281));
+            baselineSettings = preprocessingTestSettings();
+            correctedSettings = baselineSettings;
+            correctedSettings.co2DelayCorrectionSeconds = 1;
+
+            baseline = preprocessTfaSignals( ...
+                signalData, 4, baselineSettings);
+            corrected = preprocessTfaSignals( ...
+                signalData, 4, correctedSettings);
+
+            testCase.verifyEqual( ...
+                corrected.map, baseline.map(1:(end - 4)), ...
+                AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                corrected.co2, baseline.co2(5:end), ...
+                AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                corrected.t, baseline.t(1:(end - 4)), ...
+                AbsTol=1e-12);
+            testCase.verifyEqual( ...
+                corrected.co2Alignment.appliedDelayCorrectionSeconds, ...
+                1, AbsTol=1e-12);
+        end
+
         function canKeepCbvInCmPerSec(testCase)
             signalData = createPreprocessingTestSignal( ...
                 createStableCo2(281));

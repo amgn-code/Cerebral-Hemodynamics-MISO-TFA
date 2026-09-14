@@ -34,6 +34,14 @@ The report includes model gains, SISO/MISO coherence quantities, and the
 frequency-wise MISO coherence diagnostics. It does not calculate a
 truth-based model advantage for observed data.
 
+Real-data settings include the optional
+`preprocessing.co2DelayCorrectionSeconds` field. It is zero by default. A
+positive value advances recorded CO2, unmatched edges are cropped, and the
+applied sample correction is returned in `co2Alignment`. Use the same
+prespecified value for MISO and SISO when their results will be compared.
+This acquisition correction is distinct from a physiological response
+delay in a transfer function.
+
 ## Simulation
 
 ```matlab

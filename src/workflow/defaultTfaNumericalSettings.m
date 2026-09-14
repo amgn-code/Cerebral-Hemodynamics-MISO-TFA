@@ -24,6 +24,7 @@ function settings = defaultTfaNumericalSettings()
     settings.preprocessing.detrendEnabled = false;
     settings.preprocessing.detrendOrder = 1;
     settings.preprocessing.meanRemovalEnabled = true;
+    settings.preprocessing.co2DelayCorrectionSeconds = 0;
 
     settings.pwelch.windowLengthSeconds = 128;
     settings.pwelch.windowOverlap = 0.5;

@@ -257,5 +257,37 @@ classdef workflowSettingsTest < matlab.unittest.TestCase
             testCase.verifyEqual( ...
                 subjectResult.runStatus.runStage, "LateCO2Startup");
         end
+
+        function identifiesCo2CorrectionThatMakesRecordingTooShort(testCase)
+            outputFolder = tempname();
+            mkdir(outputFolder);
+            testCase.addTeardown(@() rmdir(outputFolder, "s"));
+            signalData = createSyntheticSignal(4);
+            numSamples = 260*4;
+            signalData.t = signalData.t(1:numSamples);
+            signalData.map = signalData.map(1:numSamples);
+            signalData.co2 = signalData.co2(1:numSamples);
+            signalData.cbv = signalData.cbv(1:numSamples);
+            subjectInfo.subjectID = "alignment";
+            subjectInfo.group = "NC";
+            subjectInfo.sourceFile = "synthetic";
+            [analysisSettings, outputSettings] = ...
+                createWorkflowTestSettings(outputFolder, true, true);
+            analysisSettings.preprocessing. ...
+                co2DelayCorrectionSeconds = 5;
+
+            subjectResult = analyzeSubjectTFA( ...
+                signalData, subjectInfo, ...
+                analysisSettings, outputSettings);
+
+            testCase.verifyFalse( ...
+                subjectResult.runStatus.analysisSucceeded);
+            testCase.verifyEqual( ...
+                subjectResult.runStatus.runStage, ...
+                "CO2AlignmentTooShort");
+            testCase.verifyEqual( ...
+                subjectResult.runStatus.co2DelayCorrectionSeconds, ...
+                5, AbsTol=1e-12);
+        end
     end
 end

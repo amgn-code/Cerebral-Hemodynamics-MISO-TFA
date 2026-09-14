@@ -85,6 +85,18 @@ function analysisSettings = validateTfaSettings(analysisSettings)
     analysisSettings.frequencyBandEdgesHz = frequencyBandEdgesHz;
     analysisSettings.frequencyBandNames = frequencyBandNames;
 
+    %% Preprocessing Settings
+
+    if ~isfield(analysisSettings.preprocessing, ...
+            "co2DelayCorrectionSeconds")
+        analysisSettings.preprocessing.co2DelayCorrectionSeconds = 0;
+    end
+    validateattributes( ...
+        analysisSettings.preprocessing.co2DelayCorrectionSeconds, ...
+        {'numeric'}, {'real', 'finite', 'scalar'}, ...
+        mfilename, ...
+        'analysisSettings.preprocessing.co2DelayCorrectionSeconds');
+
     %% Welch Settings
 
     welchSettings = analysisSettings.pwelch;

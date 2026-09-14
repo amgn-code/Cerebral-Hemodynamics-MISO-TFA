@@ -39,6 +39,7 @@ function results = runMisoSisoRealData( ...
     results.analysisInput.siso = sisoRun.analysisInput;
     results.physiology = misoRun.physiology;
     results.co2Startup = misoRun.co2Startup;
+    results.co2Alignment = misoRun.co2Alignment;
     results.outputFolder = "";
     results.runStatus = combineRunStatus( ...
         misoRun.runStatus, sisoRun.runStatus);

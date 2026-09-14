@@ -20,19 +20,6 @@ classdef robustnessAnalysisTest < matlab.unittest.TestCase
             testCase.verifyNotEqual(shifted, signal);
         end
 
-        function positiveDelayAdvancesCo2(testCase)
-            map = [1; 0; 0; 0; 0];
-            co2 = [0; 0; 1; 0; 0];
-            cbv = map;
-
-            [alignedMap, alignedCo2, alignedCbv] = ...
-                alignCo2ByDelay(map, co2, cbv, 1, 2);
-
-            testCase.verifyEqual(alignedMap, [1; 0; 0]);
-            testCase.verifyEqual(alignedCo2, [1; 0; 0]);
-            testCase.verifyEqual(alignedCbv, [1; 0; 0]);
-        end
-
         function surrogateAnalysisRefitsEveryShift(testCase)
             signalData = createSyntheticSignal(4);
             analysisInput.map = signalData.map(:);

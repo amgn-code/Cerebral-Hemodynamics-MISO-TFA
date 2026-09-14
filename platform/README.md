@@ -52,6 +52,31 @@ misoResults = misoTesting( ...
     connectedData, defaultMisoRealDataSettings(), displaySettings);
 ```
 
+## Optional CO2 timing correction
+
+The real-data and NC pages do not estimate or optimize a CO2 delay. Their
+default correction is zero. If a known acquisition delay or a prespecified
+sensitivity condition needs to be applied, set it explicitly:
+
+```matlab
+misoSettings = defaultMisoRealDataSettings();
+misoSettings.preprocessing.co2DelayCorrectionSeconds = 3;
+misoResults = misoTesting(connectedData, misoSettings);
+```
+
+A positive correction means the recorded CO2 trace is assumed to lag MAP
+and CBFV, so CO2 is advanced. A negative correction delays CO2. The
+preprocessor crops unmatched edge samples and never wraps or invents data.
+The returned `co2Alignment` structure records the requested value, the
+rounded sample correction, retained length, and sign convention.
+
+For the NC page, use the same setting under
+`settings.analysis.preprocessing.co2DelayCorrectionSeconds`. Keep it at
+zero for the primary analysis unless the correction was determined before
+examining MISO-SISO performance. This setting represents measurement
+alignment; it is separate from the physiological delay of the CO2-to-CBFV
+pathway in the known-truth generator.
+
 ## Simulation outputs
 
 `runSimulation` now returns the numerical simulation together with five

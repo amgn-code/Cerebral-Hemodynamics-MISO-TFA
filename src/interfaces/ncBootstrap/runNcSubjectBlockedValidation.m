@@ -102,6 +102,8 @@ function subjectResult = runNcSubjectBlockedValidation( ...
         numel(processed.map) / settings.analysis.fsTarget;
     subjectResult.co2StartupRemovedSeconds = ...
         processed.co2Startup.removedDurationSeconds;
+    subjectResult.co2DelayCorrectionSeconds = ...
+        processed.co2Alignment.appliedDelayCorrectionSeconds;
     subjectResult.welchWindowLengthSeconds = ...
         settings.analysis.pwelch.windowLengthSeconds;
     subjectResult.welchWindowCountForTraining = ...
@@ -165,6 +167,7 @@ function subjectResult = createEmptyNcSubjectResult(subjectInfo)
     subjectResult.numValidFrequencyBins = 0;
     subjectResult.recordingDurationSeconds = NaN;
     subjectResult.co2StartupRemovedSeconds = NaN;
+    subjectResult.co2DelayCorrectionSeconds = NaN;
     subjectResult.welchWindowLengthSeconds = NaN;
     subjectResult.welchWindowCountForTraining = NaN;
     subjectResult.frequencyHz = [];

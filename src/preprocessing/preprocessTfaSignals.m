@@ -110,6 +110,26 @@ function processedSignalData = preprocessTfaSignals( ...
     co2Resampled = interp1(timeValid, co2Valid, timeResampled, "linear");
     cbvResampled = interp1(timeValid, cbvValid, timeResampled, "linear");
 
+    %% Apply an Explicit CO2 Measurement-Delay Correction
+
+    if isfield(preprocessingSettings, "co2DelayCorrectionSeconds")
+        co2DelayCorrectionSeconds = ...
+            preprocessingSettings.co2DelayCorrectionSeconds;
+    else
+        co2DelayCorrectionSeconds = 0;
+    end
+
+    [mapResampled, co2Resampled, cbvResampled, co2Alignment] = ...
+        alignCo2ByDelay( ...
+            mapResampled, co2Resampled, cbvResampled, ...
+            targetSamplingFrequencyHz, co2DelayCorrectionSeconds);
+    timeResampled = timeResampled( ...
+        co2Alignment.mapStartIndex:co2Alignment.mapEndIndex);
+
+    mapResampled = mapResampled.';
+    co2Resampled = co2Resampled.';
+    cbvResampled = cbvResampled.';
+
     %% Calculate Physiological Summaries Before Signal Processing
 
     mapBaselineMmHg = mean(mapResampled, 'omitnan');
@@ -189,5 +209,6 @@ function processedSignalData = preprocessTfaSignals( ...
         originalStartTimeSeconds;
     processedSignalData.co2Startup.originalEndTimeSeconds = ...
         originalEndTimeSeconds;
+    processedSignalData.co2Alignment = co2Alignment;
 
 end

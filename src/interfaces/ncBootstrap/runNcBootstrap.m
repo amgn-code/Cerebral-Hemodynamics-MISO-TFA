@@ -120,6 +120,15 @@ function settings = completeNcBootstrapSettings(settings)
         end
     end
 
+    preprocessingFields = fieldnames(defaults.analysis.preprocessing);
+    for fieldIndex = 1:numel(preprocessingFields)
+        fieldName = preprocessingFields{fieldIndex};
+        if ~isfield(settings.analysis.preprocessing, fieldName)
+            settings.analysis.preprocessing.(fieldName) = ...
+                defaults.analysis.preprocessing.(fieldName);
+        end
+    end
+
     validationFields = fieldnames(defaults.validation);
     for fieldIndex = 1:numel(validationFields)
         fieldName = validationFields{fieldIndex};
@@ -195,6 +204,7 @@ function result = createEmptySubjectResultForBatch(subjectInfo)
     result.numValidFrequencyBins = 0;
     result.recordingDurationSeconds = NaN;
     result.co2StartupRemovedSeconds = NaN;
+    result.co2DelayCorrectionSeconds = NaN;
     result.welchWindowLengthSeconds = NaN;
     result.welchWindowCountForTraining = NaN;
     result.frequencyHz = [];
@@ -220,10 +230,12 @@ function statusTable = createNcStatusTable(subjectResults)
         [subjectResults.numValidFrequencyBins].', ...
         [subjectResults.recordingDurationSeconds].', ...
         [subjectResults.co2StartupRemovedSeconds].', ...
+        [subjectResults.co2DelayCorrectionSeconds].', ...
         'VariableNames', { ...
             'SubjectID', 'Status', 'StatusMessage', ...
             'NumFoldsCompleted', 'NumValidFrequencyBins', ...
-            'RecordingDurationSeconds', 'Co2StartupRemovedSeconds'});
+            'RecordingDurationSeconds', 'Co2StartupRemovedSeconds', ...
+            'Co2DelayCorrectionSeconds'});
 end
 
 function frequencyTable = createNcFrequencyTable(summary)
