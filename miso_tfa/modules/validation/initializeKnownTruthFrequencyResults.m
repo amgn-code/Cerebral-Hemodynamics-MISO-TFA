@@ -16,6 +16,9 @@ function results = initializeKnownTruthFrequencyResults( ...
     results.multipleMinusPartialMapCoherence = realArray;
     results.normalizedConditionNumber = realArray;
     results.normalizedDeterminant = realArray;
+    results.realizedOutputSnrDb = realArray;
+    results.realizedMapInputSnrDb = realArray;
+    results.realizedCo2InputSnrDb = realArray;
 
     results.map.truth = complexArray;
     results.map.sisoEstimate = complexArray;
@@ -27,8 +30,12 @@ function results = initializeKnownTruthFrequencyResults( ...
     results.map.sisoPhaseErrorRadians = realArray;
     results.map.misoPhaseErrorRadians = realArray;
     results.map.complexAdvantage = realArray;
+    results.map.truthRecoveryAdvantage = realArray;
     results.map.gainAdvantage = realArray;
     results.map.phaseAdvantage = realArray;
+    results.map.populationSisoTarget = complexArray;
+    results.map.populationSisoBiasError = realArray;
+    results.map.sisoOwnTargetError = realArray;
 
     results.co2.truth = complexArray;
     results.co2.sisoEstimate = complexArray;
@@ -40,7 +47,11 @@ function results = initializeKnownTruthFrequencyResults( ...
     results.co2.sisoPhaseErrorRadians = realArray;
     results.co2.misoPhaseErrorRadians = realArray;
     results.co2.complexAdvantage = realArray;
+    results.co2.truthRecoveryAdvantage = realArray;
     results.co2.gainAdvantage = realArray;
     results.co2.phaseAdvantage = realArray;
+    results.co2.populationSisoTarget = complexArray;
+    results.co2.populationSisoBiasError = realArray;
+    results.co2.sisoOwnTargetError = realArray;
 
 end

@@ -30,6 +30,8 @@ function settings = defaultNcBootstrapSettings()
     settings.bootstrap.confidenceLevel = 0.95;
     settings.errorFloor = 1e-12;
     settings.execution.stopOnSubjectError = false;
+    settings.inputCharacterization.enabled = true;
+    settings.inputCharacterization.reportingBandHz = [0.02 0.35];
 
     settings.plot.enabled = true;
     settings.plot.visible = "on";

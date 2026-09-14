@@ -7,7 +7,7 @@ function factorTitle = getSimulationFactorTitle( ...
         case "DurationSeconds"
             factorTitle = "recording duration";
         case "OutputSNRdB"
-            factorTitle = "CBFV SNR";
+            factorTitle = "broadband CBFV output SNR";
         case {"FamilyInputCoherence", "RealizedInputCoherence"}
             factorTitle = "input coherence";
         case {"FamilyPSDShapeOverlap", "RealizedPSDShapeOverlap"}

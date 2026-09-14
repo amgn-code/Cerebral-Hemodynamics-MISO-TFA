@@ -13,7 +13,8 @@ transfer function is compared with the known filter that generated it. SISO
 omits the other input by design, so its omitted-input bias is part of the
 comparison.
 
-The frequency-resolved score is
+The frequency-resolved score is called `truthRecoveryAdvantage` in the
+independent workflow:
 
 ```text
 advantage(f) = log10(mean SISO error(f) / mean MISO error(f))
@@ -28,13 +29,15 @@ additional accuracy endpoints.
 ## Fixed signal and analysis choices
 
 - Sampling rate: 4 Hz; Nyquist frequency: 2 Hz.
-- Reporting band: 0.005–0.35 Hz.
+- Reporting band: **0.02–0.35 Hz**. The lower edge is two bins above DC for
+  both the 100 s simulation window and the 90 s NC block.
 - Pathway calibration band: stored separately from the reporting band and
   fixed before the random signal draw.
 - MAP and CO2 input spectra, pathway shapes, Welch settings, and pathway delay
   are fixed in the simple profile.
-- Each family is generated once at the longest requested duration. Shorter
-  observations are prefixes of the same family.
+- Each family is generated once at a fixed 1200 s realization length. Shorter
+  observations are prefixes of the same family, even when the duration list
+  changes.
 - Training and validation realizations have separate deterministic seeds.
 
 ## Conditions
@@ -43,8 +46,8 @@ The default simple profile contains nine clean physiology families:
 
 | Condition | Levels | Role |
 |---|---:|---|
-| MAP–CO2 input coherence | 0, 0.50, 0.95 | input separability |
-| Relative CO2 pathway gain | 0, 0.25, 1 | effect of omitting CO2 |
+| MAP–CO2 input coherence | 0, 0.50, 0.95 pending NC quantiles | input separability |
+| Relative CO2 pathway gain | 0, 0.25, 1 | methodological stress test; report realized CBFV contribution share |
 
 Each family receives the following paired observations:
 
@@ -78,6 +81,14 @@ NC validation is a separate real-data workflow. It fits on two contiguous
 training blocks, evaluates on the held-out block, masks frequencies above each
 recording's usable Nyquist frequency, and bootstraps subjects. Its advantage is
 held-out prediction advantage, not known-truth accuracy.
+
+The NC page also returns `inputCharacterization`, which measures ordinary
+MAP–PETCO2 coherence, cross-spectral phase above the CARNET threshold, and MAP
+and PETCO2 power spectra over 0.02–0.35 Hz. The current audit completed 23 NC
+recordings and returned coherence 10th/50th/90th percentiles of approximately
+0.181/0.240/0.282 and fitted phase-lag percentiles of approximately
+-6.17/0.27/3.68 s. These values are evidence for the next scientific review,
+not silent changes to the declared stress levels.
 
 Before a paper run, replace or confirm provisional levels in
 `config/simulationFactors.m` and save the resulting settings and manifest with

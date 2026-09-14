@@ -87,7 +87,7 @@ classdef ncBootstrapTest < matlab.unittest.TestCase
             testCase.verifyEqual( ...
                 height(exportResults.subjectErrorTable), ...
                 2 * height(results.frequencyTable));
-            testCase.verifyEqual(numel(exportResults.savedFiles), 5);
+            testCase.verifyEqual(numel(exportResults.savedFiles), 9);
             testCase.verifyTrue(all(isfile(exportResults.savedFiles)));
         end
 
@@ -111,6 +111,27 @@ classdef ncBootstrapTest < matlab.unittest.TestCase
             testCase.verifyEqual( ...
                 first.frequencyTable.CIUpper, ...
                 second.frequencyTable.CIUpper, AbsTol=1e-12);
+        end
+
+        function inputCharacterizationReturnsProtocolDeliverables(testCase)
+            [temporaryFolder, dataFolder] = createNcFixture(2, false);
+            testCase.addTeardown(@() rmdir(temporaryFolder, "s"));
+            settings = createTestNcSettings();
+
+            results = ncBootstrap(dataFolder, settings);
+
+            testCase.verifyTrue(isfield(results, "inputCharacterization"));
+            characterization = results.inputCharacterization;
+            testCase.verifyEqual( ...
+                characterization.coherence.suggestedCoreLevels(1), 0);
+            testCase.verifyEqual( ...
+                height(characterization.coherence.frequencyTable), ...
+                nnz(characterization.frequencyHz >= 0.02 & ...
+                characterization.frequencyHz <= 0.35));
+            testCase.verifyTrue(isfield(characterization.phase, ...
+                "subjectLagQuantilesSeconds"));
+            testCase.verifyTrue(isfield(characterization.power, ...
+                "frequencyTable"));
         end
 
         function shortRecordingIsReportedAlongsideCompletedSubject(testCase)

@@ -11,8 +11,10 @@ function observation = createKnownTruthObservation( ...
     end
 
     keptSamples = 1:numSamples;
-    map = realization.map(keptSamples);
-    co2 = realization.co2(keptSamples);
+    cleanMap = realization.map(keptSamples);
+    cleanCo2 = realization.co2(keptSamples);
+    map = cleanMap;
+    co2 = cleanCo2;
     cleanCbv = realization.cleanCbv(keptSamples);
     mapContribution = realization.mapContribution(keptSamples);
     co2Contribution = realization.co2Contribution(keptSamples);
@@ -33,7 +35,7 @@ function observation = createKnownTruthObservation( ...
         [map, co2, cbv] = alignCo2ByDelay( ...
             originalMap, originalCo2, cbv, fs, ...
             planRow.AlignmentErrorSeconds);
-        [~, ~, cleanCbv] = alignCo2ByDelay( ...
+        [cleanMap, cleanCo2, cleanCbv] = alignCo2ByDelay( ...
             originalMap, originalCo2, cleanCbv, fs, ...
             planRow.AlignmentErrorSeconds);
         [~, ~, mapContribution] = alignCo2ByDelay( ...
@@ -42,12 +44,20 @@ function observation = createKnownTruthObservation( ...
         [~, ~, co2Contribution] = alignCo2ByDelay( ...
             originalMap, originalCo2, co2Contribution, fs, ...
             planRow.AlignmentErrorSeconds);
+    else
+        cleanMap = cleanMap(:);
+        cleanCo2 = cleanCo2(:);
     end
 
     observation.map = map(:);
     observation.co2 = co2(:);
     observation.cbv = cbv(:);
+    observation.cleanMap = cleanMap(:);
+    observation.cleanCo2 = cleanCo2(:);
     observation.cleanCbv = cleanCbv(:);
+    observation.mapMeasurementNoise = observation.map - observation.cleanMap;
+    observation.co2MeasurementNoise = observation.co2 - observation.cleanCo2;
+    observation.outputNoise = observation.cbv - observation.cleanCbv;
     observation.mapContribution = mapContribution(:);
     observation.co2Contribution = co2Contribution(:);
     observation.fs = fs;

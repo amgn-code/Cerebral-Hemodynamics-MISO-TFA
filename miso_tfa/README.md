@@ -22,7 +22,7 @@ The public interfaces are:
 6. `runSimulation` executes the known-truth simulation and optional export.
 
 The active project uses a fixed 4 Hz sampling rate and a physiological
-reporting band ending at 0.35 Hz. The Nyquist frequency is 2 Hz; frequencies
+reporting band of 0.02–0.35 Hz. The Nyquist frequency is 2 Hz; frequencies
 above the reporting band are not part of the primary physiological analysis.
 
 Simulation, real-data analysis, and NC validation share the numerical modules
@@ -30,17 +30,14 @@ under `modules/`, but their settings and results remain separate. Generated
 files belong under `output/` and are not source code.
 
 The primary simulation factor schema contains MAP-CO2 input coherence,
-MAP-CO2 input phase lag, relative CO2 pathway strength, recording duration,
-CBFV output SNR, MAP measurement SNR, and CO2 measurement SNR. CO2 timing
-misalignment is a secondary robustness condition. Each level carries a
-provenance label in `config/simulationFactors.m`; provisional levels must be
-confirmed against NC data or cited physiology before the final paper run.
-The default `simple` profile keeps input phase at zero until those phase
-levels are confirmed; the generator and family design already support phase
-as an explicit factor for a reviewed follow-up run.
+relative CO2 pathway strength, recording duration, and broadband CBFV output
+SNR. Input phase, MAP or CO2 input SNR, and CO2 timing misalignment are named
+secondary experiments. Each level carries a provenance label in
+`config/simulationFactors.m`; provisional levels must be confirmed against NC
+data or cited physiology before the final paper run.
 
 The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. The primary reporting
-band ends at 0.35 Hz. The simulation stores a separate pathway-calibration
+band is 0.02–0.35 Hz. The simulation stores a separate pathway-calibration
 band so changing the displayed band cannot change the generated pathway truth.
 The simulation workflow exposes only the unregularized MISO/SISO comparison.
 The low-level solver retains an optional regularization branch for numerical
@@ -50,6 +47,10 @@ NC validation performs acquisition cleanup before splitting the record, then
 fits centering and CBV conditioning from the training blocks and applies those
 parameters to the held-out block. Frequencies above each recording's native
 usable Nyquist frequency are masked and reported in the subject status table.
+The same `ncBootstrap` result contains `inputCharacterization`, with the NC
+MAP–CO2 coherence distribution, thresholded cross-spectral phase-lag
+distribution, and MAP/CO2 power-spectrum tables used to review simulation
+levels.
 
 Run the independent test set with:
 
@@ -59,10 +60,9 @@ results = runIndependentTests;
 table(results)
 ```
 
-The factor table, estimands, calibration-band decision, provenance labels, and
-final protocol will be added to `config/` and `docs/` before the final study
-run. The current parent-level files are migration sources and are not required
-by this project.
+The factor table, estimands, calibration-band decision, and provenance labels
+are in `config/` and `docs/`. The current parent-level files are migration
+sources and are not required by this project.
 
 Saved simulation archives can be replayed without rebuilding settings by
 calling `replaySimulation("/path/to/simulation_results.mat")`. The replay

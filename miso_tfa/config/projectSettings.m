@@ -2,11 +2,11 @@ function settings = projectSettings()
 % projectSettings Return the single active project configuration boundary.
 
 settings.samplingFrequencyHz = 4;
-settings.analysis.reportingBandHz = [0.005 0.35];
-settings.analysis.pathwayCalibrationBandHz = [0.005 0.35];
+settings.analysis.reportingBandHz = [0.02 0.35];
+settings.analysis.pathwayCalibrationBandHz = [0.02 0.35];
 settings.analysis.frequencyBandEdgesHz = ...
-    [0.005; 0.024; 0.070; 0.200; 0.350];
-settings.analysis.frequencyBandNames = ["VVLF"; "VLF"; "LF"; "HF"];
+    [0.02; 0.070; 0.200; 0.350];
+settings.analysis.frequencyBandNames = ["VLF"; "LF"; "HF"];
 settings.analysis.nyquistFrequencyHz = ...
     settings.samplingFrequencyHz/2;
 settings.analysis.primaryEstimand = ...

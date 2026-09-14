@@ -39,7 +39,8 @@ function [figureHandle, sourceData] = ...
         "LineStyle", "--");
 
     xlabel(axesHandle, "Frequency (Hz)");
-    ylabel(axesHandle, "MISO advantage, log10(SISO error / MISO error)");
+    ylabel(axesHandle, ...
+        "predictionAdvantage, log10(held-out SISO error / MISO error)");
     title(axesHandle, "NC held-out MISO advantage");
     grid(axesHandle, "on");
     box(axesHandle, "off");

@@ -15,7 +15,6 @@ function simulationResults = runSimpleKnownTruthSimulation( ...
 
     settings = defaultKnownTruthSimulationSettings("simple");
     settings.families.repetitionsPerCondition = repetitionsPerCondition;
-    settings.families.numFamilies = 9*repetitionsPerCondition;
 
     simulationResults = runKnownTruthSimulationGrid(settings);
 

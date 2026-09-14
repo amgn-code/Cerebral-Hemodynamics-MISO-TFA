@@ -97,6 +97,12 @@ function results = runNcBootstrap(dataFolder, settings)
     results.summary = summary;
     results.frequencyTable = frequencyTable;
     results.figureHandle = [];
+    if settings.inputCharacterization.enabled
+        results.inputCharacterization = characterizeNcInputs( ...
+            dataFolder, settings);
+    else
+        results.inputCharacterization = struct();
+    end
 
 end
 
@@ -144,6 +150,20 @@ function settings = completeNcBootstrapSettings(settings)
         if ~isfield(settings.bootstrap, fieldName)
             settings.bootstrap.(fieldName) = ...
                 defaults.bootstrap.(fieldName);
+        end
+    end
+
+    characterizationFields = fieldnames(defaults.inputCharacterization);
+    if ~isfield(settings, "inputCharacterization") || ...
+            ~isstruct(settings.inputCharacterization)
+        settings.inputCharacterization = defaults.inputCharacterization;
+    else
+        for fieldIndex = 1:numel(characterizationFields)
+            fieldName = characterizationFields{fieldIndex};
+            if ~isfield(settings.inputCharacterization, fieldName)
+                settings.inputCharacterization.(fieldName) = ...
+                    defaults.inputCharacterization.(fieldName);
+            end
         end
     end
 

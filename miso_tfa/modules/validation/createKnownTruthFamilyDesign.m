@@ -6,18 +6,32 @@ function familyDesign = createKnownTruthFamilyDesign(settings)
 % nuisance variables. Input phase is explicit so it cannot be confused with
 % pathway delay or measurement alignment.
 
-    numFamilies = settings.families.numFamilies;
-    validateattributes( ...
-        numFamilies, {'numeric'}, ...
-        {'scalar', 'integer', 'positive', 'finite'});
+    designMode = string(settings.families.designMode);
+    if lower(designMode) == "fullfactorial"
+        valueSetLengths = [ ...
+            numel(settings.families.targetCoherenceValues), ...
+            numel(settings.families.spectralSimilarityValues), ...
+            numel(settings.families.petco2ToMapFluctuationSdRatioValues), ...
+            numel(settings.families.petco2ToMapBandGainRatioValues), ...
+            numel(settings.families.co2DelaySecondsValues), ...
+            numel(settings.families.inputPhaseLagSecondsValues)];
+        numFamilies = prod(valueSetLengths)*settingsRepetitions( ...
+            settings.families);
+    else
+        if ~isfield(settings.families, "numFamilies")
+            error("TFA:MissingFamilyCount", ...
+                "Non-factorial designs must declare families.numFamilies.");
+        end
+        numFamilies = settings.families.numFamilies;
+        validateattributes( ...
+            numFamilies, {'numeric'}, ...
+            {'scalar', 'integer', 'positive', 'finite'});
+    end
     validateFamilyFactorValues(settings.families);
 
-    previousRandomState = rng;
-    restoreRandomState = onCleanup(@() rng(previousRandomState));
-    rng(settings.randomSeed, "twister");
-
     [factorValues, factorLevelIndices, designBlockId, designBaseRow] = ...
-        createFamilyFactorAssignments(settings.families, numFamilies);
+        createFamilyFactorAssignments( ...
+        settings.families, numFamilies, settings.randomSeed);
     targetCoherence = factorValues(:,1);
     spectralSimilarity = factorValues(:,2);
     petco2ToMapFluctuationSdRatio = factorValues(:,3);
@@ -26,17 +40,21 @@ function familyDesign = createKnownTruthFamilyDesign(settings)
     inputPhaseLagSeconds = factorValues(:,6);
     mapTimeConstantSeconds = sampleLinearRange( ...
         numFamilies, ...
-        settings.families.mapPathwayTimeConstantRange);
+        settings.families.mapPathwayTimeConstantRange, ...
+        settings.randomSeed, 17);
     co2TimeConstantSeconds = sampleLinearRange( ...
         numFamilies, ...
-        settings.families.co2PathwayTimeConstantRange);
+        settings.families.co2PathwayTimeConstantRange, ...
+        settings.randomSeed, 31);
 
     fs = settings.samplingFrequencyHz;
     co2DelaySeconds = round(co2DelaySeconds*fs)/fs;
 
     familyId = (1:numFamilies)';
     scenarioId = familyId;
-    familySeed = settings.randomSeed + 1000*familyId;
+    % A family owns its random stream. Adding families therefore appends new
+    % realizations without changing the already assigned prefix.
+    familySeed = settings.randomSeed + 7919*familyId;
 
     designedSpectralOverlap = NaN(numFamilies, 1);
     for familyIndex = 1:numFamilies
@@ -88,12 +106,10 @@ function familyDesign = createKnownTruthFamilyDesign(settings)
             'MAPPathwayTimeConstantSeconds', ...
             'CO2PathwayTimeConstantSeconds'});
 
-    clear restoreRandomState
-
 end
 
 function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
-    createFamilyFactorAssignments(families, numFamilies)
+    createFamilyFactorAssignments(families, numFamilies, randomSeed)
 % createFamilyFactorAssignments Assign the intrinsic family factor values.
 
     valueSets = { ...
@@ -144,7 +160,8 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
                  'levels when designMode is "pairwiseFiveLevel".']);
         end
         [levelIndices, designBlockId, designBaseRow] = ...
-            createPairwiseBalancedFiveLevelDesign(numFamilies);
+            createPairwiseBalancedFiveLevelDesign( ...
+                numFamilies, randomSeed);
         for factorIndex = 1:5
             currentValues = pairwiseValueSets{factorIndex};
             factorValues(:,factorIndex) = ...
@@ -165,8 +182,8 @@ function [factorValues, levelIndices, designBlockId, designBaseRow] = ...
     end
     for factorIndex = 1:numFactors
         currentValues = valueSets{factorIndex};
-        assignedValues = createBalancedFamilyLevels( ...
-            currentValues, numFamilies);
+        assignedValues = createStableBalancedFamilyLevels( ...
+            currentValues, numFamilies, factorIndex);
         [isFound, currentIndices] = ismember( ...
             assignedValues, currentValues);
         if ~all(isFound)
@@ -265,19 +282,28 @@ function repetitions = settingsRepetitions(families)
 
 end
 
-function values = sampleLinearRange(numValues, range)
-% sampleLinearRange Draw one randomized point from each equal interval.
+function values = sampleLinearRange( ...
+    numValues, range, randomSeed, streamOffset)
+% sampleLinearRange Draw one reproducible nuisance value per family.
 
-    unitValues = stratifiedUnitValues(numValues);
-    values = range(1) + unitValues*(range(2) - range(1));
+    values = NaN(numValues, 1);
+    for familyIndex = 1:numValues
+        familyStream = RandStream("threefry", ...
+            "Seed", randomSeed + streamOffset + 7919*familyIndex);
+        values(familyIndex) = range(1) + ...
+            familyStream.rand()*(range(2) - range(1));
+    end
 
 end
 
-function values = stratifiedUnitValues(numValues)
-% stratifiedUnitValues Return shuffled values between zero and one.
+function levels = createStableBalancedFamilyLevels( ...
+    allowedValues, numFamilies, factorIndex)
+% createStableBalancedFamilyLevels Assign levels without N-dependent shuffles.
 
-    values = ((0:(numValues - 1))' + rand(numValues, 1))/numValues;
-    values = values(randperm(numValues));
+    allowedValues = allowedValues(:);
+    numLevels = numel(allowedValues);
+    indices = mod((0:(numFamilies - 1))' + factorIndex - 1, numLevels) + 1;
+    levels = allowedValues(indices);
 
 end
 

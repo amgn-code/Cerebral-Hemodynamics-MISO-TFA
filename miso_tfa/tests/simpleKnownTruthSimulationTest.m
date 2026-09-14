@@ -32,7 +32,7 @@ classdef simpleKnownTruthSimulationTest < matlab.unittest.TestCase
             testCase.verifyEqual( ...
                 settings.observations.inputNoiseSnrDb, [Inf 10 0]);
             testCase.verifyEqual( ...
-                settings.frequencyRangeHz, [0.005 0.35]);
+                settings.frequencyRangeHz, [0.02 0.35]);
         end
 
         function fullFactorialDesignContainsAllNinePairs(testCase)

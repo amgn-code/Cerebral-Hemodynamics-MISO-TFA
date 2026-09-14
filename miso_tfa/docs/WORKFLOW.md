@@ -41,12 +41,13 @@ reporting function is explicitly called.
 
 The primary simulation score is the conditional pathway error of MISO versus
 SISO. A positive advantage means the SISO error divided by the MISO error is
-greater than one on a log10 scale. Input coherence and input phase are
-physiological input conditions; recording duration and the three SNR settings
-are observation conditions. Alignment is a secondary robustness condition.
+greater than one on a log10 scale. Input coherence and pathway strength are
+primary family conditions; recording duration and broadband output SNR are
+observation conditions. Input phase, input SNR, and alignment are secondary
+robustness experiments.
 
 The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. Results are reported in
-the 0.005–0.35 Hz physiological band. The pathway calibration band is stored
+the 0.02–0.35 Hz physiological band. The pathway calibration band is stored
 separately so changing a display range cannot silently change the generated
 truth.
 

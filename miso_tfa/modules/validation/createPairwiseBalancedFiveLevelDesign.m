@@ -1,5 +1,5 @@
 function [levelIndices, blockId, baseRow] = ...
-    createPairwiseBalancedFiveLevelDesign(numFamilies)
+    createPairwiseBalancedFiveLevelDesign(numFamilies, randomSeed)
 % createPairwiseBalancedFiveLevelDesign Create balanced five-factor blocks.
 %
 % Each 25-row block contains five factors with five levels. Every level is
@@ -9,6 +9,7 @@ function [levelIndices, blockId, baseRow] = ...
 
     arguments
         numFamilies (1,1) double {mustBeInteger, mustBePositive}
+        randomSeed (1,1) double {mustBeInteger, mustBeNonnegative}
     end
 
     blockSize = 25;
@@ -38,13 +39,15 @@ function [levelIndices, blockId, baseRow] = ...
     baseRow = zeros(numFamilies, 1);
 
     for blockIndex = 1:numBlocks
+        blockStream = RandStream("threefry", ...
+            "Seed", randomSeed + 7919*blockIndex);
         currentDesign = baseDesign;
         for factorIndex = 1:numFactors
-            levelOrder = randperm(numLevels);
+            levelOrder = randperm(blockStream, numLevels);
             currentDesign(:,factorIndex) = ...
                 levelOrder(currentDesign(:,factorIndex));
         end
-        rowOrder = randperm(blockSize);
+        rowOrder = randperm(blockStream, blockSize);
         rows = (blockIndex - 1)*blockSize + (1:blockSize);
         levelIndices(rows,:) = currentDesign(rowOrder,:);
         blockId(rows) = blockIndex;

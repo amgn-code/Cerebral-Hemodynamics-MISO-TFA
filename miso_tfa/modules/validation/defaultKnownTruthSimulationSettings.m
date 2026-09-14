@@ -31,6 +31,7 @@ function settings = defaultKnownTruthSimulationSettings(profileName)
         projectConfiguration.analysis.frequencyBandEdgesHz;
     settings.frequencyBandNames = ...
         projectConfiguration.analysis.frequencyBandNames;
+    settings.generator.realizationLengthSeconds = 1200;
 
     %% Family Design
 
@@ -201,11 +202,10 @@ function settings = applySimpleStudy(settings)
 % physiology remain fixed.
 
     settings.profileName = "simple";
-    settings.frequencyRangeHz = [0.005 0.35];
-    settings.pathways.calibrationBandHz = [0.005 0.35];
-    settings.frequencyBandEdgesHz = [0.005; 0.025; 0.070; 0.200; 0.350];
-    settings.frequencyBandNames = ["0.005-0.025"; "0.025-0.070"; ...
-        "0.070-0.200"; "0.200-0.350"];
+    settings.frequencyRangeHz = [0.02 0.35];
+    settings.pathways.calibrationBandHz = [0.02 0.35];
+    settings.frequencyBandEdgesHz = [0.02; 0.070; 0.200; 0.350];
+    settings.frequencyBandNames = ["VLF"; "LF"; "HF"];
 
     settings.families.targetCoherenceValues = [0 0.50 0.95];
     settings.families.spectralSimilarityValues = 1;
@@ -217,7 +217,6 @@ function settings = applySimpleStudy(settings)
     settings.families.co2PathwayTimeConstantRange = [5 5];
     settings.families.designMode = "fullFactorial";
     settings.families.repetitionsPerCondition = 1;
-    settings.families.numFamilies = 9;
     settings.families.progressEvery = 1;
 
     settings.inputs.maximumCenterSeparationHz = 0;

@@ -24,6 +24,7 @@ function exportResults = exportNcBootstrapResults( ...
     defaultExportSettings.saveFrequencyCsv = true;
     defaultExportSettings.saveStatusCsv = true;
     defaultExportSettings.saveSubjectErrorsCsv = true;
+    defaultExportSettings.saveInputCharacterizationCsv = true;
     defaultExportSettings.saveMat = true;
     defaultExportSettings.closeFigure = true;
     if nargin < 3 || isempty(exportSettings)
@@ -85,6 +86,23 @@ function exportResults = exportNcBootstrapResults( ...
             outputFolder, "nc_bootstrap_subject_frequency_errors.csv");
         writetable(subjectErrorTable, subjectErrorFile);
         exportResults.savedFiles(end + 1, 1) = string(subjectErrorFile);
+    end
+
+    if exportSettings.saveInputCharacterizationCsv && ...
+            isfield(results, "inputCharacterization") && ...
+            ~isempty(fieldnames(results.inputCharacterization))
+        characterization = results.inputCharacterization;
+        inputFiles = [ ...
+            fullfile(outputFolder, "nc_input_coherence_frequency_table.csv")
+            fullfile(outputFolder, "nc_input_phase_frequency_table.csv")
+            fullfile(outputFolder, "nc_input_power_frequency_table.csv")
+            fullfile(outputFolder, "nc_input_subject_table.csv")];
+        writetable(characterization.coherence.frequencyTable, inputFiles(1));
+        writetable(characterization.phase.frequencyTable, inputFiles(2));
+        writetable(characterization.power.frequencyTable, inputFiles(3));
+        writetable(characterization.subjectTable, inputFiles(4));
+        exportResults.savedFiles = [exportResults.savedFiles; inputFiles];
+        exportResults.inputCharacterization = characterization;
     end
 
     if exportSettings.saveMat
