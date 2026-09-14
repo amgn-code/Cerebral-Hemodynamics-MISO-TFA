@@ -71,4 +71,5 @@ defaults.
 
 For a compact start-to-finish example, open
 `examples/quick_start.m`. The workflow diagram and page responsibilities are
-described in `docs/WORKFLOW.md`.
+described in `docs/WORKFLOW.md`; the default simulation contract is in
+`docs/SIMULATION_PROTOCOL.md`.
