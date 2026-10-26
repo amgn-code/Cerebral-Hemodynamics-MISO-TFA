@@ -12,6 +12,9 @@ codegen/
 results/
 output/
 **/__pycache__/
+tmp/
+.codex-finalizer-*/
+miso_tfa/data/
 
 # LaTeX build output. Each document keeps generated files in its own build/.
 manuscript/*/build/
