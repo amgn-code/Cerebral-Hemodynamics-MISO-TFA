@@ -47,6 +47,15 @@ function exportResults = exportSimulationResults( ...
             csvFile = fileStem + "_frequency_map.csv";
             writetable(map.frequencyTable, csvFile);
             savedFiles(end + 1, 1) = csvFile; %#ok<AGROW>
+            if isfield(map, "companions") && ...
+                    isfield(map.companions, "analyticReference")
+                referenceFile = fileStem + "_analytic_reference.csv";
+                snrFile = fileStem + "_realized_output_snr.csv";
+                writetable(map.companions.analyticReference, referenceFile);
+                writetable(map.companions.realizedOutputSnr, snrFile);
+                savedFiles(end + 1, 1) = referenceFile; %#ok<AGROW>
+                savedFiles(end + 1, 1) = snrFile; %#ok<AGROW>
+            end
         end
     end
 
@@ -85,6 +94,12 @@ function resultsCopy = removeFigureHandles(simulationResults, outputs)
 
     for mapNumber = 1:numel(outputs.maps)
         outputs.maps(mapNumber).figureHandle = [];
+    end
+    for mapNumber = 1:numel(outputs.primaryMaps)
+        outputs.primaryMaps(mapNumber).figureHandle = [];
+    end
+    for mapNumber = 1:numel(outputs.diagnosticMaps)
+        outputs.diagnosticMaps(mapNumber).figureHandle = [];
     end
     resultsCopy = simulationResults;
     resultsCopy.outputs = outputs;

@@ -12,9 +12,21 @@ connectedData = connectData(filePath);
 misoResults = misoTesting(connectedData);
 sisoResults = sisoTesting(connectedData);
 
+% To export one model page, set its output folder. CSV, MAT, and PNG files
+% are then created by the same page that performs the analysis.
+% displaySettings = defaultRealDataDisplaySettings("off");
+% displaySettings.outputFolder = fullfile(project.output, "my_recording");
+% misoResults = misoTesting( ...
+%     connectedData, defaultMisoRealDataSettings(), displaySettings);
+
 % For the known-truth simulation, edit the returned settings before running.
-simulationSettings = simulationSettings("simple");
-simulationResults = runSimulation(simulationSettings);
+simSettings = simulationSettings("simple");
+simulationResults = runSimulation(simSettings);
+
+% Final-study wiring check. Use 500 repetitions for scientific output.
+finalOutput = defaultSimulationOutputSettings("off");
+finalOutput.createFigures = false;
+finalStudySmoke = runFinalSimulationStudy(1, finalOutput);
 
 % NC validation is a separate workflow. Supply the folder containing NC
 % recordings when it is ready for the local dataset.

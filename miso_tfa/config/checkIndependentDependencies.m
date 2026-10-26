@@ -12,7 +12,12 @@ entryPoints = [ ...
     "sisoTesting"
     "ncBootstrap"
     "simulationSettings"
-    "runSimulation"];
+    "runSimulation"
+    "runFinalSimulationStudy"
+    "exportFinalSimulationStudy"
+    "createFinalMisoTfaReport"
+    "generateManuscriptAssets"
+    "buildManuscript"];
 
 entryPointName = strings(numel(entryPoints), 1);
 requiredFileCount = zeros(numel(entryPoints), 1);
@@ -20,11 +25,14 @@ externalFileCount = zeros(numel(entryPoints), 1);
 externalFiles = cell(numel(entryPoints), 1);
 
 for entryPointIndex = 1:numel(entryPoints)
-    [files, ~] = matlab.codetools.requiredFilesAndProducts( ...
+    entryFile = which(entryPoints(entryPointIndex));
+    assert(~isempty(entryFile), "TFA:MissingEntryPoint", ...
+        "Entry point %s is missing. Run setup before auditing dependencies.", ...
         entryPoints(entryPointIndex));
+    [files, ~] = matlab.codetools.requiredFilesAndProducts(entryFile);
     paths = string(files(:));
-    parentProjectFile = startsWith(paths, string(parentRoot)) & ...
-        ~startsWith(paths, string(projectRoot));
+    parentProjectFile = startsWith(paths, string(parentRoot) + filesep) & ...
+        ~startsWith(paths, string(projectRoot) + filesep);
     entryPointName(entryPointIndex) = entryPoints(entryPointIndex);
     requiredFileCount(entryPointIndex) = numel(paths);
     externalFileCount(entryPointIndex) = nnz(parentProjectFile);

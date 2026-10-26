@@ -7,7 +7,9 @@ function settings = defaultSimulationOutputSettings(visibility)
 
     settings.createFigures = true;
     settings.visible = lower(string(visibility));
-    settings.advantageColorLimit = 1.5;
+    % Empty/NaN means choose one symmetric limit from all primary maps.
+    % A numeric value remains available when reproducing an older figure.
+    settings.advantageColorLimit = NaN;
     settings.diagnosticBinEdges = 0:0.1:1;
 
     settings.bootstrap.enabled = true;

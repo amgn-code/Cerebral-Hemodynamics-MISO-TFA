@@ -36,9 +36,9 @@ classdef protocolFreezeTest < matlab.unittest.TestCase
             firstDesign = createKnownTruthFamilyDesign(settings);
             settings.families.repetitionsPerCondition = 2;
             secondDesign = createKnownTruthFamilyDesign(settings);
-            testCase.verifyEqual(height(firstDesign), 9);
-            testCase.verifyEqual(height(secondDesign), 18);
-            testCase.verifyEqual(firstDesign, secondDesign(1:9,:));
+            testCase.verifyEqual(height(firstDesign), 12);
+            testCase.verifyEqual(height(secondDesign), 24);
+            testCase.verifyEqual(firstDesign, secondDesign(1:12,:));
         end
 
         function durationSelectionDoesNotRedrawFamily(testCase)
@@ -76,6 +76,34 @@ classdef protocolFreezeTest < matlab.unittest.TestCase
             testCase.verifyTrue(isfield(analysis, "secondaryEstimand"));
             testCase.verifyTrue(isfield( ...
                 analysis.diagnostics, "realizedInBandSnrDb"));
+        end
+
+        function longNoiselessRecordApproachesAnalyticSisoBias(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            settings.generator.realizationLengthSeconds = 7200;
+            design = createKnownTruthFamilyDesign(settings);
+            selected = design.TargetInputCoherence == 0.50 & ...
+                design.PETCO2ToMAPBandGainRatio == 1;
+            family = createKnownTruthFamily(design(find(selected, 1), :), ...
+                settings);
+            plan = table(7200, Inf, Inf, Inf, 0, "signalShaped", ...
+                'VariableNames', {'DurationSeconds', 'OutputSNRdB', ...
+                'MAPInputSNRdB', 'CO2InputSNRdB', ...
+                'AlignmentErrorSeconds', 'NoiseSpectrum'});
+            training = createKnownTruthObservation(family.training, plan);
+            validation = createKnownTruthObservation(family.validation, plan);
+            analysis = analyzeKnownTruthObservation( ...
+                training, validation, settings);
+            empiricalSisoError = ...
+                analysis.frequencyError.map.siso.complex;
+            analyticSisoBias = ...
+                analysis.population.sisoTruthError.map.complex;
+            finite = empiricalSisoError > 0 & analyticSisoBias > 0;
+            logDifference = log10( ...
+                empiricalSisoError(finite)./analyticSisoBias(finite));
+
+            testCase.verifyLessThan( ...
+                median(abs(logDifference), "omitnan"), 0.20);
         end
     end
 end

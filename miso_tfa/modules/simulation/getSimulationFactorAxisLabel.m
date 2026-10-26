@@ -7,7 +7,7 @@ function axisLabel = getSimulationFactorAxisLabel( ...
         case "DurationSeconds"
             axisLabel = "Duration (s)";
         case "OutputSNRdB"
-            axisLabel = "Broadband CBFV output SNR (dB)";
+            axisLabel = "CBFV output SNR (dB)";
         case {"FamilyInputCoherence", "RealizedInputCoherence"}
             axisLabel = "Mean input coherence";
         case {"FamilyPSDShapeOverlap", "RealizedPSDShapeOverlap"}

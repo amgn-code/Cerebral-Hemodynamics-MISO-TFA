@@ -46,6 +46,10 @@ function [figureHandle, sourceData] = plotSimpleSimulationFrequencyMap( ...
 
     [plotCenters, tickValues, tickLabels] = ...
         prepareSimulationHeatmapAxis(summary.factorLabels);
+    if factorName == "TargetInputCoherence"
+        ncRow = abs(summary.factorCenters - 0.15) < 1e-12;
+        tickLabels(ncRow) = tickLabels(ncRow) + " (NC: 0.06-0.18)";
+    end
     plotValues = summary.advantage;
     plotValues(plotValues > colorLimit) = colorLimit;
     plotValues(plotValues < -colorLimit) = -colorLimit;

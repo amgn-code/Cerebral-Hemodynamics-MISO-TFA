@@ -1,9 +1,9 @@
 {
-  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.outDir": "%DIR%/../output/pdf",
   "latex-workshop.latex.recipe.default": "first",
   "latex-workshop.latex.recipes": [
     {
-      "name": "latexmk → document/build",
+      "name": "latexmk → MISO-TFA manuscript PDF",
       "tools": [
         "latexmk-document-build"
       ]
@@ -18,6 +18,7 @@
         "-interaction=nonstopmode",
         "-file-line-error",
         "-pdf",
+        "-jobname=MISO_TFA_simulation_study_manuscript",
         "-outdir=%OUTDIR%",
         "%DOC%"
       ],

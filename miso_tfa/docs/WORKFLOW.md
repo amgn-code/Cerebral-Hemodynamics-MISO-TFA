@@ -1,57 +1,63 @@
 # Independent workflow
 
-The `miso_tfa` folder is the migration target for the project. It has one
-setup function, six user-facing pages, and shared numerical modules.
+The standalone project has three user workflows and one final study
+orchestrator. They share numerical modules but keep their settings and accuracy
+targets separate.
 
 ```mermaid
-flowchart LR
-    A[connectData<br/>file path] --> B[canonical MAP / CO2 / CBFV]
+flowchart TB
+    A[connectData: file path] --> B[Canonical MAP, CO2, CBFV]
     B --> C[misoTesting]
     B --> D[sisoTesting]
-    C --> E[MISO frequency table and figure]
-    D --> F[SISO frequency table and figure]
-    G[simulationSettings] --> H[runSimulation]
-    H --> I[frequency × metric × advantage heatmaps]
-    J[ncBootstrap<br/>NC folder] --> K[held-out frequency advantage<br/>and subject bootstrap]
-    B --> L[shared preprocessing, Welch, phase, and TFA modules]
-    C --> L
-    D --> L
-    H --> L
-    K --> L
+    E[simulationSettings] --> F[runSimulation]
+    G[runFinalSimulationStudy] --> H[Core plus E2/E3/E4 maps]
+    I[ncBootstrap: NC folder] --> J[Held-out advantage and pointwise CI]
+    C --> K[Shared preprocessing, Welch, phase and TFA modules]
+    D --> K
+    F --> K
+    G --> K
+    I --> K
 ```
 
-## User-facing pages
+| Entry point | Purpose | Main return |
+| --- | --- | --- |
+| `connectData` | Read and standardize one CSV or Excel recording | Canonical time, MAP, CO2, CBFV and source metadata |
+| `misoTesting` | Analyze one recording jointly | MAP and CO2 transfer functions, multiple/partial coherence, frequency table, figure and optional export |
+| `sisoTesting` | Analyze the same recording separately | Two SISO transfer functions, ordinary coherence, frequency table, figure and optional export |
+| `simulationSettings` | Expose editable simulation settings | Settings with factor provenance |
+| `runSimulation` | Run an exploratory known-truth configuration | Frequency-by-factor advantage maps |
+| `runFinalSimulationStudy` | Run the frozen core and secondary experiments | Seventeen named source-table maps and precision audit |
+| `ncBootstrap` | Evaluate NC held-out prediction | Subject-averaged frequency advantage, SD, pointwise CI and valid subject count |
+| `createFinalMisoTfaReport` | Render saved scientific outputs | One nine-page PDF and its NC source CSV files |
 
-- `connectData(filePath)` loads one Excel or CSV recording. It performs header
-  matching and returns canonical signals without choosing a model.
-- `misoTesting(connectedData)` runs the two-input MAP/CO2 transfer-function
-  model and returns frequency-resolved results and a figure.
-- `sisoTesting(connectedData)` runs the MAP-only and CO2-only models using the
-  same connected recording.
-- `simulationSettings(profile)` returns the editable known-truth simulation
-  design. `runSimulation(settings)` runs it and can export an archive.
-- `ncBootstrap(dataFolder)` runs blocked NC validation and returns the
-  frequency-wise held-out advantage plus subject-level bootstrap summaries.
+A single observed recording has no known truth and no held-out comparison, so
+the MISO and SISO pages return model results separately. The NC workflow owns
+the empirical MISO-versus-SISO accuracy comparison.
 
-The interfaces own workflow choices. The folders under `modules/` contain
-reusable functions and do not read file paths or create paper figures unless a
-reporting function is explicitly called.
+The final heatmaps place frequency on the horizontal axis, the selected
+recording or mechanism factor on the vertical axis, and MISO advantage in
+color. Band averages are synopsis values only. MAP-CBFV and CO2-CBFV phase are
+recorded outcomes; E2 varies the CO2 timing relative to MAP because that is the
+input relationship that changes estimator separation.
 
-## Simulation interpretation
+## Where to edit
 
-The primary simulation score is the conditional pathway error of MISO versus
-SISO. A positive advantage means the SISO error divided by the MISO error is
-greater than one on a log10 scale. Input coherence and pathway strength are
-primary family conditions; recording duration and broadband output SNR are
-observation conditions. Input phase, input SNR, and alignment are secondary
-robustness experiments.
+| Change you want to make | Start here |
+| --- | --- |
+| File path or one-recording settings | `interfaces/connectData.m`, `misoTesting.m`, `sisoTesting.m` |
+| Simulation settings | `interfaces/simulationSettings.m` and `config/simulationFactors.m` |
+| Synthetic signal generation and known pathways | `modules/simulation/knownTruth/generateKnownTruthRealization.m` |
+| Frozen experiment sequence | `modules/simulation/runFinalSimulationStudy.m` |
+| NC folds, held-out predictions, bootstrap | `modules/ncValidation/` |
+| Shared SISO/MISO estimation | `modules/tfa/runSISOTFA.m`, `runMISOTFA.m` |
+| Shared preprocessing and analysis sequence | `modules/tfa/analyzeTfaSignals.m` and `modules/preprocessing/` |
+| Single-recording figures and exports | `modules/realData/` |
+| Simulation heatmaps and exports | `modules/simulation/` |
+| Paper wording | `manuscript/main.tex` |
+| Paper figures from frozen results | `modules/reporting/generateManuscriptAssets.m` |
+| Rebuild the paper | `buildManuscript.m` |
 
-The 4 Hz sampling rate gives a 2 Hz Nyquist frequency. Results are reported in
-the 0.02–0.35 Hz physiological band. The pathway calibration band is stored
-separately so changing a display range cannot silently change the generated
-truth.
-
-The generator varies MAP–CO2 input phase when that factor is enabled. The
-MAP–CBFV and CO2–CBFV phases are consequences of the two input signals and the
-two known pathways; they are recorded as outputs and are not independently
-assigned parameters.
+The entry points remain small functions with explicit inputs and outputs.
+Numerical routines that serve several workflows remain shared. Short
+bookkeeping functions used by one routine live at the bottom of that routine's
+file, so reading the workflow requires fewer file jumps.

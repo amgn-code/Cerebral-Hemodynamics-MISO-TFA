@@ -14,7 +14,13 @@ function project = setup()
     project.interfaces = fullfile(projectRoot, "interfaces");
     project.config = fullfile(projectRoot, "config");
     project.modules = fullfile(projectRoot, "modules");
+    project.realData = fullfile(project.modules, "realData");
+    project.reporting = fullfile(project.modules, "reporting");
     project.tests = fullfile(projectRoot, "tests");
+    project.manuscript = fullfile(projectRoot, "manuscript");
     project.output = fullfile(projectRoot, "output");
+    project.publicInterfaces = [ ...
+        "connectData"; "misoTesting"; "sisoTesting"; ...
+        "simulationSettings"; "runSimulation"; "ncBootstrap"];
 
 end

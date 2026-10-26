@@ -62,6 +62,31 @@ classdef platformInterfaceTest < matlab.unittest.TestCase
             testCase.verifyTrue(isgraphics(siso.figureHandle));
         end
 
+        function modelPageCanExportItsOwnResults(testCase)
+            [temporaryFolder, inputFile] = createInputWorkbook();
+            testCase.addTeardown(@() rmdir(temporaryFolder, "s"));
+            connectedData = connectData(inputFile);
+
+            analysisSettings = defaultMisoRealDataSettings();
+            analysisSettings.pwelch.windowLengthSeconds = 32;
+            displaySettings = defaultRealDataDisplaySettings("off");
+            displaySettings.createFigure = false;
+            displaySettings.outputFolder = ...
+                fullfile(temporaryFolder, "miso_results");
+
+            results = misoTesting( ...
+                connectedData, analysisSettings, displaySettings);
+
+            testCase.verifyEmpty(results.figureHandle);
+            testCase.verifyEqual( ...
+                numel(results.exportResults.savedFiles), 3);
+            testCase.verifyTrue(all(isfile( ...
+                results.exportResults.savedFiles)));
+            testCase.verifyTrue(contains( ...
+                results.exportResults.savedFiles(1), ...
+                "miso_frequency_results"));
+        end
+
         function simulationPagesExposeSettingsAndRunner(testCase)
             settings = simulationSettings("quick");
 
@@ -91,9 +116,11 @@ classdef platformInterfaceTest < matlab.unittest.TestCase
             testCase.verifyEqual(results.interfaceName, "simulationRunner");
             testCase.verifyEqual(results.numFamilies, 1);
             testCase.verifyGreaterThanOrEqual(results.numObservations, 1);
-            testCase.verifyEqual(numel(results.outputs.maps), 5);
+            testCase.verifyEqual(numel(results.outputs.maps), 6);
+            testCase.verifyEqual(numel(results.outputs.primaryMaps), 4);
+            testCase.verifyEqual(numel(results.outputs.diagnosticMaps), 2);
             testCase.verifyEqual( ...
-                height(results.outputs.manifest.mapIndex), 5);
+                height(results.outputs.manifest.mapIndex), 6);
             testCase.verifyTrue(ismember( ...
                 "Advantage", ...
                 string(results.outputs.maps(1).frequencyTable. ...

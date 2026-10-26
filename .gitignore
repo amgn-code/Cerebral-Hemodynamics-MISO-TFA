@@ -15,6 +15,9 @@ output/
 
 # LaTeX build output. Each document keeps generated files in its own build/.
 manuscript/*/build/
+miso_tfa/manuscript/build/
+archive/scratch/
+archive/generated_outputs/
 slides/*/build/
 *.aux
 *.bbl

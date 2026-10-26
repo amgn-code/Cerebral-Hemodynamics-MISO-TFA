@@ -104,6 +104,21 @@ classdef knownTruthSimulationTest < matlab.unittest.TestCase
                 family.training.truth.inputPhaseLagSeconds, 2);
         end
 
+        function positiveInputLagDelaysCo2RelativeToMap(testCase)
+            settings = defaultKnownTruthSimulationSettings("simple");
+            design = createKnownTruthFamilyDesign(settings);
+            scenario = scenarioFromDesignRowForTest(design(1,:));
+            scenario.targetInputCoherence = 1;
+            scenario.inputPhaseLagSeconds = 4;
+
+            realization = generateKnownTruthRealization( ...
+                scenario, settings, 4817, 600);
+            measuredDelaySamples = finddelay( ...
+                realization.map, realization.co2, 24);
+
+            testCase.verifyEqual(measuredDelaySamples, 16, AbsTol=1);
+        end
+
         function knownTruthFrequencyErrorsRespectPhaseMask(testCase)
             truth = [1; 0.001];
             estimate = [0.8; 0.2];
@@ -129,4 +144,21 @@ function settings = smallSettings()
     settings.observations.referenceOutputSnrDb = Inf;
     settings.observations.runInputNoiseExperiment = false;
     settings.observations.runAlignmentExperiment = false;
+end
+
+function scenario = scenarioFromDesignRowForTest(row)
+% scenarioFromDesignRowForTest Convert one design row for direct generation.
+
+    scenario = struct( ...
+        "targetInputCoherence", row.TargetInputCoherence, ...
+        "spectralSimilarityControl", row.SpectralSimilarityControl, ...
+        "petco2ToMapFluctuationSdRatio", ...
+            row.PETCO2ToMAPFluctuationSDRatio, ...
+        "petco2ToMapBandGainRatio", row.PETCO2ToMAPBandGainRatio, ...
+        "co2DelaySeconds", row.CO2DelaySeconds, ...
+        "inputPhaseLagSeconds", row.InputPhaseLagSeconds, ...
+        "mapPathwayTimeConstantSeconds", ...
+            row.MAPPathwayTimeConstantSeconds, ...
+        "co2PathwayTimeConstantSeconds", ...
+            row.CO2PathwayTimeConstantSeconds);
 end

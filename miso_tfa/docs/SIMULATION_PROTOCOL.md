@@ -1,95 +1,121 @@
-# Simulation protocol
+# Final simulation protocol
 
-This document describes the default `simple` profile in the independent
-project. It is the implementation contract for a pilot run, not a claim that
-the listed engineering levels are population reference intervals.
+## Aim and estimand
 
-## Question and estimand
+This is a controlled linear mechanism study. It asks when a two-input MISO
+estimate recovers the known conditional MAP-to-CBFV and CO2-to-CBFV pathways
+more accurately than two separate SISO estimates. It does not learn a
+physiological transfer-function distribution and it is not tuned to make MISO
+win on the NC recordings.
 
-The simulation asks when a joint MAP/CO2 model recovers the generating
-MAP-to-CBFV and CO2-to-CBFV pathways more accurately than separate SISO
-models. The primary target is conditional pathway recovery: each estimated
-transfer function is compared with the known filter that generated it. SISO
-omits the other input by design, so its omitted-input bias is part of the
-comparison.
-
-The frequency-resolved score is called `truthRecoveryAdvantage` in the
-independent workflow:
+At each retained frequency, the primary score is
 
 ```text
-advantage(f) = log10(mean SISO error(f) / mean MISO error(f))
+advantage = log10(mean paired SISO squared error /
+                  mean paired MISO squared error)
 ```
 
-Positive color means lower average MISO error. The primary complex error
-combines gain and phase discrepancy. Gain and phase errors remain available as
-supporting quantities where the true pathway has sufficient gain. Coherence,
-condition number, and null-reference values explain the result; they are not
-additional accuracy endpoints.
+Positive values favor MISO, zero is equal mean error, and negative values favor
+SISO. A family supplies both estimates, so every summary uses a shared paired
+finite mask. MAP-pathway recovery is primary. CO2-pathway recovery is reported
+as a supplement.
 
-## Fixed signal and analysis choices
+The generator is favorable to correctly specified MISO by construction: CBFV
+is the sum of filtered MAP and CO2 pathways plus an unexplained output term.
+The scientific result is therefore the frequency and recording conditions in
+which MISO's finite-sample cost outweighs, equals, or improves on SISO. The
+study cannot establish universal MISO superiority or population reference
+ranges.
 
-- Sampling rate: 4 Hz; Nyquist frequency: 2 Hz.
-- Reporting band: **0.02–0.35 Hz**. The lower edge is two bins above DC for
-  both the 100 s simulation window and the 90 s NC block.
-- Pathway calibration band: stored separately from the reporting band and
-  fixed before the random signal draw.
-- MAP and CO2 input spectra, pathway shapes, Welch settings, and pathway delay
-  are fixed in the simple profile.
-- Each family is generated once at a fixed 1200 s realization length. Shorter
-  observations are prefixes of the same family, even when the duration list
-  changes.
-- Training and validation realizations have separate deterministic seeds.
+## Fixed analysis
 
-## Conditions
+- Sampling is 4 Hz, so the Nyquist frequency is 2 Hz.
+- Results are reported only from 0.02 to 0.35 Hz. Simulation bins begin at
+  2/100 = 0.02 Hz; retained NC bins begin at 2/90 = 0.0222 Hz.
+- Welch spectra use 100-second Hann windows, 50% overlap, linear detrending
+  within every segment, and three-bin smoothing.
+- The input spectrum is the NC-derived monotonic shape
+  `1/(1+(f/0.0290)^2.5514)`. Its fitted shape is used as a plausible operating
+  spectrum, not as proof of a physiological range.
+- MAP and CO2 pathway time constants are fixed at 3 and 5 seconds. The CO2
+  pathway delay is fixed at 3 seconds.
+- The pathway scaling band equals the 0.02-0.35 Hz reporting band. This only
+  makes the assigned pathway-gain ratio reproducible; it is not a separate
+  calibration experiment.
+- Random streams, settings, family seeds, source tables, and manifests are
+  saved. Increasing the repetition count preserves the existing family prefix.
 
-The default simple profile contains nine clean physiology families:
+## Factor design
 
-| Condition | Levels | Role |
-|---|---:|---|
-| MAP–CO2 input coherence | 0, 0.50, 0.95 pending NC quantiles | input separability |
-| Relative CO2 pathway gain | 0, 0.25, 1 | methodological stress test; report realized CBFV contribution share |
+The primary core has 12 mechanism conditions crossed with six paired
+observations per family.
 
-Each family receives the following paired observations:
+| Factor | Levels | Interpretation |
+| --- | --- | --- |
+| MAP-CO2 input coherence | 0, 0.15, 0.50, 0.95 | 0 is an independent control; 0.15 is NC-informed; 0.50 and 0.95 are stress levels |
+| Assigned CO2-to-MAP pathway gain ratio | 0, 0.25, 1 | Mechanistic pathway levels; realized contribution is a share of separate pathway powers |
+| Recording duration | 300, 600 s | Finite-record variance |
+| CBFV output SNR | Inf, 10, 0 dB | Primary signal-shaped unexplained output variation |
 
-| Observation factor | Levels | Role |
-|---|---:|---|
-| Recording duration | 300, 600 s | finite-record variance |
-| CBFV output SNR | Inf, 10, 0 dB | output measurement disturbance |
-| MAP input SNR | Inf, 10, 0 dB | MAP measurement disturbance, separate check |
-| CO2 input SNR | Inf, 10, 0 dB | CO2 measurement disturbance, separate check |
-| CO2 alignment error | -3, 0, +3 s | secondary acquisition robustness |
+The following experiments are separate so their effects remain readable.
 
-The default profile therefore runs 9 families × 15 observation plans. MAP and
-CO2 input-noise plans are separate so a combined input-noise condition cannot
-be mistaken for an output-noise effect. Input phase is implemented as an
-explicit MAP–CO2 factor, but remains fixed at zero in this profile until its
-levels are supported by NC data or cited physiology. When enabled, the phase
-rotation uses signed FFT frequencies so the generated signals remain real.
+| Experiment | Levels | Fixed reference condition |
+| --- | --- | --- |
+| E2 CO2 lag relative to MAP | -6, 0, 4 s at coherence 0.15, 0.50, 0.95 | pathway ratio 1; 300 s; 10 dB output SNR |
+| E3 MAP input SNR | Inf, 10, 0 dB | coherence 0.50; pathway ratio 1; 300 s; 10 dB output SNR |
+| E3 CO2 input SNR | Inf, 10, 0 dB | same reference, varied separately from MAP noise |
+| E4 CO2 measurement alignment error | -3, 0, 3 s | same reference |
+| Output-noise shape contrast | white noise at 10 and 0 dB | same reference |
 
-MAP–CBFV and CO2–CBFV phases are generated consequences of the input pair and
-the two pathway filters. They are reported outputs, not independent settings.
+MAP-CBFV and CO2-CBFV phase are generated outcomes of the input relation and
+the two pathways. They are not independently assigned factors.
 
-## Figures and validation
+## Verification and uncertainty
 
-The simulation interface returns frequency-by-condition advantage heatmaps.
-Frequency is horizontal, the selected factor or diagnostic is vertical, and
-color is the paired MISO-versus-SISO advantage. Band-averaged values are
-synopses. Diagnostic maps use per-frequency coherence bins and retain valid
-counts.
+The analytic companion contains three quantities on the same truth
+normalization: analytic population SISO squared bias, empirical SISO mean
+squared error, and empirical MISO mean squared error. It is a verification
+view, not another advantage endpoint. The long-record convergence test checks
+the population SISO target while allowing finite-record leakage, detrending,
+tapering, smoothing, and sampling variation.
 
-NC validation is a separate real-data workflow. It fits on two contiguous
-training blocks, evaluates on the held-out block, masks frequencies above each
-recording's usable Nyquist frequency, and bootstraps subjects. Its advantage is
-held-out prediction advantage, not known-truth accuracy.
+Production starts at 500 repetitions per condition and uses 2,000 paired
+bootstrap draws. The precision target is a maximum primary-cell Monte Carlo
+standard error of 0.05 log10 units. If the observed maximum exceeds 0.05, one
+predeclared extension is allowed:
 
-The NC page also returns `inputCharacterization`, which measures ordinary
-MAP–PETCO2 coherence, cross-spectral phase above the CARNET threshold, and MAP
-and PETCO2 power spectra over 0.02–0.35 Hz. The current audit completed 23 NC
-recordings and returned coherence 10th/50th/90th percentiles of approximately
-0.181/0.240/0.282 and fitted phase-lag percentiles of approximately
--6.17/0.27/3.68 s. These values are evidence for the next scientific review,
-not silent changes to the declared stress levels.
+```text
+ceil_to_50(500 * (observed maximum SE / 0.05)^2), capped at 1000
+```
 
-Before a paper run, replace or confirm provisional levels in
-`config/simulationFactors.m` and save the resulting settings and manifest with
-the exported simulation archive.
+The final precision table reports the maximum SE, fraction of finite primary
+cells meeting the target, paired sample counts, and failed estimates. If one
+extension still misses the target, the attained precision is reported.
+
+NC validation answers a different question. It averages the two disjoint
+training-block spectra, predicts the third block, rotates the held-out block,
+averages folds within subject, and then bootstraps subjects. Its intervals are
+pointwise 95% subject-bootstrap intervals. The illustrative NC-protocol
+simulation uses stated 10 dB output-noise assumptions and is not calibrated
+from NC residuals.
+
+## Reproduction
+
+```matlab
+restoredefaultpath
+cd("/path/to/miso_tfa")
+setup;
+
+output = defaultSimulationOutputSettings("off");
+output.createFigures = false;
+study = runFinalSimulationStudy(500, output);
+exportFinalSimulationStudy(study, fullfile(pwd, "output", "final"));
+
+nc = ncBootstrap("/path/to/ieem_data");
+illustrative = simulateIllustrativeNcProtocolScenario(23, 2000);
+createFinalMisoTfaReport(study, nc, illustrative, ...
+    fullfile(pwd, "output", "final"));
+```
+
+Run `runFinalSimulationStudy(1, output)` only as a wiring smoke check. Use the
+production repetition count for scientific figures.
