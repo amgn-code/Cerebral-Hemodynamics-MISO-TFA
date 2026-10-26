@@ -119,4 +119,4 @@ This is a band-limited periodic inverse, with period equal to the Welch window. 
 
 Input generation, response rules, Welch calculations, and estimator equations are retained. Duplicate interfaces/presets, the separate prediction study, and old report/manuscript builders are removed. Earlier code and writing remain in the saved baseline branch.
 
-Two editable-parameter edge cases were corrected: the CO₂/MAP SD ratio when MAP SD changes, and fractional-sample lags. Default generated signals were verified identical to the original; estimator outputs matched the saved baseline within 1e-12.
+Two editable-parameter edge cases were corrected: the CO₂/MAP SD ratio when MAP SD changes, and fractional-sample lags. With matched settings (unit MAP SD and zero input lag), generated signals were verified identical to the original; estimator outputs matched the saved baseline within 1e-12.

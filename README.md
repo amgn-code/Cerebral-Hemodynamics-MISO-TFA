@@ -133,6 +133,6 @@ assert(all([checks.Passed]));
 
 Tests cover spectral identities, circular phase, impulse units, condition design, reproducibility, mappings and units, groups, figures, and replay. The refactor was also compared directly with original generator and estimator outputs.
 
-This revision passed 37 focused tests and MATLAB Code Analyzer with zero issues. The full default simulation completed 13 conditions, 650 recordings, and 14 figures. The real-data numerical pipeline also completed all 23 original NC recordings. Default generated signals matched the saved original exactly; estimator outputs agreed within 1e-12.
+This revision passed 37 focused tests and MATLAB Code Analyzer with zero issues. The full default simulation completed 13 conditions, 650 recordings, and 14 figures. The real-data numerical pipeline also completed all 23 original NC recordings. With matched settings, generated signals matched the saved original exactly; estimator outputs agreed within 1e-12.
 
 Previous interfaces, prediction validation, reports, manuscripts, and archived references remain on [matlab-baseline-2026-10-26](https://github.com/amgn-code/Cerebral-Hemodynamics-MISO-TFA/tree/matlab-baseline-2026-10-26). They are not duplicated in the current source tree.
